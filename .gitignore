@@ -1,0 +1,6 @@
+.env.example
+.env    
+BUILD_PROMPT.md
+DATA_SOURCE.md
+__pycache__/
+*.pyc
