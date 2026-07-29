@@ -240,6 +240,107 @@ def generate_synthetic_cases(n: int = 5000, seed: int = 42) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# ─── Real data loader ────────────────────────────────────────────────────────
+
+DATA_PATH = r"C:\Users\Lenovo\OneDrive\Desktop\MSME Major project\data\msme_samadhaan.csv"
+
+
+def load_real_data(csv_path: str = DATA_PATH) -> pd.DataFrame:
+    """
+    Loads and maps msme_samadhaan.csv columns to the model's expected schema.
+    CSV columns  →  model columns:
+      claim_amount_numeric     → claim_amount_inr
+      delay_days               → overdue_days
+      has_written_contract     → has_signed_contract
+      has_delivery_challan     → has_delivery_proof
+      num_invoices_submitted   → invoice_count
+      doc_completeness_score   → documentation_score
+      prior_cases_filed        → prior_disputes
+      resolution_days          → adjudication_days (for unsettled)
+      case_status              → settled  (Mutually Settled → 1, else → 0)
+    """
+    df_raw = pd.read_csv(csv_path)
+    print(f"[Data] Loaded {len(df_raw)} rows from {csv_path}")
+
+    # Map case_status → binary settled label
+    df_raw["settled"] = df_raw["case_status"].str.strip().str.lower().apply(
+        lambda s: 1 if "mutually settled" in s or "settled" in s else 0
+    )
+
+    # Map dispute_type values to model's expected categories
+    dtype_map = {
+        "delayed payment":   "delayed_payment",
+        "non payment":       "non_payment",
+        "short payment":     "short_payment",
+        "quality dispute":   "quality_dispute",
+        "quantity dispute":  "quantity_dispute",
+        "contract breach":   "contract_breach",
+    }
+    df_raw["dispute_type"] = (
+        df_raw["dispute_type"].str.strip().str.lower()
+        .map(dtype_map)
+        .fillna("delayed_payment")       # default for unknown types
+    )
+
+    # Map state names → state codes
+    state_name_to_code = {
+        "maharashtra": "MH", "delhi": "DL", "gujarat": "GJ",
+        "karnataka": "KA", "tamil nadu": "TN", "uttar pradesh": "UP",
+        "west bengal": "WB", "rajasthan": "RJ", "haryana": "HR",
+        "madhya pradesh": "MP", "telangana": "TG", "andhra pradesh": "AP",
+    }
+    df_raw["state"] = (
+        df_raw["state"].str.strip().str.lower()
+        .map(state_name_to_code)
+        .fillna("other")
+    )
+
+    # Map sector → industry
+    df_raw["industry"] = (
+        df_raw["sector"].str.strip().str.lower()
+        .apply(lambda s: s if s in INDUSTRIES else "other")
+    )
+
+    # Respondent type → size
+    resp_map = {"msme": "small", "large enterprise": "large",
+                "psu": "large", "government": "large"}
+    df_raw["respondent_size"] = (
+        df_raw["respondent_type"].str.strip().str.lower()
+        .map(resp_map).fillna("medium")
+    )
+
+    # Settlement percentage (for settled cases)
+    df_raw["settlement_pct"] = None   # not available in raw data; use 0.75 default
+    settled_mask = df_raw["settled"] == 1
+    df_raw.loc[settled_mask, "settlement_pct"] = 0.75
+
+    # Build final DataFrame with model-expected column names
+    df = pd.DataFrame({
+        "claim_amount_inr":         pd.to_numeric(df_raw["claim_amount_numeric"], errors="coerce").fillna(200_000),
+        "overdue_days":             pd.to_numeric(df_raw["delay_days"], errors="coerce").fillna(60).astype(int),
+        "previous_payments_made":   0,   # not in dataset, default False
+        "invoice_count":            pd.to_numeric(df_raw["num_invoices_submitted"], errors="coerce").fillna(1).astype(int),
+        "documentation_score":      pd.to_numeric(df_raw["doc_completeness_score"], errors="coerce").fillna(0.5),
+        "has_signed_contract":      pd.to_numeric(df_raw["has_written_contract"], errors="coerce").fillna(0).astype(int),
+        "has_delivery_proof":       pd.to_numeric(df_raw["has_delivery_challan"], errors="coerce").fillna(0).astype(int),
+        "claimant_enterprise_size": "micro",   # not in dataset, default
+        "respondent_size":          df_raw["respondent_size"],
+        "prior_disputes":           pd.to_numeric(df_raw["prior_cases_filed"], errors="coerce").fillna(0).astype(int),
+        "industry":                 df_raw["industry"],
+        "dispute_type":             df_raw["dispute_type"],
+        "state":                    df_raw["state"],
+        "msefc_filing":             1,   # all MSME Samadhan cases are filed
+        "days_since_dispute":       pd.to_numeric(df_raw["delay_days"], errors="coerce").fillna(60).astype(int),
+        "settled":                  df_raw["settled"],
+        "settlement_pct":           df_raw["settlement_pct"],
+        "adjudication_days":        pd.to_numeric(df_raw["resolution_days"], errors="coerce").where(df_raw["settled"]==0).fillna(180).astype(int),
+    })
+
+    df = df.dropna(subset=["claim_amount_inr"]).reset_index(drop=True)
+    print(f"[Data] After cleaning: {len(df)} rows | settled={df['settled'].mean():.1%}")
+    return df
+
+
 # ─── Model training ───────────────────────────────────────────────────────────
 
 class OutcomePredictionTrainer:
@@ -425,9 +526,14 @@ class OutcomePredictionEngine:
 # ─── Entry point ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # 1. Generate synthetic data
-    print("Generating synthetic training data...")
-    df = generate_synthetic_cases(n=5000)
+    # 1. Load real data if available, else fall back to synthetic
+    import os
+    if os.path.exists(DATA_PATH):
+        print(f"[Data] Found real dataset at {DATA_PATH} — using real data for training.")
+        df = load_real_data(DATA_PATH)
+    else:
+        print(f"[Data] Real dataset not found at {DATA_PATH} — using synthetic data.")
+        df = generate_synthetic_cases(n=5000)
     print(df.describe())
 
     # 2. Train

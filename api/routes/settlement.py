@@ -60,7 +60,7 @@ def _generate_settlement(case: Case) -> dict:
         )
 
         gen    = SettlementGenerator(use_llm=False)
-        result = asyncio.get_event_loop().run_until_complete(gen.generate(agreement))
+        result = asyncio.run(gen.generate(agreement))
 
         return {
             "agreement_id":     agreement.agreement_id,

@@ -14,7 +14,8 @@ from api.config import settings
 from api.database import get_db
 from api.models.user import User
 
-pwd_context    = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use pbkdf2_sha256 for broad runtime compatibility (notably Python 3.13 on Windows).
+pwd_context    = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme  = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 

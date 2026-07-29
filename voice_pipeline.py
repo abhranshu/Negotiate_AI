@@ -27,6 +27,7 @@ from transformers import (
     AutoModelForTokenClassification,
     pipeline as hf_pipeline,
 )
+from translation_service import get_translator
 
 
 # ─── Data classes ────────────────────────────────────────────────────────────
@@ -208,8 +209,9 @@ class VoiceToFormPipeline:
     """End-to-end: audio file → populated DisputeFormFields."""
 
     def __init__(self, whisper_size: str = "medium"):
-        self.asr = IndianASR(whisper_size)
-        self.ner = LegalNER()
+        self.asr        = IndianASR(whisper_size)
+        self.ner        = LegalNER()
+        self.translator = get_translator()   # IndicTrans2 (lazy-loaded)
 
     def process(self, audio_path: str, language: Optional[str] = None) -> DisputeFormFields:
         form = DisputeFormFields()
@@ -220,10 +222,17 @@ class VoiceToFormPipeline:
         form.detected_language = result["language"]
         form.confidence        = result["language_probability"]
 
-        # Step 2 — Translate to English if non-English detected
+        # Step 2 — Translate to English using IndicTrans2 if non-English detected
         if result["language"] not in ("en", "english"):
-            en_result  = self.asr.transcribe_to_english(audio_path)
-            en_text    = en_result["text"]
+            detected_iso = result["language"]   # Whisper returns ISO 639-1 codes
+            try:
+                en_text = self.translator.to_english(transcript, src_lang=detected_iso)
+                print(f"[Pipeline] IndicTrans2 translation: {en_text[:120]}...")
+            except (ValueError, Exception) as e:
+                # Fallback: use Whisper's built-in translate task
+                print(f"[Pipeline] IndicTrans2 failed ({e}), falling back to Whisper translate")
+                en_result = self.asr.transcribe_to_english(audio_path)
+                en_text   = en_result["text"]
         else:
             en_text = transcript
 

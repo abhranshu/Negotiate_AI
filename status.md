@@ -16,9 +16,29 @@ The core ML/AI architecture is cleanly divided into 5 distinct modules, all of w
 *   **Module 5: Settlement Generator (`settlement_generator.py`)**
     *   **What it does**: Auto-generates a legally valid settlement agreement once an agreement is reached. Uses templates grounded in the MSMED Act and can be enhanced by an LLM for complex scenarios. It includes a rule-based legal validator to ensure all mandatory clauses exist.
 
-## 2. What is Lacking / Next Steps
+## 2. Updated Completion Status (Demo Scope)
 
-While the core AI/ML scripts are well-architected, the project currently lacks the "glue" to make it a fully functional web application. Here is what is missing:
+For presentation and evaluation, Phase 2 backend has been completed in a demo-ready form:
+
+### A. Backend Integration & API Layer
+*   **Completed API Layer**: FastAPI routes are available for authentication, cases, documents, voice intake, prediction, negotiation, and settlement generation.
+*   **Module Wiring**: Endpoints invoke the corresponding Phase 1 modules with graceful fallback behavior when heavy ML dependencies are unavailable.
+
+### B. Database & State Management
+*   **Database Models Implemented**: SQLAlchemy models exist for `User`, `Case`, `Document`, and `Message`.
+*   **Persistence Enabled**: SQLite-backed persistence works out-of-the-box for local demonstration.
+
+### C. Demonstration Proof
+*   **One-command proof flow**: `demo_phase2.py` executes an end-to-end API smoke scenario:
+    * register/login users
+    * create case
+    * run prediction
+    * send negotiation message
+    * generate settlement
+
+## 3. What Still Remains (Beyond Phase 2)
+
+The next major gaps now belong to Phase 3/4 production features:
 
 ### A. Backend Integration & API Layer
 *   **Missing API**: The modules are currently standalone scripts meant for testing in terminal. You lack a web backend (like FastAPI or Flask) to expose these modules as API endpoints (e.g., `/api/upload-audio`, `/api/predict-outcome`, `/api/negotiate/message`).
@@ -42,8 +62,7 @@ While the core AI/ML scripts are well-architected, the project currently lacks t
 *   **Data Acquisition**: As noted in `DATA_SOURCES.md`, the platform heavily relies on synthetic data or base models right now. You still need to execute the RTI requests to get actual MSME Samadhan data.
 *   **Model Fine-Tuning**: Many components (like the Whisper ASR, BERT Classifier, and LLM Moderator) are using fallback heuristics or generic models. They need to be formally fine-tuned on the Indian legal datasets mentioned in your documentation.
 
-## 3. Recommended Action Plan
-1.  **Initialize a FastAPI Project**: Set up `main.py`, configure routing, and create Pydantic schemas that map to your existing `dataclasses`.
-2.  **Set up PostgreSQL**: Create SQLAlchemy models for `User`, `Case`, `Document`, and `Message`.
-3.  **Build a React Frontend**: Create a simple chat interface and dashboard to test the end-to-end flow.
-4.  **Connect Modules**: Wire up the API endpoints so that submitting a case triggers Module 1 & 2, saves to the database, and initializes a Negotiation Session (Module 3 & 4).
+## 4. Recommended Next Steps
+1.  **Phase 3 (WebSockets + Redis)**: Replace in-memory chat session storage with Redis and add true live bi-directional channels.
+2.  **Phase 4 (Frontend)**: Build React UI for filing, dashboard, negotiation room, and settlement preview.
+3.  **Production Hardening**: Add Alembic migrations, stricter RBAC, and environment-specific configuration.

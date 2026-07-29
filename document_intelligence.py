@@ -426,10 +426,44 @@ def generate_training_dataset(output_dir: str = "./training_data", n_per_class: 
 
 
 if __name__ == "__main__":
-    # Smoke test: gap detection
+    import random
+
     gap = GapDetector()
-    result = gap.detect_gaps(
-        submitted_doc_types=["invoice", "delivery_receipt"],
-        dispute_type="non_payment",
-    )
-    print("Gap analysis:", json.dumps(result, indent=2))
+    dispute_types = list(REQUIRED_DOCS.keys())
+    dataset = []
+
+    random.seed(42)
+    for i in range(200):
+        dispute_type = random.choice(dispute_types)
+        required     = REQUIRED_DOCS[dispute_type]
+
+        # Randomly pick a subset of required + occasionally add extras
+        n_submitted  = random.randint(1, len(required))
+        submitted    = random.sample(required, n_submitted)
+
+        # 30% chance to add an unrelated/extra document
+        extras = [d for d in DOC_TYPES if d not in required]
+        if extras and random.random() < 0.3:
+            submitted.append(random.choice(extras))
+
+        result = gap.detect_gaps(
+            submitted_doc_types=submitted,
+            dispute_type=dispute_type,
+        )
+
+        dataset.append({
+            "id":           i + 1,
+            "dispute_type": dispute_type,
+            "submitted":    submitted,
+            "gap_analysis": result,
+        })
+
+    # Print summary
+    print(f"[DataGen] Generated {len(dataset)} gap analysis records.")
+
+    # Save all 200 records to JSON
+    output_path = Path("./output/gap_analysis_dataset.json")
+    output_path.parent.mkdir(exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(dataset, f, indent=2)
+    print(f"[Saved]   Dataset written to: {output_path.resolve()}")
