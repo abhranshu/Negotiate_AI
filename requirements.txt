@@ -37,6 +37,7 @@ pydantic>=2.6.0
 python-multipart>=0.0.9    # file uploads
 redis>=5.0.0
 sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0      # PostgreSQL driver for Supabase
 asyncpg>=0.29.0            # async postgres driver
 alembic>=1.13.0            # migrations
 

@@ -1,21 +1,22 @@
-"""
-Configuration & environment variables.
-Copy .env.example to .env and fill in your values.
-"""
+"""Configuration & environment variables."""
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # Database — defaults to SQLite (no install needed to get started)
-    DATABASE_URL: str = "sqlite:///./negotiateai.db"
+    # Supabase PostgreSQL
+    DATABASE_URL: str = "postgresql+psycopg2://postgres:3A7oCDP6ku46otyM@db.vficltziofvdswguubzy.supabase.co:5432/postgres"
 
-    # LLM — set your Anthropic key for Module 4 & 5 (optional; falls back to keyword heuristics)
-    ANTHROPIC_API_KEY: str = ""
+    # Supabase URL & Key
+    SUPABASE_URL: str = "https://vficltziofvdswguubzy.supabase.co"
+    SUPABASE_KEY: str = "sb_publishable_c9oCNc_BioGwjZ3IogNxSg_w_DxTgB1"
+
+    # LLM — no external API key required
+    USE_EXTERNAL_LLM: bool = False
 
     # Auth
-    SECRET_KEY: str = "change-me-in-production-use-openssl-rand-hex-32"
+    SECRET_KEY: str = "nai2025msme-odr-platform-secret-key-minimum-32-characters"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
     # File uploads
     UPLOAD_DIR: str = "./uploads"

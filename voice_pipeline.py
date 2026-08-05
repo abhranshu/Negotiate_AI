@@ -208,10 +208,10 @@ class LegalNER:
 class VoiceToFormPipeline:
     """End-to-end: audio file → populated DisputeFormFields."""
 
-    def __init__(self, whisper_size: str = "medium"):
+    def __init__(self, whisper_size: str = "base"):
         self.asr        = IndianASR(whisper_size)
         self.ner        = LegalNER()
-        self.translator = get_translator()   # IndicTrans2 (lazy-loaded)
+        self.translator = None   # IndicTrans2 disabled — using Whisper built-in translate instead
 
     def process(self, audio_path: str, language: Optional[str] = None) -> DisputeFormFields:
         form = DisputeFormFields()
@@ -222,17 +222,15 @@ class VoiceToFormPipeline:
         form.detected_language = result["language"]
         form.confidence        = result["language_probability"]
 
-        # Step 2 — Translate to English using IndicTrans2 if non-English detected
+        # Step 2 — Translate to English using Whisper built-in translate (no IndicTrans2 needed)
         if result["language"] not in ("en", "english"):
-            detected_iso = result["language"]   # Whisper returns ISO 639-1 codes
             try:
-                en_text = self.translator.to_english(transcript, src_lang=detected_iso)
-                print(f"[Pipeline] IndicTrans2 translation: {en_text[:120]}...")
-            except (ValueError, Exception) as e:
-                # Fallback: use Whisper's built-in translate task
-                print(f"[Pipeline] IndicTrans2 failed ({e}), falling back to Whisper translate")
                 en_result = self.asr.transcribe_to_english(audio_path)
                 en_text   = en_result["text"]
+                print(f"[Pipeline] Whisper translate: {en_text[:120]}...")
+            except Exception as e:
+                print(f"[Pipeline] Whisper translate failed ({e}), using raw transcript")
+                en_text = transcript
         else:
             en_text = transcript
 

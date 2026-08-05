@@ -1,16 +1,27 @@
-"""
-SQLAlchemy database engine and session factory.
-"""
+# Listen for DB url from .env
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from api.config import settings
 
-# SQLite needs connect_args; PostgreSQL does not
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+# Determine DB type
+database_url = settings.DATABASE_URL.strip()
 
-engine = create_engine(settings.DATABASE_URL, connect_args=connect_args)
+if database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+else:
+    # PostgreSQL (Supabase, Neon, etc.)
+    connect_args = {}
+
+engine = create_engine(
+    database_url,
+    connect_args=connect_args,
+    pool_size=5,
+    pool_recycle=300,
+    echo=False,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

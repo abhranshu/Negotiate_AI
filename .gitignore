@@ -46,3 +46,6 @@ README.md
 demo.py
 demo_phase2.py
 download_indictrans2.py
+
+node_modules/
+frontend/node_modules/

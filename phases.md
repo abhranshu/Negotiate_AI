@@ -30,14 +30,15 @@ This document outlines the entire lifecycle of the NegotiateAI platform, broken 
 
 ---
 
-## 🔴 PHASE 3: Real-Time Communication Engine (Not Started)
-**Status:** ⏳ PENDING
+## 🟡 PHASE 3: Real-Time Communication Engine (In Progress)
+**Status:** 🟡 IN PROGRESS (Backend WebSockets Complete)
 **Description:** Building the live-chat infrastructure so two parties can negotiate simultaneously while the AI watches in real-time.
 
-*   [ ] **WebSocket Integration:** Creating the `/ws/negotiation/{session_id}` endpoint in FastAPI.
-*   [ ] **Redis State Management:** Using Redis to store active connection states and live conversation history instantly.
-*   [ ] **Real-time Event Handlers:** Processing incoming chat messages, running sentiment analysis on the fly, and broadcasting messages.
-*   [ ] **Private AI Suggestions:** Logic to push AI advice *only* to the relevant party's WebSocket connection without the other party seeing.
+*   [x] **WebSocket Integration:** Creating the `/ws/{case_id}` endpoint in FastAPI (`api/routes/negotiate.py`).
+*   [x] **Connection Manager:** `api/websockets.py` managing public broadcasting & private party-specific channels.
+*   [x] **Real-time Event Handlers:** Processing incoming chat messages, running sentiment analysis, and broadcasting messages.
+*   [x] **Private AI Suggestions:** Logic to push AI advice *only* to the relevant party's WebSocket connection without the other party seeing.
+*   [ ] **Redis State Management:** Swapping in-memory dictionary for Redis pub/sub state cache in production.
 
 ---
 

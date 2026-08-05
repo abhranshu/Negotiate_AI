@@ -1,12 +1,14 @@
 """
 Negotiation chat route — triggers Module 4 (NegotiationSession).
-POST /api/cases/{case_id}/negotiate  — Send a message; get AI mediator response
+POST /api/cases/{case_id}/negotiate  — REST endpoint to send a message; get AI mediator response
 GET  /api/cases/{case_id}/messages   — Retrieve full chat history
+WS   /api/cases/ws/{case_id}        — Real-Time WebSocket Endpoint (Phase 3)
 """
+
 import asyncio
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from api.database import get_db
@@ -14,6 +16,7 @@ from api.models.case import Case, Message, CaseStatus
 from api.models.user import User
 from api.schemas.case import NegotiateRequest, NegotiateResponse, MessageOut
 from api.auth import get_current_user
+from api.websockets import manager
 
 router = APIRouter(prefix="/api/cases", tags=["Negotiation"])
 
@@ -54,7 +57,7 @@ def send_message(
     db:           Session = Depends(get_db),
     current_user: User    = Depends(get_current_user),
 ):
-    """Send a negotiation message. Module 4 returns a mediator response."""
+    """Send a negotiation message via REST API. Module 4 returns a mediator response."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
@@ -71,7 +74,6 @@ def send_message(
             party_enum = Party.CLAIMANT if party_str == "claimant" else Party.RESPONDENT
             result = asyncio.run(session.process_message(party_enum, payload.text, payload.offer))
         except Exception:
-            # If external LLM/API call fails, keep negotiation endpoint functional.
             result = {
                 "mediator_response":  "Thank you. Let's continue toward a fair settlement.",
                 "sentiment_detected": "neutral",
@@ -103,7 +105,128 @@ def send_message(
         case.status           = CaseStatus.agreement
 
     db.commit()
+
+    # If active WebSocket connections exist, broadcast event
+    asyncio.run(manager.broadcast_public(case_id, {
+        "type": "chat_message",
+        "sender": party_str,
+        "text": payload.text,
+        "offer": payload.offer,
+        "mediator_response": result["mediator_response"]
+    }))
+
     return result
+
+
+@router.websocket("/ws/{case_id}")
+async def websocket_negotiation(
+    websocket: WebSocket,
+    case_id: str,
+    party: str = "claimant",  # Passed as query param: /api/cases/ws/{case_id}?party=claimant
+    db: Session = Depends(get_db)
+):
+    """
+    Real-Time Bi-Directional Negotiation WebSocket.
+    Manages live chat, AI mediator public responses, and party-specific private strategy hints.
+    """
+    party_str = party.lower()
+    if party_str not in ("claimant", "respondent"):
+        await websocket.close(code=4000, reason="Invalid party. Must be 'claimant' or 'respondent'")
+        return
+
+    await manager.connect(websocket, case_id, party_str)
+
+    try:
+        while True:
+            # 1. Receive JSON message from connected party
+            data = await websocket.receive_json()
+            text = data.get("text", "")
+            offer = data.get("offer")
+
+            if not text:
+                continue
+
+            # 2. Fetch case from database
+            case = db.query(Case).filter(Case.id == case_id).first()
+            if case and case.status in (CaseStatus.draft, CaseStatus.submitted):
+                case.status = CaseStatus.in_progress
+                db.commit()
+
+            # 3. Broadcast incoming user message to all public room listeners
+            await manager.broadcast_public(case_id, {
+                "type": "user_message",
+                "sender": party_str,
+                "text": text,
+                "offer": offer
+            })
+
+            # 4. Invoke Module 4 (NegotiationSession)
+            session = _get_or_create_session(case) if case else None
+            if session:
+                try:
+                    from negotiation_ai import Party
+                    party_enum = Party.CLAIMANT if party_str == "claimant" else Party.RESPONDENT
+                    result = await session.process_message(party_enum, text, offer)
+                except Exception:
+                    result = {
+                        "mediator_response":  "Thank you for your message. Let's work toward an agreement.",
+                        "sentiment_detected": "neutral",
+                        "phase":              "bargaining",
+                        "round":              1,
+                        "agreement_reached":  False,
+                        "agreement_amount":   None,
+                        "strategy_hints":     {},
+                    }
+            else:
+                result = {
+                    "mediator_response":  "Message received. The AI mediator is analyzing the terms.",
+                    "sentiment_detected": "neutral",
+                    "phase":              "bargaining",
+                    "round":              1,
+                    "agreement_reached":  False,
+                    "agreement_amount":   None,
+                    "strategy_hints":     {},
+                }
+
+            # Save messages to database persistence
+            if case:
+                db.add(Message(case_id=case_id, party=party_str, text=text,
+                               offer=offer, sentiment=result.get("sentiment_detected"),
+                               phase=result.get("phase"), round_num=result.get("round")))
+                db.add(Message(case_id=case_id, party="mediator", text=result["mediator_response"],
+                               phase=result.get("phase"), round_num=result.get("round")))
+
+                if result.get("agreement_reached") and result.get("agreement_amount"):
+                    case.agreement_amount = result["agreement_amount"]
+                    case.status           = CaseStatus.agreement
+
+                db.commit()
+
+            # 5. Broadcast Mediator's Public Response to the room
+            await manager.broadcast_public(case_id, {
+                "type": "mediator_response",
+                "sender": "mediator",
+                "text": result["mediator_response"],
+                "sentiment": result.get("sentiment_detected"),
+                "phase": result.get("phase"),
+                "round": result.get("round"),
+                "agreement_reached": result.get("agreement_reached"),
+                "agreement_amount": result.get("agreement_amount")
+            })
+
+            # 6. Send Private Party-Specific Strategy Hints (Crucial Novelty!)
+            hints = result.get("strategy_hints", {})
+            if party_str in hints:
+                await manager.send_private(case_id, party_str, {
+                    "type": "private_hint",
+                    "recipient": party_str,
+                    "hint": hints[party_str]
+                })
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, case_id)
+    except Exception as e:
+        manager.disconnect(websocket, case_id)
 
 
 @router.get("/{case_id}/messages", response_model=List[MessageOut])

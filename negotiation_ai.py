@@ -329,6 +329,60 @@ If the conversation is in a language other than English, respond in that languag
 Be brief (2–4 sentences). Do not reveal internal strategy hints to parties.
 """
 
+    def generate_response_sync(self, state, last_message, strategy_hints):
+        """Rule-based mediator — no external API call."""
+        lo, hi    = state.predicted_range
+        mid       = strategy_hints.get("midpoint") or (lo + hi) / 2
+        nash      = strategy_hints.get("nash_solution") or mid
+        move      = strategy_hints.get("mediator_move", "facilitate")
+        agreement = state.agreement_amount
+
+        def inr(v): return f"₹{v:,.0f}" if v else "—"
+
+        if move == "close" and agreement:
+            return (
+                f"Excellent — both parties have converged near {inr(agreement)}. "
+                f"This sits within the predicted band ({inr(lo)}–{inr(hi)}). "
+                "I will now prepare the settlement agreement for review and signatures."
+            )
+        if move == "suggest_mediator_proposal":
+            return (
+                "I notice an impasse. Allow me to formally propose "
+                f"{inr(nash)} — this is the point where both parties gain more than "
+                "formal adjudication would deliver. Please respond with 'accept' or 'revise'."
+            )
+        if last_message.sentiment == SentimentLabel.HOSTILE or move == "de-escalate":
+            return (
+                "I hear the frustration — this delay is genuinely difficult. "
+                "Let's refocus on numbers: the fair settlement window for similar "
+                f"MSMED cases is {inr(lo)} to {inr(hi)}. Can each side share their "
+                "absolute floor so we can test whether an overlap exists?"
+            )
+        if state.last_claimant_offer and state.last_respondent_offer and \
+           abs(state.last_claimant_offer - state.last_respondent_offer) <= state.claim_amount * 0.10:
+            return (
+                f"We are very close — the gap is only {inr(abs(state.last_claimant_offer - state.last_respondent_offer))}. "
+                f"I recommend both sides meet at {inr(mid)} and close this amicably today."
+            )
+        if last_message.offer is not None:
+            return (
+                f"Thank you — a concrete offer of {inr(last_message.offer)} is now on the table. "
+                f"For reference, our data suggests a fair Nash equilibrium near {inr(nash)}. "
+                "The other party may accept, reject, or counter-offer."
+            )
+        if state.round_number > 3:
+            return (
+                "I've observed that extended negotiation increases costs for both sides. "
+                f"MSMED Act Section 18 conciliation exists precisely to avoid this. "
+                f"My data-driven recommendation remains near {inr(mid)}. "
+                "Shall we test this number with both parties?"
+            )
+        return (
+            f"Thank you for sharing that. Based on similar cases, the settlement range "
+            f"is {inr(lo)}–{inr(hi)}. I would encourage the next proposal to stay "
+            "within or near this band to accelerate resolution."
+        )
+
     async def generate_response(
         self,
         state: NegotiationState,
@@ -336,43 +390,7 @@ Be brief (2–4 sentences). Do not reveal internal strategy hints to parties.
         strategy_hints: dict,
         language: str = "en",
     ) -> str:
-        prompt = self._build_prompt(state, last_message, strategy_hints, language)
-
-        if self.use_api:
-            return await self._call_anthropic_api(prompt)
-        else:
-            return await self._call_ollama(prompt)
-
-    async def _call_anthropic_api(self, prompt: str) -> str:
-        """Use Claude via API as negotiation moderator backbone."""
-        import httpx
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "Content-Type": "application/json",
-                    "anthropic-version": "2023-06-01",
-                },
-                json={
-                    "model":      "claude-sonnet-4-20250514",
-                    "max_tokens": 300,
-                    "messages":   [{"role": "user", "content": prompt}],
-                },
-                timeout=15.0,
-            )
-            data = resp.json()
-            return data["content"][0]["text"]
-
-    async def _call_ollama(self, prompt: str) -> str:
-        """Local Mistral via Ollama."""
-        import httpx
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                "http://localhost:11434/api/generate",
-                json={"model": self.model_name, "prompt": prompt, "stream": False},
-                timeout=30.0,
-            )
-            return resp.json()["response"]
+        return self.generate_response_sync(state, last_message, strategy_hints)
 
 
 # ─── Main Negotiation Session ─────────────────────────────────────────────────
@@ -388,7 +406,7 @@ class NegotiationSession:
         self.language   = language
         self.sentiment  = NegotiationSentimentAnalyser()
         self.strategy   = BargainingStrategyEngine()
-        self.moderator  = NegotiationModerator(use_api=True)
+        self.moderator  = NegotiationModerator()
 
     async def process_message(
         self,
