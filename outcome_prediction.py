@@ -34,6 +34,7 @@ import json
 import joblib
 import numpy as np
 import pandas as pd
+import sys
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional
@@ -108,6 +109,21 @@ class PredictionReport:
     confidence_band:         str             # "high" | "medium" | "low"
     key_factors:             list[dict]      # SHAP-based explanations
     recommendation:          str
+
+
+def _register_pickle_compatibility():
+    """Allow legacy joblib artifacts created from __main__ to unpickle cleanly."""
+    main_module = sys.modules.get("__main__")
+    if not main_module:
+        return
+    for name, obj in {
+        "CaseFeatures": CaseFeatures,
+        "PredictionReport": PredictionReport,
+        "FeatureEngineer": FeatureEngineer,
+        "OutcomePredictionTrainer": OutcomePredictionTrainer,
+        "OutcomePredictionEngine": OutcomePredictionEngine,
+    }.items():
+        setattr(main_module, name, obj)
 
 
 # ─── Feature engineering ─────────────────────────────────────────────────────
@@ -444,6 +460,7 @@ class OutcomePredictionTrainer:
 class OutcomePredictionEngine:
 
     def __init__(self, model_dir: str = "./models"):
+        _register_pickle_compatibility()
         model_dir = Path(model_dir)
         self.clf      = joblib.load(model_dir / "settlement_classifier.pkl")
         self.pct_reg  = joblib.load(model_dir / "settlement_pct_regressor.pkl")

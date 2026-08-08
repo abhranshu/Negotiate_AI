@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import API from '../api';
 import { T, css, fmt, pct, confColor } from '../theme';
 import { Badge, Spinner, Stat, ProgressBar, Alert, EmptyState, Tab } from './UI';
@@ -99,8 +99,52 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
   const [docFiles, setDocFiles]     = useState([]);
   const [voiceResult, setVoiceResult] = useState(null);
   const [loadingV, setLoadingV]     = useState(false);
+  const [recording, setRecording]   = useState(false);
   const [loadingD, setLoadingD]     = useState(false);
   const [err, setErr]               = useState('');
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const stopRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    recorder.stop();
+  };
+
+  const startRecording = async () => {
+    setErr('');
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setErr('Microphone is not supported in this browser');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = () => {
+        const mimeType = recorder.mimeType || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        const extension = mimeType.includes('mp4') ? 'm4a' : 'webm';
+        const file = new File([blob], `voice-note.${extension}`, { type: mimeType });
+        setVoiceFile(file);
+        setRecording(false);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch (error) {
+      setErr(error?.message || 'Could not access microphone');
+      setRecording(false);
+    }
+  };
 
   const uploadVoice = async () => {
     if (!voiceFile) return;
@@ -134,7 +178,7 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
       <div style={css.card}>
         <div style={css.title}>🎙️ Module 1 — Voice Dispute Intake</div>
         <p style={{ fontSize: 12, color: T.muted, marginBottom: 14 }}>
-          Upload a voice note in any Indian language. Whisper ASR + NER will auto-fill the dispute form.
+          Upload a voice note or record one from your microphone in any Indian language. Whisper ASR + NER will auto-fill the dispute form.
         </p>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <label style={{ ...css.btn, background: T.border, color: T.text, cursor: 'pointer', fontSize: 12 }}>
@@ -142,6 +186,12 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
             <input type='file' accept='audio/*' style={{ display: 'none' }}
               onChange={e => setVoiceFile(e.target.files[0])} />
           </label>
+          <button
+            style={{ ...css.btn, background: recording ? T.yellow : T.border, color: recording ? '#111' : T.text, fontSize: 12 }}
+            onClick={recording ? stopRecording : startRecording}
+          >
+            {recording ? '⏹ Stop Recording' : '🎙️ Record from Mic'}
+          </button>
           <button style={{ ...css.btn, background: `linear-gradient(135deg,${T.accent},${T.accent2})`, color: '#fff' }}
             onClick={uploadVoice} disabled={!voiceFile || loadingV}>
             {loadingV && <Spinner />}🚀 Process Voice
