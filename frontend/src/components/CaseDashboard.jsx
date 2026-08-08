@@ -119,9 +119,18 @@ export default function CaseDashboard({ user, onSelectCase, onCreateCase, refres
                     <td style={{ padding: '12px', fontSize: 12, color: T.muted }}>
                       {new Date(c.created_at).toLocaleDateString('en-IN')}
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td style={{ padding: '12px', display: 'flex', gap: 6 }}>
                       <button style={{ ...css.btn, background: T.accent, color: '#fff', padding: '5px 14px', fontSize: 12 }}>
                         Open →
+                      </button>
+                      <button
+                        style={{ ...css.btn, background: T.border, color: T.text, fontSize: 12, padding: '5px 10px' }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          alert('📞 Call feature: Respondents are contacted via their registered email.\nDirect phone calls require additional integration.');
+                        }}
+                      >
+                        📞
                       </button>
                     </td>
                   </tr>

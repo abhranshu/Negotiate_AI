@@ -1,127 +1,88 @@
 """
-Document upload route — triggers Module 2 (Document Intelligence).
-POST /api/cases/{case_id}/documents   — Upload one or more files
-GET  /api/cases/{case_id}/documents   — List all documents for a case
+Voice upload route — triggers Module 1 (Voice Pipeline).
+POST /api/cases/{case_id}/voice  — Upload audio, extract entities, pre-fill case fields
 """
 import os
 import uuid
-from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.models.case import Case, Document
+from api.models.case import Case
 from api.models.user import User
-from api.schemas.case import DocumentOut
+from api.schemas.case import CaseOut
 from api.auth import get_current_user
 from api.config import settings
 
-router = APIRouter(prefix="/api/cases", tags=["Documents"])
+router = APIRouter(prefix="/api/cases", tags=["Voice"])
 
-os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".ogg", ".flac", ".webm"}
 
 
-def _run_document_intelligence(file_path: str, dispute_type: str) -> dict:
+def _run_voice_pipeline(audio_path: str) -> dict:
     """
-    Runs Module 2 on a single file.
-    Returns a dict with: doc_type, confidence, extracted_text, key_fields, issues.
-
-    Heavy imports (torch, transformers) are done lazily so the API starts fast
-    even on machines without a GPU or the full ML stack installed.
+    Runs Module 1 on the uploaded audio file.
+    Returns populated form fields as a dict.
+    Falls back to empty dict if ML stack not installed.
     """
     try:
-        from document_intelligence import DocumentOCR, DocumentClassifier
-        ocr        = DocumentOCR()
-        classifier = DocumentClassifier()
 
-        text          = ocr.extract_text(file_path)
-        doc_type, conf = classifier.classify(text)
-        key_fields    = classifier.extract_key_fields(text, doc_type)
-
+        from AIML.voice_pipeline import VoiceToFormPipeline
+        pipeline = VoiceToFormPipeline(whisper_size="base")   # use "base" for speed; change to "medium" in prod
+        form     = pipeline.process(audio_path)
         return {
-            "doc_type":       doc_type,
-            "confidence":     conf,
-            "extracted_text": text[:4000],   # store first 4 KB
-            "key_fields":     key_fields,
-            "issues":         [],
-            "is_valid":       conf >= 0.6,
+            "dispute_type":    form.dispute_type,
+            "claim_amount":    form.invoice_amount,
+            "description":     form.description,
+            "claimant_name":   form.claimant_name,
+            "respondent_name": form.respondent_name,
+            "detected_language": form.detected_language,
+            "missing_fields":  form.missing_fields,
         }
     except Exception as exc:
-        # If ML stack not installed, return stub so API still works
-        return {
-            "doc_type":       "unknown",
-            "confidence":     0.0,
-            "extracted_text": "",
-            "key_fields":     {},
-            "issues":         [f"ML processing unavailable: {exc}"],
-            "is_valid":       False,
-        }
+        return {"error": str(exc)}
 
 
-@router.post("/{case_id}/documents", response_model=List[DocumentOut])
-async def upload_documents(
+@router.post("/{case_id}/voice", response_model=CaseOut)
+async def upload_voice(
     case_id:  str,
-    files:    List[UploadFile] = File(...),
-    db:       Session          = Depends(get_db),
-    current_user: User         = Depends(get_current_user),
+    file:     UploadFile = File(...),
+    db:       Session    = Depends(get_db),
+    current_user: User   = Depends(get_current_user),
 ):
-    """Upload one or more documents for a case. Each file is classified by Module 2."""
+    """
+    Upload an audio file. Module 1 will transcribe, translate, extract entities,
+    and pre-populate any missing fields on the case.
+    """
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     if case.claimant_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the claimant can upload documents")
+        raise HTTPException(status_code=403, detail="Only the claimant can upload voice")
 
-    # Size guard
-    max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
+    ext = os.path.splitext(file.filename)[-1].lower()
+    if ext not in AUDIO_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Unsupported audio format. Allowed: {AUDIO_EXTENSIONS}")
 
-    results = []
-    for upload in files:
-        raw = await upload.read()
-        if len(raw) > max_bytes:
-            raise HTTPException(status_code=413, detail=f"{upload.filename} exceeds {settings.MAX_FILE_SIZE_MB} MB limit")
+    # Save audio file
+    audio_name = f"{uuid.uuid4()}{ext}"
+    audio_path = os.path.join(settings.UPLOAD_DIR, audio_name)
+    raw = await file.read()
+    with open(audio_path, "wb") as f:
+        f.write(raw)
 
-        # Persist file to disk
-        ext       = os.path.splitext(upload.filename)[-1]
-        file_name = f"{uuid.uuid4()}{ext}"
-        file_path = os.path.join(settings.UPLOAD_DIR, file_name)
-        with open(file_path, "wb") as f:
-            f.write(raw)
+    # Run Module 1
+    fields = _run_voice_pipeline(audio_path)
 
-        # Run Module 2
-        m2 = _run_document_intelligence(file_path, case.dispute_type or "delayed_payment")
-
-        doc = Document(
-            id            = str(uuid.uuid4()),
-            case_id       = case_id,
-            filename      = upload.filename,
-            file_path     = file_path,
-            file_size_kb  = len(raw) // 1024,
-            doc_type      = m2["doc_type"],
-            confidence    = m2["confidence"],
-            extracted_text= m2["extracted_text"],
-            key_fields    = m2["key_fields"],
-            is_valid      = m2["is_valid"],
-            issues        = m2["issues"],
-        )
-        db.add(doc)
-        results.append(doc)
+    # Pre-fill case fields that are still empty
+    if fields.get("dispute_type") and not case.dispute_type:
+        case.dispute_type = fields["dispute_type"]
+    if fields.get("claim_amount") and not case.claim_amount:
+        case.claim_amount = fields["claim_amount"]
+    if fields.get("description") and not case.description:
+        case.description  = fields["description"]
 
     db.commit()
-    for doc in results:
-        db.refresh(doc)
-    return results
-
-
-@router.get("/{case_id}/documents", response_model=List[DocumentOut])
-def list_documents(
-    case_id: str,
-    db:      Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """List all uploaded documents and their classification results for a case."""
-    case = db.query(Case).filter(Case.id == case_id).first()
-    if not case:
-        raise HTTPException(status_code=404, detail="Case not found")
-    return case.documents
+    db.refresh(case)
+    return case

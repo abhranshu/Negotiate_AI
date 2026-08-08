@@ -25,7 +25,7 @@ _SESSIONS: dict = {}   # in-memory session cache; swap for Redis in production
 
 def _get_or_create_session(case: Case):
     try:
-        from negotiation_ai import NegotiationSession, NegotiationState
+        from AIML.negotiation_ai import NegotiationSession, NegotiationState
         if case.id not in _SESSIONS:
             state = NegotiationState(
                 case_id               = case.id,
@@ -164,7 +164,7 @@ async def websocket_negotiation(
             session = _get_or_create_session(case) if case else None
             if session:
                 try:
-                    from negotiation_ai import Party
+                    from AIML.negotiation_ai import Party
                     party_enum = Party.CLAIMANT if party_str == "claimant" else Party.RESPONDENT
                     result = await session.process_message(party_enum, text, offer)
                 except Exception:

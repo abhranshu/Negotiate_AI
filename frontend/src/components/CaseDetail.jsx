@@ -264,6 +264,12 @@ export default function CaseDetail({ caseData, onBack, onUpdate }) {
             &nbsp;·&nbsp;{fmt(c.claim_amount)} claimed
           </div>
         </div>
+        <button
+          style={{ ...css.btn, background: T.surface, border: '1px solid ' + T.border, color: T.accent, fontSize: 12, padding: '8px 14px' }}
+          onClick={() => window.print()}
+        >
+          🖨️ Print
+        </button>
       </div>
 
       {/* Tab Bar */}

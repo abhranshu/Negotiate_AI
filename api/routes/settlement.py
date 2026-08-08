@@ -1,125 +1,127 @@
 """
-Settlement generation route — triggers Module 5.
-POST /api/cases/{case_id}/settlement  — Generate PDF-ready settlement agreement
-GET  /api/cases/{case_id}/settlement  — Retrieve saved agreement text
+Document upload route — triggers Module 2 (Document Intelligence).
+POST /api/cases/{case_id}/documents   — Upload one or more files
+GET  /api/cases/{case_id}/documents   — List all documents for a case
 """
-import asyncio
-from datetime import datetime
+import os
+import uuid
+from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from typing import Optional
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.models.case import Case, CaseStatus
+from api.models.case import Case, Document
 from api.models.user import User
+from api.schemas.case import DocumentOut
 from api.auth import get_current_user
+from api.config import settings
 
-router = APIRouter(prefix="/api/cases", tags=["Settlement"])
+router = APIRouter(prefix="/api/cases", tags=["Documents"])
 
-
-class SettlementOut(BaseModel):
-    agreement_id:     str
-    is_valid:         bool
-    validation_notes: list
-    agreement_text:   str
-    agreed_amount:    float
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
 
-def _generate_settlement(case: Case) -> dict:
+def _run_document_intelligence(file_path: str, dispute_type: str) -> dict:
+    """
+    Runs Module 2 on a single file.
+    Returns a dict with: doc_type, confidence, extracted_text, key_fields, issues.
+
+    Heavy imports (torch, transformers) are done lazily so the API starts fast
+    even on machines without a GPU or the full ML stack installed.
+    """
     try:
-        from settlement_generator import (
-            SettlementGenerator, SettlementAgreement,
-            PartyDetails, SettlementTerms
-        )
+        from AIML.document_intelligence import DocumentOCR, DocumentClassifier
+        ocr        = DocumentOCR()
+        classifier = DocumentClassifier()
 
-        claimant_user   = case.claimant
-        respondent_user = case.respondent
-
-        agreement = SettlementAgreement(
-            agreement_id  = f"NAI-{case.case_number}-SETTLE",
-            date          = datetime.now().strftime("%d %B %Y"),
-            claimant      = PartyDetails(
-                name    = claimant_user.company_name or claimant_user.full_name,
-                address = "As per records",
-                gstin   = claimant_user.gstin,
-                udyam_number = claimant_user.udyam_number,
-            ),
-            respondent    = PartyDetails(
-                name    = respondent_user.company_name or respondent_user.full_name if respondent_user else "Respondent",
-                address = "As per records",
-                gstin   = respondent_user.gstin if respondent_user else None,
-            ),
-            terms         = SettlementTerms(
-                agreed_amount  = case.agreement_amount or case.claim_amount,
-                interest_waiver= True,
-            ),
-            dispute_type  = case.dispute_type.value if case.dispute_type else "delayed_payment",
-            original_claim= case.claim_amount or 0,
-        )
-
-        gen    = SettlementGenerator(use_llm=False)
-        result = asyncio.run(gen.generate(agreement))
+        text          = ocr.extract_text(file_path)
+        doc_type, conf = classifier.classify(text)
+        key_fields    = classifier.extract_key_fields(text, doc_type)
 
         return {
-            "agreement_id":     agreement.agreement_id,
-            "is_valid":         result.is_valid,
-            "validation_notes": result.validation_notes,
-            "agreement_text":   result.agreement_text,
-            "agreed_amount":    case.agreement_amount or case.claim_amount,
+            "doc_type":       doc_type,
+            "confidence":     conf,
+            "extracted_text": text[:4000],   # store first 4 KB
+            "key_fields":     key_fields,
+            "issues":         [],
+            "is_valid":       conf >= 0.6,
         }
     except Exception as exc:
+        # If ML stack not installed, return stub so API still works
         return {
-            "agreement_id":     f"NAI-{case.case_number}-SETTLE",
-            "is_valid":         False,
-            "validation_notes": [f"Module 5 unavailable: {exc}"],
-            "agreement_text":   "Settlement agreement generation requires full ML stack.",
-            "agreed_amount":    case.agreement_amount or 0,
+            "doc_type":       "unknown",
+            "confidence":     0.0,
+            "extracted_text": "",
+            "key_fields":     {},
+            "issues":         [f"ML processing unavailable: {exc}"],
+            "is_valid":       False,
         }
 
 
-@router.post("/{case_id}/settlement", response_model=SettlementOut)
-def generate_settlement(
-    case_id:      str,
-    db:           Session = Depends(get_db),
-    current_user: User    = Depends(get_current_user),
+@router.post("/{case_id}/documents", response_model=List[DocumentOut])
+async def upload_documents(
+    case_id:  str,
+    files:    List[UploadFile] = File(...),
+    db:       Session          = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
 ):
-    """Generate a legally valid settlement agreement via Module 5."""
+    """Upload one or more documents for a case. Each file is classified by Module 2."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     if case.claimant_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only claimant can generate settlement")
-    if not case.agreement_amount:
-        raise HTTPException(status_code=400, detail="No agreed amount yet. Complete negotiation first.")
+        raise HTTPException(status_code=403, detail="Only the claimant can upload documents")
 
-    result = _generate_settlement(case)
+    # Size guard
+    max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
 
-    case.agreement_text  = result["agreement_text"]
-    case.agreement_valid = result["is_valid"]
-    case.status          = CaseStatus.closed
+    results = []
+    for upload in files:
+        raw = await upload.read()
+        if len(raw) > max_bytes:
+            raise HTTPException(status_code=413, detail=f"{upload.filename} exceeds {settings.MAX_FILE_SIZE_MB} MB limit")
+
+        # Persist file to disk
+        ext       = os.path.splitext(upload.filename)[-1]
+        file_name = f"{uuid.uuid4()}{ext}"
+        file_path = os.path.join(settings.UPLOAD_DIR, file_name)
+        with open(file_path, "wb") as f:
+            f.write(raw)
+
+        # Run Module 2
+        m2 = _run_document_intelligence(file_path, case.dispute_type or "delayed_payment")
+
+        doc = Document(
+            id            = str(uuid.uuid4()),
+            case_id       = case_id,
+            filename      = upload.filename,
+            file_path     = file_path,
+            file_size_kb  = len(raw) // 1024,
+            doc_type      = m2["doc_type"],
+            confidence    = m2["confidence"],
+            extracted_text= m2["extracted_text"],
+            key_fields    = m2["key_fields"],
+            is_valid      = m2["is_valid"],
+            issues        = m2["issues"],
+        )
+        db.add(doc)
+        results.append(doc)
+
     db.commit()
+    for doc in results:
+        db.refresh(doc)
+    return results
 
-    return result
 
-
-@router.get("/{case_id}/settlement", response_model=SettlementOut)
-def get_settlement(
-    case_id:      str,
-    db:           Session = Depends(get_db),
-    current_user: User    = Depends(get_current_user),
+@router.get("/{case_id}/documents", response_model=List[DocumentOut])
+def list_documents(
+    case_id: str,
+    db:      Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Return the previously generated settlement agreement."""
+    """List all uploaded documents and their classification results for a case."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-    if not case.agreement_text:
-        raise HTTPException(status_code=404, detail="No settlement generated yet")
-    return {
-        "agreement_id":     f"NAI-{case.case_number}-SETTLE",
-        "is_valid":         case.agreement_valid or False,
-        "validation_notes": [],
-        "agreement_text":   case.agreement_text,
-        "agreed_amount":    case.agreement_amount or 0,
-    }
+    return case.documents
