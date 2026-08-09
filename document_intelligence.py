@@ -24,7 +24,6 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 from PIL import Image
-import pytesseract
 from transformers import (
     AutoTokenizer,
     AutoModelForSequenceClassification,
@@ -32,6 +31,11 @@ from transformers import (
 )
 from sklearn.preprocessing import LabelEncoder
 import joblib
+
+try:
+    import pytesseract
+except ModuleNotFoundError:
+    pytesseract = None
 
 
 # ─── Document taxonomy ───────────────────────────────────────────────────────
@@ -108,6 +112,7 @@ class DocumentOCR:
             return self._extract_from_image(str(path), tess_lang)
 
     def _extract_from_image(self, path: str, lang: str) -> str:
+        self._ensure_tesseract_available()
         img = Image.open(path)
         config = f"--oem 3 --psm 6 -l {lang}+eng"
         return pytesseract.image_to_string(img, config=config).strip()
@@ -115,12 +120,21 @@ class DocumentOCR:
     def _extract_from_pdf(self, path: str, lang: str) -> str:
         """Convert PDF pages to images and OCR each."""
         try:
+            self._ensure_tesseract_available()
             from pdf2image import convert_from_path
             images = convert_from_path(path, dpi=200)
             texts  = [pytesseract.image_to_string(img, lang=lang) for img in images]
             return "\n\n".join(texts).strip()
         except ImportError:
             raise RuntimeError("Install pdf2image: pip install pdf2image")
+
+    @staticmethod
+    def _ensure_tesseract_available():
+        if pytesseract is None:
+            raise RuntimeError(
+                "pytesseract is not available in the Python environment running the backend. "
+                "Install it in the same interpreter and restart the server."
+            )
 
 
 # ─── Document Classifier ─────────────────────────────────────────────────────

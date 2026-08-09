@@ -20,7 +20,7 @@ def _run_prediction(case: Case) -> dict:
     Trains on synthetic data if no saved models exist yet.
     """
     try:
-        from outcome_prediction import (
+        from AIML.outcome_prediction import (
             CaseFeatures, OutcomePredictionTrainer,
             OutcomePredictionEngine, generate_synthetic_cases
         )

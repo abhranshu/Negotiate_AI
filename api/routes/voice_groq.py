@@ -71,7 +71,7 @@ def _run_ner(transcript: str) -> dict:
     This is fast — no Whisper model loaded here.
     """
     try:
-        from voice_pipeline import LegalNER
+        from AIML.voice_pipeline import LegalNER
         ner = LegalNER()
         entities = ner.extract(transcript)
         dtype, _  = ner.classify_dispute_type(transcript)

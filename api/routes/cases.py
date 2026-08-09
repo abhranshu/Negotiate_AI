@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.models.case import Case, CaseStatus
 from api.models.user import User
-from api.schemas.case import CaseCreate, CaseOut, CaseListItem
+from api.schemas.case import CaseCreate, CaseOut, CaseListItem, CaseDescriptionUpdate
 from api.auth import get_current_user
 
 router = APIRouter(prefix="/api/cases", tags=["Cases"])
@@ -107,6 +107,25 @@ def update_status(
     if case.claimant_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the claimant can update case status")
     case.status = new_status
+    db.commit()
+    db.refresh(case)
+    return case
+
+
+@router.patch("/{case_id}/description", response_model=CaseOut)
+def update_description(
+    case_id:      str,
+    payload:      CaseDescriptionUpdate,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
+):
+    """Update the case description, for example from voice dictation."""
+    case = db.query(Case).filter(Case.id == case_id).first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    if case.claimant_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the claimant can update case description")
+    case.description = payload.description.strip()
     db.commit()
     db.refresh(case)
     return case

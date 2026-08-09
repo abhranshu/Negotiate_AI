@@ -280,19 +280,26 @@ Current case context will be provided in each message."""
 
 class NegotiationModerator:
     """
-    LLM-powered negotiation moderator.
-
-    Production: fine-tune Mistral-7B-Instruct on Indian legal negotiation dialogues
-    Quick start: use via Anthropic API or Ollama locally
-
-    Fine-tuning data: curate ~500 MSEFC-style negotiation transcripts
-    with annotated mediator responses. Label: mediator_move ∈
-    {reframe, validate, suggest_compromise, cite_law, summarise, close}
+    LLM-powered negotiation moderator using bharatgenai/LegalParam.
     """
 
-    def __init__(self, use_api: bool = True):
+    def __init__(self, use_api: bool = False, use_local_hf: bool = True):
         self.use_api = use_api
-        if not use_api:
+        self.use_local_hf = use_local_hf
+        if self.use_local_hf:
+            from transformers import pipeline
+            import torch
+            
+            print("[Moderator] Loading bharatgenai/LegalParam model (Memory Optimized)...")
+            self.pipe = pipeline(
+                "text-generation", 
+                model="bharatgenai/LegalParam", 
+                trust_remote_code=True,
+                device_map="auto",
+                torch_dtype=torch.float16
+            )
+            print("[Moderator] Model loaded successfully.")
+        elif not use_api:
             # Local Mistral via Ollama (run: ollama pull mistral)
             self.model_name = "mistral"
 
@@ -390,6 +397,21 @@ Be brief (2–4 sentences). Do not reveal internal strategy hints to parties.
         strategy_hints: dict,
         language: str = "en",
     ) -> str:
+        if self.use_local_hf:
+            prompt = self._build_prompt(state, last_message, strategy_hints, language)
+            
+            # Format as a chat message for the model
+            messages = [
+                {"role": "user", "content": prompt}
+            ]
+            
+            # Generate the response
+            output = self.pipe(messages, max_new_tokens=150, temperature=0.7, do_sample=True)
+            
+            # The pipeline returns the chat history with the assistant's reply appended
+            generated_text = output[0]['generated_text'][-1]['content']
+            return generated_text.strip()
+            
         return self.generate_response_sync(state, last_message, strategy_hints)
 
 

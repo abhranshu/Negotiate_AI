@@ -70,7 +70,7 @@ def send_message(
 
     if session:
         try:
-            from negotiation_ai import Party
+            from AIML.negotiation_ai import Party
             party_enum = Party.CLAIMANT if party_str == "claimant" else Party.RESPONDENT
             result = asyncio.run(session.process_message(party_enum, payload.text, payload.offer))
         except Exception:

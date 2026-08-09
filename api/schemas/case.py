@@ -20,6 +20,10 @@ class CaseCreate(BaseModel):
     respondent_email: Optional[str]     = None    # invite respondent by email
 
 
+class CaseDescriptionUpdate(BaseModel):
+    description: str
+
+
 class CaseOut(BaseModel):
     id:           str
     case_number:  Optional[str]

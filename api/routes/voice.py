@@ -27,7 +27,7 @@ def _run_voice_pipeline(audio_path: str) -> dict:
     Falls back to empty dict if ML stack not installed.
     """
     try:
-        from voice_pipeline import VoiceToFormPipeline
+        from AIML.voice_pipeline import VoiceToFormPipeline
         pipeline = VoiceToFormPipeline(whisper_size="base")   # use "base" for speed; change to "medium" in prod
         form     = pipeline.process(audio_path)
         return {

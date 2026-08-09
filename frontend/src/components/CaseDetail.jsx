@@ -99,51 +99,74 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
   const [docFiles, setDocFiles]     = useState([]);
   const [voiceResult, setVoiceResult] = useState(null);
   const [loadingV, setLoadingV]     = useState(false);
-  const [recording, setRecording]   = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState(c.description || '');
+  const [listening, setListening]   = useState(false);
+  const [savingDesc, setSavingDesc] = useState(false);
   const [loadingD, setLoadingD]     = useState(false);
   const [err, setErr]               = useState('');
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  const recognitionRef = useRef(null);
 
-  const stopRecording = () => {
-    const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === 'inactive') return;
-    recorder.stop();
-  };
+  useEffect(() => {
+    setVoiceTranscript(c.description || '');
+  }, [c.description]);
 
-  const startRecording = async () => {
+  const saveTranscript = useCallback(async (text) => {
+    const cleaned = text.trim();
+    if (!cleaned) return;
+    setSavingDesc(true);
+    try {
+      await API.patch('/api/cases/' + c.id + '/description', { description: cleaned });
+      onRefresh();
+    } catch (e) {
+      setErr(e.response?.data?.detail || 'Could not save transcript');
+    } finally {
+      setSavingDesc(false);
+    }
+  }, [c.id, onRefresh]);
+
+  const toggleDictation = () => {
     setErr('');
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setErr('Microphone is not supported in this browser');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setErr('Speech dictation is not supported in this browser');
       return;
     }
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) audioChunksRef.current.push(event.data);
-      };
-
-      recorder.onstop = () => {
-        const mimeType = recorder.mimeType || 'audio/webm';
-        const blob = new Blob(audioChunksRef.current, { type: mimeType });
-        const extension = mimeType.includes('mp4') ? 'm4a' : 'webm';
-        const file = new File([blob], `voice-note.${extension}`, { type: mimeType });
-        setVoiceFile(file);
-        setRecording(false);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorderRef.current = recorder;
-      recorder.start();
-      setRecording(true);
-    } catch (error) {
-      setErr(error?.message || 'Could not access microphone');
-      setRecording(false);
+    if (listening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
     }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    let finalText = '';
+    recognition.onresult = (event) => {
+      let interimText = '';
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += transcript + ' ';
+        else interimText += transcript;
+      }
+      setVoiceTranscript((finalText + interimText).trim());
+    };
+
+    recognition.onerror = (event) => {
+      setErr(event.error || 'Could not access microphone');
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+      recognitionRef.current = null;
+      if (finalText.trim()) saveTranscript(finalText);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setListening(true);
   };
 
   const uploadVoice = async () => {
@@ -153,6 +176,7 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
       const fd = new FormData(); fd.append('file', voiceFile);
       const r = await API.post('/api/cases/' + c.id + '/voice', fd);
       setVoiceResult(r.data);
+      if (r.data?.description) setVoiceTranscript(r.data.description);
     } catch (e) { setErr(e.response?.data?.detail || 'Voice processing failed'); }
     finally { setLoadingV(false); }
   };
@@ -187,15 +211,38 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
               onChange={e => setVoiceFile(e.target.files[0])} />
           </label>
           <button
-            style={{ ...css.btn, background: recording ? T.yellow : T.border, color: recording ? '#111' : T.text, fontSize: 12 }}
-            onClick={recording ? stopRecording : startRecording}
+            style={{ ...css.btn, background: listening ? T.yellow : T.border, color: listening ? '#111' : T.text, fontSize: 12 }}
+            onClick={toggleDictation}
           >
-            {recording ? '⏹ Stop Recording' : '🎙️ Record from Mic'}
+            {listening ? '⏹ Stop Dictation' : '🎙️ Dictate Description'}
           </button>
           <button style={{ ...css.btn, background: `linear-gradient(135deg,${T.accent},${T.accent2})`, color: '#fff' }}
             onClick={uploadVoice} disabled={!voiceFile || loadingV}>
             {loadingV && <Spinner />}🚀 Process Voice
           </button>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <label style={css.label}>Description from Voice</label>
+          <textarea
+            style={{ ...css.input, minHeight: 110, resize: 'vertical', fontFamily: 'inherit' }}
+            value={voiceTranscript}
+            placeholder="Speak into the mic and the description will appear here..."
+            onChange={e => setVoiceTranscript(e.target.value)}
+            onBlur={() => saveTranscript(voiceTranscript)}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+            <div style={{ fontSize: 11, color: T.muted }}>
+              {savingDesc ? 'Saving transcript...' : 'You can edit the transcript before saving.'}
+            </div>
+            <button
+              style={{ ...css.btn, background: T.surface, border: '1px solid ' + T.border, color: T.accent, fontSize: 12, padding: '8px 12px' }}
+              onClick={() => saveTranscript(voiceTranscript)}
+              disabled={savingDesc}
+            >
+              Save Description
+            </button>
+          </div>
         </div>
 
         {voiceResult && (

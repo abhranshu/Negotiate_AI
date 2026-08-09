@@ -112,7 +112,9 @@ class PredictionReport:
 
 
 def _register_pickle_compatibility():
-    """Allow legacy joblib artifacts created from __main__ to unpickle cleanly."""
+    """Allow legacy joblib artifacts created from __main__ or outcome_prediction to unpickle cleanly."""
+    if "outcome_prediction" not in sys.modules:
+        sys.modules["outcome_prediction"] = sys.modules[__name__]
     main_module = sys.modules.get("__main__")
     if not main_module:
         return
@@ -258,7 +260,7 @@ def generate_synthetic_cases(n: int = 5000, seed: int = 42) -> pd.DataFrame:
 
 # ─── Real data loader ────────────────────────────────────────────────────────
 
-DATA_PATH = r"C:\Users\Lenovo\OneDrive\Desktop\MSME Major project\data\msme_samadhaan.csv"
+DATA_PATH = str(Path(__file__).parent.parent / "data" / "msme_samadhaan.csv")
 
 
 def load_real_data(csv_path: str = DATA_PATH) -> pd.DataFrame:
