@@ -361,7 +361,7 @@ def _build_local_pipe():
     # crashing. low_cpu_mem_usage=True streams shards one-at-a-time to avoid
     # OOM during load.
     use_cuda = torch.cuda.is_available()
-    device_map = "auto" if use_cuda else "cpu"
+    device_map = "auto" if use_cuda else None
     load_dtype = torch.float16 if use_cuda else torch.float32
     print(f"[Moderator] Loading model weights ({'fp16 on CUDA' if use_cuda else 'fp32 on CPU'})...")
     model = AutoModelForCausalLM.from_pretrained(
@@ -369,7 +369,7 @@ def _build_local_pipe():
         config=config,
         trust_remote_code=legacy,
         device_map=device_map,
-        low_cpu_mem_usage=True,
+        low_cpu_mem_usage=True if use_cuda else False,
         torch_dtype=load_dtype,
     )
 
