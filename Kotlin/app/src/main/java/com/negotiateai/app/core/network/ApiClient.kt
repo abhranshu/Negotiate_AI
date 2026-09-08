@@ -41,8 +41,10 @@ object ApiClient {
             .addInterceptor(loggingInterceptor)
             .addInterceptor(AuthInterceptor(sessionManager))
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            // First negotiation reply loads the 11GB LegalParam model (~1-2 min)
+            // plus generation (~30-90s), so the read timeout must be generous.
+            .readTimeout(300, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build()
 
         return Retrofit.Builder()

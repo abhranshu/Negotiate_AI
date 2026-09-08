@@ -2,6 +2,7 @@ package com.negotiateai.app.feature.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.negotiateai.app.data.model.RegisterRequest
 import com.negotiateai.app.data.model.UserRole
 import com.negotiateai.app.data.repository.AuthRepository
-import com.negotiateai.app.feature.settlement.NetworkResult
+import com.negotiateai.app.core.network.NetworkResult
 import kotlinx.coroutines.launch
 
 @Composable
@@ -75,7 +76,14 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                 if (!isLoginMode) {
                     Text("Role")
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                    OutlinedButton(onClick = { isClaimant = true }) { Text(if (isClaimant) "Claimant" else "Set as claimant") }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { isClaimant = true }, modifier = Modifier.weight(1f)) {
+                            Text(if (isClaimant) "● Claimant" else "Claimant")
+                        }
+                        OutlinedButton(onClick = { isClaimant = false }, modifier = Modifier.weight(1f)) {
+                            Text(if (!isClaimant) "● Respondent" else "Respondent")
+                        }
+                    }
                 }
 
                 error?.let {

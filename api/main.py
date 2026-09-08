@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
 from api.database import engine, Base
 
-# Import all models so SQLAlchemy registers them before create_all()
+# Import all models so Alembic can autogenerate and so the app can use them.
 import api.models  # noqa: F401
 
 from api.routes.auth       import router as auth_router
@@ -26,13 +26,61 @@ from api.routes.settlement import router as settlement_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Create DB tables and upload directory on startup."""
-    Base.metadata.create_all(bind=engine)
+    """Run DB migrations, create upload directory, and pre-load ML models on startup."""
+    # ── Run Alembic migrations so the DB schema is always up to date ─────
+    # This replaces Base.metadata.create_all() which was unsafe for production
+    # (no versioning, no rollback, silently ignores existing tables).
+    try:
+        from alembic.config import Config
+        from alembic import command
+        import os as _os
+
+        # alembic.ini lives at the project root.
+        project_root = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), '..'))
+        alembic_ini = _os.path.join(project_root, "alembic.ini")
+
+        cfg = Config(alembic_ini)
+        # Point Alembic at the same DB the app uses.
+        cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL.strip())
+        # Ensure project root is on sys.path so 'api' imports resolve in env.py.
+        if project_root not in _os.environ.get("PYTHONPATH", ""):
+            _os.environ["PYTHONPATH"] = project_root
+        if project_root not in __import__("sys").path:
+            __import__("sys").path.insert(0, project_root)
+
+        command.upgrade(cfg, "head")
+        print("[OK] Database migrations applied")
+    except Exception as exc:
+        print(f"[WARN] Alembic migration failed ({exc}) -- falling back to create_all")
+        Base.metadata.create_all(bind=engine)
+        print("[OK] Database tables created (fallback)")
+
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    print("✅ Database tables created / verified")
-    print(f"✅ Upload directory: {settings.UPLOAD_DIR}")
+    print(f"[OK] Upload directory: {settings.UPLOAD_DIR}")
+
+    # ── Pre-load ML models so the first negotiation message is fast ────────
+    # Without this, the first user message triggers a 1-2 min model load
+    # that blocks all other requests on this worker.
+    if settings.USE_LOCAL_MODEL:
+        try:
+            from AIML.negotiation_ai import _build_local_pipe
+            print("⏳ Pre-loading LegalParam model (CPU, ~11GB)...")
+            _build_local_pipe()
+            print("✅ LegalParam model ready")
+        except Exception as e:
+            print(f"⚠️  LegalParam pre-load failed ({e}) — will retry on first message")
+
+        # Pre-load sentiment model too (saves ~5-15s on first message)
+        try:
+            from AIML.negotiation_ai import NegotiationSentimentAnalyser
+            print("⏳ Pre-loading sentiment model...")
+            NegotiationSentimentAnalyser()
+            print("✅ Sentiment model ready")
+        except Exception as e:
+            print(f"⚠️  Sentiment model pre-load failed ({e}) — will retry on first message")
+
     yield
-    print("🛑 Shutting down NegotiateAI API")
+    print("Shutdown NegotiateAI API")
 
 
 app = FastAPI(

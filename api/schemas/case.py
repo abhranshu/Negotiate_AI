@@ -36,13 +36,16 @@ class CaseOut(BaseModel):
     industry:     Optional[str]
     created_at:   datetime
     # Module outputs
-    case_strength:             Optional[str]
-    settlement_probability:    Optional[float]
-    settlement_range_low:      Optional[float]
-    settlement_range_high:     Optional[float]
-    adjudication_days:         Optional[int]
-    prediction_recommendation: Optional[str]
-    agreement_amount:          Optional[float]
+    case_strength:              Optional[str]
+    settlement_probability:     Optional[float]
+    settlement_range_low:       Optional[float]
+    settlement_range_high:      Optional[float]
+    adjudication_days:          Optional[int]
+    prediction_confidence:      Optional[str]
+    prediction_recommendation:  Optional[str]
+    agreement_amount:           Optional[float]
+    agreement_text:             Optional[str]
+    agreement_valid:            Optional[bool]
 
     class Config:
         from_attributes = True
@@ -123,3 +126,16 @@ class NegotiateResponse(BaseModel):
     agreement_reached: bool
     agreement_amount:  Optional[float]
     strategy_hints:    Any
+
+
+# ─── Settlement (Module 5) ───────────────────────────────────────────────────
+
+class SettlementOut(BaseModel):
+    agreement_id:     str
+    date:             str
+    dispute_type:     Optional[str]
+    original_claim:   float
+    agreed_amount:    float
+    agreement_text:   str
+    is_valid:         bool
+    validation_notes: List[str]

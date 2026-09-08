@@ -20,7 +20,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.negotiateai.app.data.model.CaseListItem
 import com.negotiateai.app.data.repository.CaseRepository
 import com.negotiateai.app.core.network.NetworkResult
@@ -48,14 +48,23 @@ fun CaseDashboardScreen(
 	var loading by remember { mutableStateOf(true) }
 	var error by remember { mutableStateOf<String?>(null) }
 
-	LaunchedEffect(Unit) {
+	fun loadCases() {
 		loading = true
-		when (val result = repo.listCases()) {
-			is NetworkResult.Success -> cases = result.data ?: emptyList()
-			is NetworkResult.Error -> error = result.message
-			is NetworkResult.Loading -> Unit
+		scope.launch {
+			when (val result = repo.listCases()) {
+				is NetworkResult.Success -> cases = result.data ?: emptyList()
+				is NetworkResult.Error -> error = result.message
+				is NetworkResult.Loading -> Unit
+			}
+			loading = false
 		}
-		loading = false
+	}
+
+	// Reload whenever the dashboard regains focus (e.g. returning from a newly
+	// created case), not just on first composition.
+	LifecycleResumeEffect(Unit) {
+		loadCases()
+		onPauseOrDispose { }
 	}
 
 	Scaffold { padding ->

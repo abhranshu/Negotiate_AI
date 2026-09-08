@@ -29,6 +29,8 @@ from transformers import (
 )
 import torch
 
+from api.config import settings
+
 
 # ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -71,6 +73,16 @@ class NegotiationState:
     claim_amount:        float
     predicted_range:     tuple[float, float]
     settlement_probability: float
+
+    # ── Case-specific context (injected from DB) ──────────────────────────────
+    description:         Optional[str]    = None   # voice transcript / case description
+    dispute_type:        Optional[str]    = None   # e.g. "payment_delay"
+    industry:            Optional[str]    = None   # e.g. "manufacturing"
+    state:               Optional[str]    = None   # Indian state
+    overdue_days:        Optional[int]    = None   # days payment is overdue
+    claimant_name:       Optional[str]    = None
+    respondent_name:     Optional[str]    = None
+    document_summary:    Optional[str]    = None   # extracted text from uploaded docs
 
     phase:               NegotiationPhase = NegotiationPhase.OPENING
     round_number:        int              = 0
@@ -198,7 +210,7 @@ class BargainingStrategyEngine:
         """Nash Bargaining Solution — maximises product of surplus gains."""
         low, high = surplus_range
         # Discretise and compute Nash product
-        best_val  = -np.inf if False else float("-inf")
+        best_val  = float("-inf")
         best_offer = low
         for candidate in [low + (high - low) * t / 100 for t in range(101)]:
             claimant_gain   = candidate - claimant_batna
@@ -278,27 +290,237 @@ SYSTEM_PROMPT = """You are NegotiateAI — an impartial AI mediator specialising
 Current case context will be provided in each message."""
 
 
+# ─── Process-wide model singleton ─────────────────────────────────────────────
+# The 11GB LegalParam checkpoint is loaded ONCE per process and shared by every
+# NegotiationSession/case. Without this, each new case would re-load the whole
+# model (1-2 min) on its first message.
+import threading as _threading
+
+_LOCAL_PIPE  = None
+_PIPE_LOCK   = _threading.Lock()
+
+
+_LEGALPARAM_ID = "bharatgenai/LegalParam"
+
+
+def _is_legalparam(model_id: str) -> bool:
+    """True for the legacy LegalParam model (custom remote code, needs <5)."""
+    return model_id == _LEGALPARAM_ID
+
+
+def _build_local_pipe():
+    """Load the configured local model once per process (singleton).
+
+    Default (LOCAL_MODEL_ID, e.g. Qwen2.5-3B-Instruct): a small standard
+    instruct model that is fast on CPU. On CPU it is int8-dynamic-quantized
+    (LOCAL_MODEL_QUANTIZE, default on) for ~2-3x faster inference and ~60%
+    less memory; on CUDA it loads in fp16.
+
+    bharatgenai/LegalParam (legacy, selectable via LOCAL_MODEL_ID): the 11GB
+    legal model with custom remote code — requires transformers<5 and the
+    rope_scaling compatibility fix.
+
+    Returns the cached pipeline (singleton — safe to call repeatedly).
+    """
+    global _LOCAL_PIPE
+    if _LOCAL_PIPE is not None:
+        return _LOCAL_PIPE
+
+    from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
+    import transformers as _tf
+    import torch
+
+    model_id = (settings.LOCAL_MODEL_ID or "Qwen/Qwen2.5-3B-Instruct").strip()
+    legacy = _is_legalparam(model_id)
+    print(f"[Moderator] Loading {model_id} ({'legacy LegalParam' if legacy else 'standard instruct'} mode)...")
+
+    config = None
+    if legacy:
+        # This model's remote code targets the legacy tuple KV-cache that
+        # transformers 4.x uses. On transformers 5.x generation crashes with
+        # "'DynamicCache' object is not subscriptable" — refuse loudly instead.
+        hf_major = int(_tf.__version__.split(".")[0])
+        if hf_major >= 5:
+            raise RuntimeError(
+                "bharatgenai/LegalParam requires transformers<5 (its custom code "
+                "uses the legacy KV-cache format). Install transformers==4.48.3 "
+                "in your environment."
+            )
+        # Fix for Transformers >= 4.45 compatibility with this specific model
+        config = AutoConfig.from_pretrained(model_id, trust_remote_code=True)
+        if hasattr(config, "rope_scaling") and config.rope_scaling is not None:
+            if "type" not in config.rope_scaling and "rope_type" in config.rope_scaling:
+                config.rope_scaling["type"] = config.rope_scaling["rope_type"]
+
+    # Load tokenizer explicitly — pipeline can fail to load it when config is pre-built
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=legacy)
+
+    # Load the model on the GPU when available (fp16 — much faster inference),
+    # otherwise fall back to fp32 CPU. device_map="auto" places the model on
+    # the GPU and spills any layers that don't fit in VRAM to CPU instead of
+    # crashing. low_cpu_mem_usage=True streams shards one-at-a-time to avoid
+    # OOM during load.
+    use_cuda = torch.cuda.is_available()
+    device_map = "auto" if use_cuda else "cpu"
+    load_dtype = torch.float16 if use_cuda else torch.float32
+    print(f"[Moderator] Loading model weights ({'fp16 on CUDA' if use_cuda else 'fp32 on CPU'})...")
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        config=config,
+        trust_remote_code=legacy,
+        device_map=device_map,
+        low_cpu_mem_usage=True,
+        torch_dtype=load_dtype,
+    )
+
+    # ── int8 dynamic quantization (CPU only, standard models only) ──────────
+    # Quantizes all nn.Linear layers to int8 at runtime: ~2-3x faster CPU
+    # matmul and ~60% lower memory. Not applied to LegalParam (its remote code
+    # misbehaves with quantized weights) or on CUDA (fp16 already wins).
+    if not use_cuda and settings.LOCAL_MODEL_QUANTIZE and not legacy:
+        print("[Moderator] Applying int8 dynamic quantization (CPU)...")
+        model = torch.quantization.quantize_dynamic(
+            model,
+            {torch.nn.Linear},   # quantize all Linear layers
+            dtype=torch.qint8,   # int8 weights
+        )
+        print("[Moderator] Quantization complete.")
+
+    # Build the pipeline
+    from transformers import pipeline as _pipeline
+    _LOCAL_PIPE = _pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        trust_remote_code=legacy,
+    )
+    print(f"[Moderator] Model loaded successfully ({'fp16 on CUDA' if use_cuda else 'int8-quantized CPU' if settings.LOCAL_MODEL_QUANTIZE and not legacy else 'fp32 on CPU'}).")
+    return _LOCAL_PIPE
+
+
+def _format_chat_prompt(tokenizer, prompt: str) -> str:
+    """Format the mediator prompt the way the loaded model expects.
+
+    Standard instruct models (e.g. Qwen) expose a chat_template — use it so
+    the model sees proper <|im_start|> markers. Legacy LegalParam has no chat
+    template, so keep its trained <user>/<assistant> marker format.
+    """
+    template = getattr(tokenizer, "chat_template", None)
+    if template:
+        try:
+            return tokenizer.apply_chat_template(
+                [{"role": "user", "content": prompt}],
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+        except Exception:
+            pass  # fall through to the legacy format
+    return f"<user>\n{prompt}<assistant>\n"
+
+
+async def _stream_tokens(pipe, formatted: str, max_new_tokens: int = 256) -> AsyncGenerator[str, None]:
+    """Run blocking generation on a worker thread and yield decoded text chunks.
+
+    Uses AsyncTextIteratorStreamer + a worker thread so the event loop is never
+    blocked during generation and tokens are streamed to clients as they
+    arrive. The process-wide _PIPE_LOCK serialises generations across cases.
+
+    Exceptions raised inside generate() are re-raised in the async consumer
+    after the stream ends.
+    """
+    from transformers import AsyncTextIteratorStreamer
+
+    tokenizer = pipe.tokenizer
+    inputs    = tokenizer(formatted, return_tensors="pt").to(pipe.model.device)
+    streamer  = AsyncTextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+    error_holder: dict = {}
+
+    def _produce():
+        try:
+            with _PIPE_LOCK:
+                pipe.model.generate(
+                    input_ids=inputs["input_ids"],
+                    attention_mask=inputs["attention_mask"],
+                    streamer=streamer,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=True,           # sampling, NOT greedy (fixes repetition loops)
+                    temperature=0.6,          # model-card recommended value
+                    top_k=50,                 # model-card recommended value
+                    top_p=0.95,               # model-card recommended value
+                    repetition_penalty=1.25,  # discourage repeating the same tokens
+                    no_repeat_ngram_size=5,   # hard-block 5-gram repetition
+                )
+        except Exception as e:                # noqa: BLE001 — surfaced after the stream
+            error_holder["error"] = e
+        finally:
+            # Always signal stream end so the consumer unblocks, even on crash.
+            try:
+                streamer.end()
+            except Exception:
+                pass
+
+    task = asyncio.ensure_future(asyncio.to_thread(_produce))
+    async for chunk in streamer:
+        if chunk:
+            yield chunk
+    await task
+    if "error" in error_holder:
+        raise error_holder["error"]
+
+
+# ─── Process-wide sentiment / RAG singletons ─────────────────────────────────
+# These were previously rebuilt for every NegotiationSession (one per case),
+# adding ~1-2s of model/retriever construction per new case. Build each once
+# per process and share it, like the LLM pipe.
+_SENTIMENT      = None
+_SENTIMENT_LOCK = _threading.Lock()
+
+_RAG_RETRIEVER      = None
+_RAG_RETRIEVER_LOCK = _threading.Lock()
+
+
+def _get_sentiment_analyser() -> "NegotiationSentimentAnalyser":
+    global _SENTIMENT
+    if _SENTIMENT is None:
+        with _SENTIMENT_LOCK:
+            if _SENTIMENT is None:
+                _SENTIMENT = NegotiationSentimentAnalyser()
+    return _SENTIMENT
+
+
+def _get_rag_retriever():
+    """Process-wide TF-IDF LegalRetriever (keyword_only=True — fast)."""
+    global _RAG_RETRIEVER
+    if _RAG_RETRIEVER is None:
+        with _RAG_RETRIEVER_LOCK:
+            if _RAG_RETRIEVER is None:
+                from AIML.legal_rag import LegalRetriever
+                # keyword_only=True skips sentence-transformers/chromadb import
+                _RAG_RETRIEVER = LegalRetriever(keyword_only=True)
+    return _RAG_RETRIEVER
+
+
 class NegotiationModerator:
     """
     LLM-powered negotiation moderator using bharatgenai/LegalParam.
+
+    When use_rag=True (default), relevant legal provisions are retrieved from
+    the corpus (data/legal/) via AIML.legal_rag.LegalRetriever and injected
+    into the prompt, grounding citations in real law instead of hallucination.
+
+    The model itself is a process-wide singleton (_build_local_pipe), so all
+    cases share one loaded instance — it loads once per server start, not per
+    case or per message.
     """
 
-    def __init__(self, use_api: bool = False, use_local_hf: bool = True):
+    def __init__(self, use_api: bool = False, use_local_hf: bool = False,
+                 use_rag: bool = True):
         self.use_api = use_api
         self.use_local_hf = use_local_hf
+        self.use_rag = use_rag
+        self._rag = None          # lazily built LegalRetriever
         if self.use_local_hf:
-            from transformers import pipeline
-            import torch
-            
-            print("[Moderator] Loading bharatgenai/LegalParam model (Memory Optimized)...")
-            self.pipe = pipeline(
-                "text-generation", 
-                model="bharatgenai/LegalParam", 
-                trust_remote_code=True,
-                device_map="auto",
-                torch_dtype=torch.float16
-            )
-            print("[Moderator] Model loaded successfully.")
+            self.pipe = _build_local_pipe()  # singleton — returns cached instance after first call
         elif not use_api:
             # Local Mistral via Ollama (run: ollama pull mistral)
             self.model_name = "mistral"
@@ -314,14 +536,52 @@ class NegotiationModerator:
             f"[{m.party.value.upper()}]: {m.text}"
             for m in state.messages[-6:]  # last 6 turns
         )
+
+        # Build case-specific context from DB fields
+        case_details = []
+        if state.dispute_type:
+            case_details.append(f"Dispute type: {state.dispute_type}")
+        if state.industry:
+            case_details.append(f"Industry: {state.industry}")
+        if state.state:
+            case_details.append(f"State: {state.state}")
+        if state.overdue_days:
+            case_details.append(f"Payment overdue by: {state.overdue_days} days")
+        if state.claimant_name:
+            case_details.append(f"Claimant: {state.claimant_name}")
+        if state.respondent_name:
+            case_details.append(f"Respondent: {state.respondent_name}")
+        case_details_text = "\n".join(case_details) if case_details else "Not provided"
+
+        description_text = state.description or "Not provided"
+        doc_text = state.document_summary or "No documents uploaded"
+
+        # RAG: retrieve relevant legal provisions for this case
+        # (format_context already includes its own header, so inject raw)
+        law_text = self._get_law_context(state, last_message)
+        law_section = f"\n{law_text}" if law_text else ""
+
+        # Safely format the Nash value — a missing/non-numeric value must not
+        # crash prompt building (previously f"{...:,.0f}" would raise).
+        nash = strategy_hints.get("nash_solution")
+        nash_text = f"₹{nash:,.0f}" if isinstance(nash, (int, float)) else "N/A"
+
         return f"""{SYSTEM_PROMPT}
 
-=== CASE CONTEXT ===
+=== CASE FACTS (from claimant's submission) ===
+{case_details_text}
 Claim amount: ₹{state.claim_amount:,.0f}
-Predicted settlement range: ₹{state.predicted_range[0]:,.0f} – ₹{state.predicted_range[1]:,.0f}
-Nash optimal settlement: ₹{strategy_hints.get('nash_solution', 'N/A'):,.0f}
-Phase: {state.phase.value}
-Round: {state.round_number}
+Overall case description / voice transcript:
+{description_text}
+
+=== UPLOADED DOCUMENT SUMMARY ===
+{doc_text}
+{law_section}
+=== NEGOTIATION STATUS ===
+Predicted fair settlement range: ₹{state.predicted_range[0]:,.0f} – ₹{state.predicted_range[1]:,.0f}
+Nash optimal settlement: {nash_text}
+Settlement probability: {state.settlement_probability * 100:.0f}%
+Phase: {state.phase.value} | Round: {state.round_number}
 
 === RECENT DIALOGUE ===
 {history_text}
@@ -331,10 +591,48 @@ Round: {state.round_number}
 Sentiment detected: {last_message.sentiment.value if last_message.sentiment else 'neutral'}
 
 === YOUR TASK ===
-Respond as the impartial mediator. Language: {language}.
-If the conversation is in a language other than English, respond in that language.
-Be brief (2–4 sentences). Do not reveal internal strategy hints to parties.
+You have full knowledge of this specific case. Respond as the impartial mediator using the
+case facts, description, documents and retrieved law above. Reference specific details from the
+case when relevant (e.g. mention the actual dispute type, overdue days, or amounts from documents).
+Cite the retrieved legal provisions by section number when they apply; never invent provisions
+that are not in the RELEVANT LAW block.
+Language: {language}. Be specific, helpful and brief (2-4 sentences).
+Do not reveal internal strategy hints to parties.
 """
+
+    def _get_law_context(self, state, last_message) -> str:
+        """
+        Retrieve relevant legal provisions for this case via RAG.
+
+        Builds a query from the case fields plus the latest message, so both
+        the steady-state dispute and the immediate question drive retrieval.
+        Returns a formatted prompt block, or "" when RAG is disabled/unavailable
+        or nothing relevant is found.
+        """
+        if not self.use_rag:
+            return ""
+        try:
+            if self._rag is None:
+                # Process-wide singleton — built once, shared by every session.
+                # keyword_only=True skips sentence-transformers/chromadb import
+                # (~0.5-2s saved per first query). TF-IDF is fast and sufficient
+                # for retrieving MSMED Act provisions by keyword overlap.
+                self._rag = _get_rag_retriever()
+            description = " ".join(filter(None, [
+                state.description or "",
+                last_message.text or "",
+            ]))
+            results = self._rag.retrieve_law_for_case(
+                dispute_type=state.dispute_type,
+                overdue_days=state.overdue_days,
+                industry=state.industry,
+                description=description or None,
+                k=3,
+            )
+            return self._rag.format_context(results) if results else ""
+        except Exception as e:
+            print(f"[Moderator] RAG retrieval failed: {e}")
+            return ""
 
     def generate_response_sync(self, state, last_message, strategy_hints):
         """Rule-based mediator — no external API call."""
@@ -399,20 +697,75 @@ Be brief (2–4 sentences). Do not reveal internal strategy hints to parties.
     ) -> str:
         if self.use_local_hf:
             prompt = self._build_prompt(state, last_message, strategy_hints, language)
-            
-            # Format as a chat message for the model
-            messages = [
-                {"role": "user", "content": prompt}
-            ]
-            
-            # Generate the response
-            output = self.pipe(messages, max_new_tokens=150, temperature=0.7, do_sample=True)
-            
-            # The pipeline returns the chat history with the assistant's reply appended
-            generated_text = output[0]['generated_text'][-1]['content']
-            return generated_text.strip()
-            
+
+            # Format with the model's chat template (Qwen etc.) or the legacy
+            # <user>/<assistant> markers LegalParam was trained with.
+            formatted = _format_chat_prompt(self.pipe.tokenizer, prompt)
+
+            # The pipeline is a process-wide singleton shared by all cases —
+            # serialise calls so concurrent messages can't corrupt generation.
+            # ── Generation ─────────────────────────────────────────────────
+            # Greedy decoding (do_sample=False) gets stuck repeating a single
+            # token on this CPU model (e.g. "1.500/1.500/1.500/..."). Use
+            # sampling with the model-card parameters + a repetition penalty
+            # and a hard ngram block so we always get coherent multi-sentence
+            # replies instead of an infinite loop.
+            for _attempt in range(2):
+                with _PIPE_LOCK:
+                    output = self.pipe(
+                        formatted,
+                        max_new_tokens=256,       # enough for a full 2-4 sentence response
+                        do_sample=True,           # sampling, NOT greedy (fixes repetition loops)
+                        temperature=0.6,          # model-card recommended value
+                        top_k=50,                 # model-card recommended value
+                        top_p=0.95,               # model-card recommended value
+                        repetition_penalty=1.25,  # discourage repeating the same tokens
+                        no_repeat_ngram_size=5,   # hard-block 5-gram repetition (kills "1.500/...")
+                        return_full_text=False,   # return only the newly generated text
+                    )
+
+                # Plain text-generation output format: [{'generated_text': '...'}]
+                candidate = output[0]['generated_text']
+                candidate = candidate.replace("<assistant>", "").strip()
+
+                # Accept the candidate if it is neither too short nor too
+                # repetitive - otherwise retry once, then fall back.
+                words = candidate.split()
+                if len(words) >= 8:               # "(1)", "(1, 2"... -> too short
+                    unique = len(set(w.lower() for w in words))
+                    variety = unique / len(words)
+                    if variety >= 0.45:           # "1.500/1.500/..." -> too repetitive
+                        return candidate
+
+            # Degenerate-output guard: fall back to the deterministic
+            # rule-based mediator for a coherent reply.
+            return self.generate_response_sync(state, last_message, strategy_hints)
+
         return self.generate_response_sync(state, last_message, strategy_hints)
+
+    async def generate_response_stream(
+        self,
+        state: NegotiationState,
+        last_message: Message,
+        strategy_hints: dict,
+        language: str = "en",
+    ) -> AsyncGenerator[str, None]:
+        """Async generator of mediator reply text chunks.
+
+        With the local model this streams tokens as they are generated (the
+        event loop stays free — generation runs on a worker thread). The
+        rule-based responder yields its whole short reply in one chunk.
+
+        The caller decides whether the streamed output is acceptable; a
+        degenerate reply can be replaced with generate_response_sync().
+        """
+        if self.use_local_hf:
+            prompt = self._build_prompt(state, last_message, strategy_hints, language)
+            formatted = _format_chat_prompt(self.pipe.tokenizer, prompt)
+            async for chunk in _stream_tokens(self.pipe, formatted):
+                yield chunk
+            return
+        yield self.generate_response_sync(state, last_message, strategy_hints)
 
 
 # ─── Main Negotiation Session ─────────────────────────────────────────────────
@@ -423,12 +776,16 @@ class NegotiationSession:
     Call process_message() for each party turn.
     """
 
-    def __init__(self, state: NegotiationState, language: str = "en"):
+    def __init__(self, state: NegotiationState, language: str = "en",
+                 use_local_hf: bool = False, use_api: bool = False,
+                 use_rag: bool = True):
         self.state      = state
         self.language   = language
-        self.sentiment  = NegotiationSentimentAnalyser()
+        self.sentiment  = _get_sentiment_analyser()   # process-wide singleton
         self.strategy   = BargainingStrategyEngine()
-        self.moderator  = NegotiationModerator()
+        self.moderator  = NegotiationModerator(
+            use_api=use_api, use_local_hf=use_local_hf, use_rag=use_rag
+        )
 
     async def process_message(
         self,
@@ -438,8 +795,55 @@ class NegotiationSession:
     ) -> dict:
         """Process one party's message. Returns mediator response + state update."""
 
+        msg, strategy_hints = self._prepare_turn(party, text, offer)
+        mediator_text = await self.moderator.generate_response(
+            self.state, msg, strategy_hints, self.language
+        )
+        return self._build_result(mediator_text, msg, strategy_hints)
+
+    async def process_message_stream(
+        self,
+        party:      Party,
+        text:       str,
+        offer:      Optional[float] = None,
+    ) -> AsyncGenerator:
+        """Streaming variant of process_message().
+
+        Yields, in order:
+          1. dict  — metadata (mediator_response="") for the mediator_started frame
+          2. str   — text chunks of the mediator reply as they are generated
+          3. dict  — the final result dict (full mediator_response + metadata)
+        """
+        msg, strategy_hints = self._prepare_turn(party, text, offer)
+
+        # Metadata first so the client can show phase/round immediately.
+        yield self._build_result("", msg, strategy_hints)
+
+        chunks = []
+        async for chunk in self.moderator.generate_response_stream(
+            self.state, msg, strategy_hints, self.language
+        ):
+            chunks.append(chunk)
+            yield chunk
+
+        full = "".join(chunks).strip()
+        # Degenerate/empty guard — replace with the deterministic responder.
+        words = full.split()
+        if len(words) < 8 or (len(set(w.lower() for w in words)) / len(words)) < 0.45:
+            full = self.moderator.generate_response_sync(self.state, msg, strategy_hints)
+
+        yield self._build_result(full, msg, strategy_hints)
+
+    def _prepare_turn(
+        self,
+        party:  Party,
+        text:   str,
+        offer:  Optional[float],
+    ) -> tuple[Message, dict]:
+        """Shared analysis for sync and streaming paths: sentiment, offer
+        tracking, deadlock/ZOPA detection and game-theory strategy hints."""
         # 1. Sentiment analysis
-        sentiment_label, sentiment_conf = self.sentiment.analyse(text)
+        sentiment_label, _ = self.sentiment.analyse(text)
 
         msg = Message(
             party     = party,
@@ -489,15 +893,21 @@ class NegotiationSession:
         else:
             strategy_hints["mediator_move"] = "facilitate"
 
-        # 7. Generate moderator response
+        # 7. Round counter
         self.state.round_number += 1
-        mediator_text = await self.moderator.generate_response(
-            self.state, msg, strategy_hints, self.language
-        )
 
+        return msg, strategy_hints
+
+    def _build_result(
+        self,
+        mediator_text:  str,
+        msg:            Message,
+        strategy_hints: dict,
+    ) -> dict:
+        """Assemble the standard result dict both paths return."""
         return {
             "mediator_response":    mediator_text,
-            "sentiment_detected":   sentiment_label.value,
+            "sentiment_detected":   msg.sentiment.value if msg.sentiment else "neutral",
             "phase":                self.state.phase.value,
             "round":                self.state.round_number,
             "strategy_hints":       strategy_hints,

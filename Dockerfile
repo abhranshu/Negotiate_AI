@@ -18,6 +18,7 @@ WORKDIR /app
 # ── Install Python dependencies ────────────────────────────────────────────────
 COPY requirements_deploy.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements_deploy.txt
 
 # ── Copy project files ─────────────────────────────────────────────────────────
@@ -29,16 +30,17 @@ COPY settlement_generator.py .
 COPY voice_pipeline.py       .
 COPY translation_service.py  .
 COPY document_intelligence.py .
-COPY data/msme_samadhaan.csv ./data/
+# Training data not copied — models use pre-trained .pkl files at runtime
 
 # ── Create uploads directory ───────────────────────────────────────────────────
-RUN mkdir -p uploads
+RUN mkdir -p uploads data
 
 # ── Expose port ────────────────────────────────────────────────────────────────
 EXPOSE 8000
 
 # ── Health check ───────────────────────────────────────────────────────────────
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+# start-period=180s: LegalParam (11GB) + int8 quantization takes ~1-2 min at boot
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # ── Start command (Gunicorn + Uvicorn workers for concurrency) ────────────────
@@ -47,6 +49,6 @@ CMD ["gunicorn", "api.main:app", \
      "--workers", "2", \
      "--worker-class", "uvicorn.workers.UvicornWorker", \
      "--bind", "0.0.0.0:8000", \
-     "--timeout", "120", \
+     "--timeout", "300", \
      "--keep-alive", "5", \
      "--access-logfile", "-"]

@@ -1,5 +1,12 @@
 package com.negotiateai.app.feature.case
 
+import android.Manifest
+import android.content.Context
+import android.media.MediaRecorder
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,6 +56,8 @@ import com.negotiateai.app.data.model.CaseStatus
 import com.negotiateai.app.data.model.DocumentDto
 import com.negotiateai.app.data.repository.CaseRepository
 import com.negotiateai.app.core.network.NetworkResult
+import java.io.File
+import kotlinx.coroutines.launch
 
 @Composable
 fun CaseDetailScreen(
@@ -65,13 +75,116 @@ fun CaseDetailScreen(
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // Module 1 (voice) + Module 2 (documents) state
+    var documents by remember { mutableStateOf<List<DocumentDto>>(emptyList()) }
+    var mediaRecorder by remember { mutableStateOf<MediaRecorder?>(null) }
+    var audioFile by remember { mutableStateOf<File?>(null) }
+    var isRecording by remember { mutableStateOf(false) }
+    var voiceBusy by remember { mutableStateOf(false) }
+    var voiceStatus by remember { mutableStateOf<String?>(null) }
+    var docsBusy by remember { mutableStateOf(false) }
+    var docsStatus by remember { mutableStateOf<String?>(null) }
+
+    fun loadCase() {
+        scope.launch {
+            when (val result = repo.getCase(caseId)) {
+                is NetworkResult.Success -> case = result.data
+                is NetworkResult.Error -> error = result.message
+                is NetworkResult.Loading -> Unit
+            }
+        }
+    }
+
+    fun loadDocuments() {
+        scope.launch {
+            when (val result = repo.getDocuments(caseId)) {
+                is NetworkResult.Success -> documents = result.data ?: emptyList()
+                else -> Unit
+            }
+        }
+    }
+
+    fun startRecording() {
+        if (isRecording) return
+        voiceStatus = null
+        try {
+            val file = File(context.cacheDir, "voice_note_${System.currentTimeMillis()}.m4a")
+            val recorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setOutputFile(file.absolutePath)
+                prepare()
+                start()
+            }
+            audioFile = file
+            mediaRecorder = recorder
+            isRecording = true
+            voiceStatus = "Recording… tap Stop to upload"
+        } catch (e: Exception) {
+            voiceStatus = "Could not start recording: ${e.message}"
+        }
+    }
+
+    fun stopAndUpload() {
+        val recorder = mediaRecorder ?: return
+        val file = audioFile ?: return
+        isRecording = false
+        voiceBusy = true
+        voiceStatus = "Uploading voice note…"
+        scope.launch {
+            try {
+                recorder.stop()
+            } catch (e: Exception) {
+                // recorder throws if the clip was too short — still try to upload
+            } finally {
+                try { recorder.release() } catch (_: Exception) {}
+            }
+            mediaRecorder = null
+            when (val result = repo.uploadVoice(caseId, file)) {
+                is NetworkResult.Success -> {
+                    voiceStatus = "Voice processed — case auto-filled"
+                    loadCase()
+                }
+                is NetworkResult.Error -> voiceStatus = result.message
+                is NetworkResult.Loading -> Unit
+            }
+            file.delete()
+            voiceBusy = false
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) startRecording() else voiceStatus = "Microphone permission denied"
+    }
+
+    // Pick one or more files and upload them for Module 2 classification.
+    val docPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        if (uris.isEmpty()) return@rememberLauncherForActivityResult
+        scope.launch {
+            docsBusy = true
+            docsStatus = null
+            val files = uris.mapNotNull { uri -> uriToCacheFile(context, uri) }
+            when (val result = repo.uploadDocuments(caseId, files)) {
+                is NetworkResult.Success -> {
+                    docsStatus = "Uploaded ${result.data?.size ?: files.size} document(s)"
+                    loadDocuments()
+                }
+                is NetworkResult.Error -> docsStatus = result.message
+                is NetworkResult.Loading -> Unit
+            }
+            docsBusy = false
+        }
+    }
+
     LaunchedEffect(caseId) {
         loading = true
-        when (val result = repo.getCase(caseId)) {
-            is NetworkResult.Success -> case = result.data
-            is NetworkResult.Error -> error = result.message
-            is NetworkResult.Loading -> Unit
-        }
+        loadCase()
+        loadDocuments()
         loading = false
     }
 
@@ -108,6 +221,27 @@ fun CaseDetailScreen(
                         prediction = it.predictionRecommendation ?: "No prediction available yet.",
                         confidence = (it.settlementProbability ?: 0.0).toFloat(),
                         recommendedSettlement = it.settlementRangeHigh
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    VoiceCard(
+                        isRecording = isRecording,
+                        busy = voiceBusy,
+                        status = voiceStatus,
+                        onRecord = { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) },
+                        onStop = { stopAndUpload() },
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    DocumentsCard(
+                        documents = documents,
+                        busy = docsBusy,
+                        status = docsStatus,
+                        onUpload = {
+                            docPicker.launch("application/pdf,application/msword,image/*,text/plain")
+                        },
                     )
                 }
             }
@@ -432,6 +566,102 @@ fun HistoryTab() {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+// Helper: copy a content:// URI (from the document picker) into a cache file so
+// it can be uploaded as a multipart part.
+private fun uriToCacheFile(context: Context, uri: Uri): File? {
+    return try {
+        val resolver = context.contentResolver
+        val displayName = resolver.query(uri, null, null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
+        }
+        val safeName = (displayName ?: "upload_${System.currentTimeMillis()}.bin")
+            .substringAfterLast('/')
+            .ifBlank { "upload_${System.currentTimeMillis()}.bin" }
+        val file = File(context.cacheDir, safeName)
+        resolver.openInputStream(uri)?.use { input ->
+            file.outputStream().use { output -> input.copyTo(output) }
+        }
+        file
+    } catch (e: Exception) {
+        null
+    }
+}
+
+@Composable
+fun VoiceCard(
+    isRecording: Boolean,
+    busy: Boolean,
+    status: String?,
+    onRecord: () -> Unit,
+    onStop: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("🎙️ Voice Dispute Intake", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                "Record a voice note; Whisper ASR + NER auto-fills the dispute form.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (isRecording) {
+                    Button(onClick = onStop, enabled = !busy, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Default.Mic, contentDescription = null)
+                        Text("Stop & Upload")
+                    }
+                } else {
+                    OutlinedButton(onClick = onRecord, enabled = !busy, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Default.Mic, contentDescription = null)
+                        Text("Record Voice Note")
+                    }
+                }
+            }
+            status?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        }
+    }
+}
+
+@Composable
+fun DocumentsCard(
+    documents: List<DocumentDto>,
+    busy: Boolean,
+    status: String?,
+    onUpload: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "📄 Documents (${documents.size})",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Button(onClick = onUpload, enabled = !busy) {
+                    Icon(Icons.Default.Upload, contentDescription = null)
+                    Text("Upload")
+                }
+            }
+            if (busy) {
+                CircularProgressIndicator()
+            } else if (documents.isEmpty()) {
+                Text(
+                    "No documents yet — upload contracts, invoices, or delivery proofs for AI analysis.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                documents.forEach { DocumentItem(document = it) }
+            }
+            status?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        }
     }
 }
 

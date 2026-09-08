@@ -20,12 +20,22 @@ engine = create_engine(
     connect_args=connect_args,
     pool_size=5,
     pool_recycle=300,
+    pool_pre_ping=True,  # verify each pooled connection is alive before use —
+                         # Supabase's pooler closes idle connections, which
+                         # otherwise cause "server closed the connection
+                         # unexpectedly" errors on the next request.
     echo=False,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+
+def get_engine_url() -> str:
+    """Return the raw database URL string for tools like Alembic that need
+    a plain DBAPI URL (not an Engine object)."""
+    return settings.DATABASE_URL.strip()
 
 
 def get_db():

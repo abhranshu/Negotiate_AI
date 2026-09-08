@@ -9,6 +9,7 @@ import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from api.database import get_db
@@ -21,11 +22,23 @@ router = APIRouter(prefix="/api/cases", tags=["Cases"])
 
 
 def _generate_case_number(db: Session) -> str:
-    """Generate sequential case number like NAI-2025-0001."""
+    """Generate sequential case number like NAI-2025-0001.
+
+    Uses the highest existing number for the year (not a count), so it keeps
+    incrementing correctly even after deletions. Callers retry on the unique
+    constraint for true concurrency safety.
+    """
     from datetime import datetime
-    year  = datetime.utcnow().year
-    count = db.query(Case).count() + 1
-    return f"NAI-{year}-{count:04d}"
+    year   = datetime.utcnow().year
+    prefix = f"NAI-{year}-"
+    last = (
+        db.query(Case.case_number)
+        .filter(Case.case_number.like(f"{prefix}%"))
+        .order_by(Case.case_number.desc())
+        .first()
+    )
+    seq = int(last[0].rsplit("-", 1)[1]) + 1 if last and last[0] else 1
+    return f"{prefix}{seq:04d}"
 
 
 @router.post("", response_model=CaseOut, status_code=status.HTTP_201_CREATED)
@@ -41,21 +54,33 @@ def create_case(
         respondent = db.query(User).filter(User.email == payload.respondent_email).first()
         # If respondent not yet registered, we leave respondent_id NULL for now
 
-    case = Case(
-        id            = str(uuid.uuid4()),
-        case_number   = _generate_case_number(db),
-        claimant_id   = current_user.id,
-        respondent_id = respondent.id if respondent else None,
-        dispute_type  = payload.dispute_type,
-        claim_amount  = payload.claim_amount,
-        overdue_days  = payload.overdue_days,
-        description   = payload.description,
-        state         = payload.state,
-        industry      = payload.industry,
-        status        = CaseStatus.draft,
-    )
-    db.add(case)
-    db.commit()
+    # Retry on unique-case-number collisions (parallel creates can race on the
+    # same sequence number). Max 3 attempts, then surface a clean 500.
+    for _attempt in range(3):
+        case = Case(
+            id            = str(uuid.uuid4()),
+            case_number   = _generate_case_number(db),
+            claimant_id   = current_user.id,
+            respondent_id = respondent.id if respondent else None,
+            dispute_type  = payload.dispute_type,
+            claim_amount  = payload.claim_amount,
+            overdue_days  = payload.overdue_days,
+            description   = payload.description,
+            state         = payload.state,
+            industry      = payload.industry,
+            status        = CaseStatus.draft,
+        )
+        db.add(case)
+        try:
+            db.commit()
+            break
+        except IntegrityError:
+            db.rollback()
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not allocate a unique case number — try again.",
+        )
     db.refresh(case)
     return case
 

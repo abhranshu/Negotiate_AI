@@ -1,5 +1,6 @@
-.env.example
 .env    
+# Template with placeholder values — safe to commit
+!.env.example
 BUILD_PROMPT.md
 DATA_SOURCE.md
 __pycache__/
@@ -15,11 +16,15 @@ __pycache__/
 .qoder
 .vscode
 .windsurfrules
-data/
-!data/msme_samadhaan.csv
+# Root-only: ignore the legal-corpus dir, but never the Android app's data/ package
+/data/*
+!/data/msme_samadhaan.csv
 models
 output
 phase2_demo.db
+test_alembic.db
+alembic/__pycache__/
+api/migrations/__pycache__/
 venv
 __pycache__
 .mcp.json
@@ -33,8 +38,9 @@ CLAUDE.md
 GEMINI.md
 Prompt
 QODER.md
-data/
-!data/msme_samadhaan.csv
+# Root-only: ignore the legal-corpus dir, but never the Android app's data/ package
+/data/*
+!/data/msme_samadhaan.csv
 models
 output
 phase2_demo.db

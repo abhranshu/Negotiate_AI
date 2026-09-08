@@ -12,7 +12,6 @@ POST /api/cases/{case_id}/voice  — Upload audio, extract entities, pre-fill ca
 """
 import os
 import uuid
-import tempfile
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -25,6 +24,9 @@ from api.auth import get_current_user
 from api.config import settings
 
 router = APIRouter(prefix="/api/cases", tags=["Voice"])
+
+# The whole flow below is the ACTIVE /voice implementation. (The older local-
+# Whisper variant in api/routes/voice.py is not registered anywhere.)
 
 AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".ogg", ".flac", ".webm", ".mp4"}
 
@@ -61,7 +63,13 @@ def _transcribe_with_groq(audio_path: str) -> dict:
             "language": getattr(transcription, "language", "en"),
         }
     except Exception as exc:
-        raise RuntimeError(f"Groq transcription failed: {exc}")
+        # Invalid/expired key, network issue, etc. — degrade to the demo stub
+        # instead of 500-ing (matches the missing-key fallback above).
+        print(f"[Voice] Groq transcription failed ({exc}) — using demo stub")
+        return {
+            "text": "Demo mode: Groq transcription unavailable. Check GROQ_API_KEY in environment.",
+            "language": "en",
+        }
 
 
 def _run_ner(transcript: str) -> dict:
@@ -121,7 +129,7 @@ def _run_voice_pipeline(audio_path: str) -> dict:
     }
 
 
-@router.post("/{case_id}/voice")
+@router.post("/{case_id}/voice", response_model=CaseOut)
 async def upload_voice(
     case_id:  str,
     file:     UploadFile = File(...),
@@ -172,20 +180,33 @@ async def upload_voice(
     if fields.get("description") and not case.description:
         case.description  = fields["description"]
 
+    # Persist the full extraction result (NER entities, due date, invoice ref,
+    # transcript) in the case's otherwise-unused JSON column so the pipeline's
+    # work isn't thrown away.
+    case.doc_gap_analysis = {
+        "source":            "voice",
+        "claimant_name":     fields.get("claimant_name"),
+        "respondent_name":   fields.get("respondent_name"),
+        "due_date":          fields.get("due_date"),
+        "invoice_number":    fields.get("invoice_number"),
+        "detected_language": fields.get("detected_language"),
+        "raw_transcript":    fields.get("raw_transcript"),
+    }
+
+    # If NER identified a respondent name, try to link an already-registered
+    # user so both parties can negotiate on the case.
+    if fields.get("respondent_name") and not case.respondent_id:
+        match = (
+            db.query(User)
+            .filter(User.full_name.ilike(f"%{fields['respondent_name']}%"))
+            .first()
+        )
+        if match:
+            case.respondent_id = match.id
+
     db.commit()
     db.refresh(case)
 
-    # Return both the updated case + extracted fields
-    return {
-        "case_id":           case.id,
-        "dispute_type":      fields.get("dispute_type"),
-        "claim_amount":      fields.get("claim_amount"),
-        "description":       fields.get("description"),
-        "claimant_name":     fields.get("claimant_name"),
-        "respondent_name":   fields.get("respondent_name"),
-        "detected_language": fields.get("detected_language"),
-        "due_date":          fields.get("due_date"),
-        "invoice_number":    fields.get("invoice_number"),
-        "raw_transcript":    fields.get("raw_transcript"),
-        "missing_fields":    fields.get("missing_fields", []),
-    }
+    # Return the updated case (matches the CaseOut contract the web + Android
+    # clients expect; the web reads r.data.description from it).
+    return case

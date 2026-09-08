@@ -1,26 +1,28 @@
-# ── Deployment requirements (lean — no local Whisper, no GPU packages) ─────────
-# These are the ONLY packages needed when deploying to Railway/Render
-# Groq API replaces local Whisper → saves ~2GB Docker image size
+# ── NegotiateAI Deployment Requirements (Optimized) ──────────────────────────
+# Target: Railway / Render / Fly.io
+# Goal: Lean image — no GPU, no local Whisper (uses Groq API instead)
+# Removed: full torch GPU build (~2GB) → replaced with CPU-only torch (~200MB)
 
-# ── Web framework ─────────────────────────────────────────────────────────────
+# ── Web Framework ─────────────────────────────────────────────────────────────
 fastapi>=0.110.0
 uvicorn[standard]>=0.27.0
-gunicorn>=21.2.0              # production WSGI server
-python-multipart>=0.0.9       # file uploads
+gunicorn>=21.2.0
+python-multipart>=0.0.9
 
 # ── Database ──────────────────────────────────────────────────────────────────
 sqlalchemy>=2.0.0
-psycopg2-binary>=2.9.0        # PostgreSQL driver (binary = no build tools needed)
+psycopg2-binary>=2.9.0
 alembic>=1.13.0
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+# ── Auth & Config ─────────────────────────────────────────────────────────────
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 python-dotenv>=1.0.0
 pydantic>=2.6.0
 pydantic-settings>=2.0.0
+email-validator>=2.0.0      # required by pydantic EmailStr
 
-# ── ML — Prediction (Module 3) ───────────────────────────────────────────────
+# ── ML — Prediction (Module 3) ────────────────────────────────────────────────
 xgboost>=2.0.0
 lightgbm>=4.3.0
 scikit-learn>=1.4.0
@@ -29,17 +31,20 @@ pandas>=2.1.0
 numpy>=1.26.0
 joblib>=1.3.0
 
-# ── NLP — NER (Module 1 entity extraction) ───────────────────────────────────
-transformers>=4.40.0
-torch>=2.1.0                  # CPU-only on Railway (no CUDA)
+# ── NLP — Transformers (CPU-only torch — ~200MB instead of ~2GB GPU build) ───
+# IMPORTANT: Install torch CPU-only BEFORE transformers to avoid pulling CUDA
+# Add this to your Dockerfile pip install line:
+#   pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu ; sys_platform != "darwin"   # CPU-only wheel on Linux/Windows
+transformers>=4.40.0,<5   # <5 required: bharatgenai/LegalParam custom code uses legacy KV-cache (5.x crashes)
 spacy>=3.7.0
 
-# ── Voice — Groq Whisper API (replaces local Whisper) ────────────────────────
-groq>=0.9.0                   # pip install groq
+# ── Voice — Groq Whisper API (replaces local openai-whisper — saves ~1.5GB) ──
+groq>=0.9.0
 
-# ── Document Intelligence (Module 2 — partial) ────────────────────────────────
+# ── Document Intelligence (Module 2) ─────────────────────────────────────────
 Pillow>=10.0.0
-pytesseract>=0.3.10           # needs tesseract-ocr system package
+pytesseract>=0.3.10
 
 # ── Settlement PDF (Module 5) ─────────────────────────────────────────────────
 reportlab>=4.1.0
@@ -47,4 +52,3 @@ reportlab>=4.1.0
 # ── Utilities ─────────────────────────────────────────────────────────────────
 httpx>=0.27.0
 redis>=5.0.0
-faker>=24.0.0

@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.negotiateai.app.data.model.CreateCaseRequest
 import com.negotiateai.app.data.model.DisputeType
 import com.negotiateai.app.data.repository.CaseRepository
-import com.negotiateai.app.feature.settlement.NetworkResult
+import com.negotiateai.app.core.network.NetworkResult
 import kotlinx.coroutines.launch
 
 @Composable

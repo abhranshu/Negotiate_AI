@@ -12,7 +12,7 @@ import logging
 from typing import Dict, List, Optional
 from fastapi import WebSocket
 
-logger = logging.getLogger("negotiate_ai.websockets")
+logger = logging.getLogger("negotiate_ai.ws_manager")
 
 
 class ConnectionManager:

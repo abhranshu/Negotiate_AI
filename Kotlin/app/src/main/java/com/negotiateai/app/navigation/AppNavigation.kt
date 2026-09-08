@@ -80,14 +80,15 @@ fun AppNavigation(
         }
 
         composable(Routes.DASHBOARD) {
+            val scope = rememberCoroutineScope()
             CaseDashboardScreen(
                 onCaseClick = { navController.navigate(Routes.caseDetail(it)) },
                 onCreateCase = { navController.navigate(Routes.CREATE_CASE) },
                 onLogout = {
-                    val scope = rememberCoroutineScope()
                     scope.launch {
                         sessionManager.clearAuthToken()
                         sessionManager.clearUserId()
+                        sessionManager.clearUserRole()
                         navController.navigate(Routes.AUTH) {
                             popUpTo(0) { inclusive = true }
                         }

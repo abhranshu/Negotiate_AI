@@ -25,7 +25,6 @@ import re
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from typing import Optional
-import httpx
 
 
 # ─── Settlement Agreement Structure ──────────────────────────────────────────
@@ -119,7 +118,9 @@ class LegalValidator:
                     agreement.respondent.name.lower(),
                 ]
             ),
-            "agreed_amount":        str(int(agreement.terms.agreed_amount)) in agreement.agreement_text,
+            # Template formats amounts with thousands separators (e.g. "380,000.00"),
+            # so strip commas before matching the integer form.
+            "agreed_amount":        str(int(agreement.terms.agreed_amount)) in agreement.agreement_text.replace(",", ""),
             "payment_timeline":     any(word in text for word in ["days", "date", "schedule", "instalment"]),
             "full_final_settlement": "full and final" in text,
             "governing_law":        any(w in text for w in ["msmed act", "indian contract act", "1872"]),
@@ -250,14 +251,12 @@ def _num_to_words(n: float) -> str:
 
 class SettlementGenerator:
     """
-    Generates settlement agreements in two modes:
-    1. Template mode (fast, deterministic) — for standard cases
-    2. LLM-augmented mode (for complex / non-standard cases)
+    Generates settlement agreements from a validated legal template
+    (deterministic — no external LLM / API dependency).
     """
 
-    def __init__(self, use_llm: bool = True):
+    def __init__(self):
         self.validator = LegalValidator()
-        self.use_llm   = use_llm
 
     def _build_payment_schedule_text(self, schedule: list[dict]) -> str:
         lines = ["   The settlement amount shall be paid as follows:"]
@@ -332,58 +331,15 @@ class SettlementGenerator:
         )
         return text
 
-    async def generate_llm_enhanced(
-        self,
-        agreement: SettlementAgreement,
-        template_text: str,
-    ) -> str:
-        """Use LLM to refine template output for complex cases."""
-        prompt = f"""You are a legal document specialist. Improve the following settlement agreement draft for readability and legal completeness. 
-Keep all factual details (names, amounts, dates) exactly as written. 
-Only improve phrasing, add missing standard clauses, and ensure language is appropriate under Indian law.
-Do not add any clauses not already implied. Output only the final agreement text.
-
-DRAFT:
-{template_text}"""
-
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"Content-Type": "application/json",
-                         "anthropic-version": "2023-06-01"},
-                json={
-                    "model":      "claude-sonnet-4-20250514",
-                    "max_tokens": 2000,
-                    "messages":   [{"role": "user", "content": prompt}],
-                },
-                timeout=60.0,
-            )
-            return resp.json()["content"][0]["text"]
-
     async def generate(self, agreement: SettlementAgreement) -> SettlementAgreement:
-        """Full generation pipeline with validation."""
+        """Full generation pipeline with validation (template-only, no LLM)."""
         import time
         start = time.time()
 
-        # Step 1: Template generation (always done first)
-        template_text = self.generate_from_template(agreement)
+        # Template generation (deterministic — no external LLM dependency)
+        agreement.agreement_text = self.generate_from_template(agreement)
 
-        # Step 2: LLM enhancement (for complex cases)
-        if self.use_llm and (
-            agreement.terms.special_conditions
-            or len(agreement.terms.payment_schedule) > 2
-        ):
-            try:
-                agreement.agreement_text = await self.generate_llm_enhanced(
-                    agreement, template_text
-                )
-            except Exception as e:
-                print(f"[Settlement] LLM failed ({e}), using template only")
-                agreement.agreement_text = template_text
-        else:
-            agreement.agreement_text = template_text
-
-        # Step 3: Legal validation
+        # Legal validation
         is_valid, issues = self.validator.validate(agreement)
         agreement.is_valid         = is_valid
         agreement.validation_notes = issues
@@ -433,7 +389,7 @@ if __name__ == "__main__":
     )
 
     async def demo():
-        gen   = SettlementGenerator(use_llm=False)
+        gen   = SettlementGenerator()
         result = await gen.generate(agreement)
         print(f"\nValid: {result.is_valid}")
         if result.validation_notes:

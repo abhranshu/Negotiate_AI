@@ -15,6 +15,7 @@ class UserRole(str, enum.Enum):
     claimant   = "claimant"
     respondent = "respondent"
     admin      = "admin"
+    MSME       = "MSME"
 
 
 class User(Base):
