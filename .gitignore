@@ -1,59 +1,39 @@
 .env    
 # Template with placeholder values — safe to commit
 !.env.example
-BUILD_PROMPT.md
-DATA_SOURCE.md
+
+# Python
 __pycache__/
-*.pyc
-# Added by code-review-graph
-.code-review-graph/
-.claude
-.code-review-graph
-.cursor
-.gemini
-.github
-.kiro
-.qoder
-.vscode
-.windsurfrules
-# Root-only: ignore the legal-corpus dir, but never the Android app's data/ package
-/data/*
-!/data/msme_samadhaan.csv
-models
-output
-phase2_demo.db
-test_alembic.db
+*.py[cod]
+*$py.class
+venv/
+.venv/
 alembic/__pycache__/
 api/migrations/__pycache__/
-venv
-__pycache__
+
+# Local SQLite databases (except Chroma vector DB)
+phase2_demo.db
+test_alembic.db
+
+# Heavy datasets and local outputs (do NOT commit 2GB+ datasets)
+data/chainyo___rvl-cdip-invoice/
+data/samples/
+output/
+
+# IDE and Editor configs
+.claude/
+.code-review-graph/
+.cursor/
+.gemini/
+.kiro/
+.qoder/
+.vscode/
+.windsurfrules
 .mcp.json
 .opencode.json
 .qoder.json
-.vscode
-.windsurfrules
-
-AGENTS.md
-CLAUDE.md
-GEMINI.md
-Prompt
-QODER.md
-# Root-only: ignore the legal-corpus dir, but never the Android app's data/ package
-/data/*
-!/data/msme_samadhaan.csv
-models
-output
-phase2_demo.db
-translation_service.py
-venv
-__pycache__
-phases.md
-status.md
-README.md
 .cursorrules
-demo.py
-demo_phase2.py
-download_indictrans2.py
 
+# Frontend dependencies
 node_modules/
 frontend/node_modules/

@@ -1,0 +1,1002 @@
+[
+  {
+    "text": "We are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "We acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "The principal balance requested is under review by our accounts department.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "We have been waiting for over 120 days and received no response to our calls.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "It is extremely unfair that our valid claims are ignored week after week.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "This is total fraud and cheating! We will file criminal charges immediately!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "We understand the buyer's current difficulty and are willing to waive late interest fees.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "To maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "To be clear, we have been waiting for over 120 days and received no response to our calls. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, this is total fraud and cheating! we will file criminal charges immediately! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "To be clear, we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, this is total fraud and cheating! we will file criminal charges immediately! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, it is extremely unfair that our valid claims are ignored week after week. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Regarding our dispute, this is total fraud and cheating! we will file criminal charges immediately!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we acknowledge the invoice and will review our financial records. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, to maintain long-term business relations, we are ready to lower our demand. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "this is total fraud and cheating! we will file criminal charges immediately! We demand immediate action.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, we are happy to compromise and accept a structured payment schedule if verified. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, this is total fraud and cheating! we will file criminal charges immediately!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "it is extremely unfair that our valid claims are ignored week after week. We demand immediate action.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, yes, we agree to your proposed timeline and thank the mediator for facilitating. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, it is extremely unfair that our valid claims are ignored week after week.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, we are happy to compromise and accept a structured payment schedule if verified. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! We demand immediate action.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we have been waiting for over 120 days and received no response to our calls. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, yes, we agree to your proposed timeline and thank the mediator for facilitating. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Frankly, we have been waiting for over 120 days and received no response to our calls. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, we are happy to compromise and accept a structured payment schedule if verified. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "To be clear, yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, to maintain long-term business relations, we are ready to lower our demand. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "To be clear, yes, we agree to your proposed timeline and thank the mediator for facilitating. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, this is total fraud and cheating! we will file criminal charges immediately! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, the principal balance requested is under review by our accounts department. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "As stated before, we understand the buyer's current difficulty and are willing to waive late interest fees. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, this is total fraud and cheating! we will file criminal charges immediately! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "we have been waiting for over 120 days and received no response to our calls. We demand immediate action.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "yes, we agree to your proposed timeline and thank the mediator for facilitating. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "this is total fraud and cheating! we will file criminal charges immediately!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "As stated before, this is total fraud and cheating! we will file criminal charges immediately! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "As stated before, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, it is extremely unfair that our valid claims are ignored week after week.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "we understand the buyer's current difficulty and are willing to waive late interest fees. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we have been waiting for over 120 days and received no response to our calls. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Regarding our dispute, we acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, the principal balance requested is under review by our accounts department. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "we understand the buyer's current difficulty and are willing to waive late interest fees. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, we understand the buyer's current difficulty and are willing to waive late interest fees. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Frankly, we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, yes, we agree to your proposed timeline and thank the mediator for facilitating. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "we acknowledge the invoice and will review our financial records. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! We demand immediate action.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "As stated before, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "this is total fraud and cheating! we will file criminal charges immediately!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "To be clear, we are happy to compromise and accept a structured payment schedule if verified. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, this is total fraud and cheating! we will file criminal charges immediately! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, the principal balance requested is under review by our accounts department. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. We demand immediate action.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, to maintain long-term business relations, we are ready to lower our demand. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, we acknowledge the invoice and will review our financial records. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, the principal balance requested is under review by our accounts department. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "As stated before, we understand the buyer's current difficulty and are willing to waive late interest fees.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, we acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, we are happy to compromise and accept a structured payment schedule if verified. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "As stated before, we have been waiting for over 120 days and received no response to our calls. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, to maintain long-term business relations, we are ready to lower our demand. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, we understand the buyer's current difficulty and are willing to waive late interest fees. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, to maintain long-term business relations, we are ready to lower our demand. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, the principal balance requested is under review by our accounts department.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Frankly, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "we understand the buyer's current difficulty and are willing to waive late interest fees.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, we are happy to compromise and accept a structured payment schedule if verified. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "yes, we agree to your proposed timeline and thank the mediator for facilitating. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "the principal balance requested is under review by our accounts department. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, it is extremely unfair that our valid claims are ignored week after week. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! We demand immediate action.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "As stated before, this is total fraud and cheating! we will file criminal charges immediately! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "To be clear, it is extremely unfair that our valid claims are ignored week after week. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "the principal balance requested is under review by our accounts department.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "we understand the buyer's current difficulty and are willing to waive late interest fees. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, we acknowledge the invoice and will review our financial records. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "the principal balance requested is under review by our accounts department. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, yes, we agree to your proposed timeline and thank the mediator for facilitating. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "To be clear, the principal balance requested is under review by our accounts department. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we are happy to compromise and accept a structured payment schedule if verified. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, we acknowledge the invoice and will review our financial records. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, we are happy to compromise and accept a structured payment schedule if verified. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "To be clear, to maintain long-term business relations, we are ready to lower our demand. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "To be clear, this is total fraud and cheating! we will file criminal charges immediately! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "we acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "we have been waiting for over 120 days and received no response to our calls. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "To be clear, we acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, it is extremely unfair that our valid claims are ignored week after week. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, we acknowledge the invoice and will review our financial records. Please acknowledge.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, this is total fraud and cheating! we will file criminal charges immediately! We demand immediate action.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "As stated before, the principal balance requested is under review by our accounts department. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "it is extremely unfair that our valid claims are ignored week after week. We demand immediate action.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, we acknowledge the invoice and will review our financial records. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "it is extremely unfair that our valid claims are ignored week after week. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "to maintain long-term business relations, we are ready to lower our demand. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we acknowledge the invoice and will review our financial records.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "this is total fraud and cheating! we will file criminal charges immediately! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "To be clear, we understand the buyer's current difficulty and are willing to waive late interest fees. Let us resolve this.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Frankly, it is extremely unfair that our valid claims are ignored week after week.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Regarding our dispute, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "To be clear, we are happy to compromise and accept a structured payment schedule if verified. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Frankly, we are happy to compromise and accept a structured payment schedule if verified. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "To be clear, we have been waiting for over 120 days and received no response to our calls. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, the principal balance requested is under review by our accounts department. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "To be clear, this is total fraud and cheating! we will file criminal charges immediately! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Frankly, your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "the principal balance requested is under review by our accounts department.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. We demand immediate action.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "As stated before, we are happy to compromise and accept a structured payment schedule if verified. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, to maintain long-term business relations, we are ready to lower our demand. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "it is extremely unfair that our valid claims are ignored week after week. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Regarding our dispute, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we have been waiting for over 120 days and received no response to our calls.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "it is extremely unfair that our valid claims are ignored week after week. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. Let us resolve this.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "it is extremely unfair that our valid claims are ignored week after week. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, this is total fraud and cheating! we will file criminal charges immediately! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "we are happy to compromise and accept a structured payment schedule if verified. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Frankly, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "this is total fraud and cheating! we will file criminal charges immediately!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating. Please acknowledge.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "we have been waiting for over 120 days and received no response to our calls.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Regarding our dispute, we are happy to compromise and accept a structured payment schedule if verified. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "To be clear, yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "To be clear, your offer of 30% is absurd and unacceptable, we refuse to negotiate further!",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "As stated before, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "Frankly, to maintain long-term business relations, we are ready to lower our demand. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, we have been waiting for over 120 days and received no response to our calls.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "To be clear, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, we understand the buyer's current difficulty and are willing to waive late interest fees.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "As stated before, we acknowledge the invoice and will review our financial records. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. Please acknowledge.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "Frankly, we understand the buyer's current difficulty and are willing to waive late interest fees. Please acknowledge.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, we have been waiting for over 120 days and received no response to our calls. We demand immediate action.",
+    "sentiment": "frustrated",
+    "label": 2
+  },
+  {
+    "text": "As stated before, the principal balance requested is under review by our accounts department. Let us resolve this.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "yes, we agree to your proposed timeline and thank the mediator for facilitating. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Please acknowledge.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, the principal balance requested is under review by our accounts department. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "Frankly, we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "your offer of 30% is absurd and unacceptable, we refuse to negotiate further! Let us resolve this.",
+    "sentiment": "hostile",
+    "label": 3
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Frankly, yes, we agree to your proposed timeline and thank the mediator for facilitating. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, yes, we agree to your proposed timeline and thank the mediator for facilitating. Let us resolve this.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, to maintain long-term business relations, we are ready to lower our demand.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, we are happy to compromise and accept a structured payment schedule if verified.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "Regarding our dispute, we understand the buyer's current difficulty and are willing to waive late interest fees. We demand immediate action.",
+    "sentiment": "conciliatory",
+    "label": 4
+  },
+  {
+    "text": "we are happy to compromise and accept a structured payment schedule if verified. We demand immediate action.",
+    "sentiment": "cooperative",
+    "label": 0
+  },
+  {
+    "text": "As stated before, the principal balance requested is under review by our accounts department.",
+    "sentiment": "neutral",
+    "label": 1
+  },
+  {
+    "text": "As stated before, we acknowledge the invoice and will review our financial records. We demand immediate action.",
+    "sentiment": "neutral",
+    "label": 1
+  }
+]

@@ -1,0 +1,1302 @@
+[
+  {
+    "id": "MSEFC-SIM-0001",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: breach_of_warranty | State: Uttar Pradesh\nClaim Amount: \u20b91,412,107 | Overdue: 143 days\nPredicted Range: \u20b9892,068 - \u20b91,139,725 | Nash Solution: \u20b91,015,896\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-3240 for \u20b91,412,107 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7329 on time. We propose paying \u20b91,125,944 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7329 on time. We propose paying \u20b91,125,944 in two equal instalments over 60 days.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b91,015,896. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1412107,
+      "p_low": 892068,
+      "p_high": 1139725,
+      "nash": 1015896,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0002",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: breach_of_warranty | State: Maharashtra\nClaim Amount: \u20b93,133,761 | Overdue: 75 days\nPredicted Range: \u20b92,057,533 - \u20b92,546,797 | Nash Solution: \u20b92,302,165\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-7038 for \u20b93,133,761 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9470,064. We are willing to clear \u20b91,606,613 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9470,064. We are willing to clear \u20b91,606,613 if the defect issue is resolved.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,606,613 is close to the fair band. I propose bridging the gap at \u20b92,595,647.",
+    "context": {
+      "claim_amount": 3133761,
+      "p_low": 2057533,
+      "p_high": 2546797,
+      "nash": 2302165,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0003",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: breach_of_warranty | State: Gujarat\nClaim Amount: \u20b93,998,869 | Overdue: 161 days\nPredicted Range: \u20b92,837,865 - \u20b93,686,015 | Nash Solution: \u20b93,261,940\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b93,998,869 to Respondent Pvt Ltd over 161 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b93,998,869 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,977,023, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b93,998,869 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,977,023, which we can settle immediately upon final account reconciliation.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b93,261,940. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3998869,
+      "p_low": 2837865,
+      "p_high": 3686015,
+      "nash": 3261940,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0004",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: quality_issue | State: Tamil Nadu\nClaim Amount: \u20b9526,141 | Overdue: 141 days\nPredicted Range: \u20b9368,249 - \u20b9428,101 | Nash Solution: \u20b9398,175\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b9526,141 to Respondent Pvt Ltd over 141 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b978,921. We are willing to clear \u20b9270,542 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b978,921. We are willing to clear \u20b9270,542 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9398,175. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 526141,
+      "p_low": 368249,
+      "p_high": 428101,
+      "nash": 398175,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0005",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Uttar Pradesh\nClaim Amount: \u20b93,619,799 | Overdue: 111 days\nPredicted Range: \u20b92,296,600 - \u20b93,332,859 | Nash Solution: \u20b92,814,729\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b93,619,799 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9542,969. We are willing to clear \u20b92,700,755 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9542,969. We are willing to clear \u20b92,700,755 if the defect issue is resolved.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b92,700,755 is close to the fair band. I propose bridging the gap at \u20b92,958,199.",
+    "context": {
+      "claim_amount": 3619799,
+      "p_low": 2296600,
+      "p_high": 3332859,
+      "nash": 2814729,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0006",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: cancellation | State: Tamil Nadu\nClaim Amount: \u20b9504,242 | Overdue: 122 days\nPredicted Range: \u20b9361,840 - \u20b9454,374 | Nash Solution: \u20b9408,107\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b9504,242. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b975,636. We are willing to clear \u20b9358,343 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b975,636. We are willing to clear \u20b9358,343 if the defect issue is resolved.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9358,343 is close to the fair band. I propose bridging the gap at \u20b9433,041.",
+    "context": {
+      "claim_amount": 504242,
+      "p_low": 361840,
+      "p_high": 454374,
+      "nash": 408107,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0007",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: payment_delay | State: Punjab\nClaim Amount: \u20b94,883,315 | Overdue: 131 days\nPredicted Range: \u20b93,541,472 - \u20b94,520,583 | Nash Solution: \u20b94,031,027\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b94,883,315 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We refuse to pay the full claim of \u20b94,883,315 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b93,024,793 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b94,883,315 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b93,024,793 as full and final settlement.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b94,031,027. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 4883315,
+      "p_low": 3541472,
+      "p_high": 4520583,
+      "nash": 4031027,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0008",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: breach_of_warranty | State: Tamil Nadu\nClaim Amount: \u20b9683,744 | Overdue: 134 days\nPredicted Range: \u20b9498,843 - \u20b9585,996 | Nash Solution: \u20b9542,419\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8738 for \u20b9683,744 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9102,561. We are willing to clear \u20b9382,959 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9102,561. We are willing to clear \u20b9382,959 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9542,419. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 683744,
+      "p_low": 498843,
+      "p_high": 585996,
+      "nash": 542419,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0009",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: payment_delay | State: Uttar Pradesh\nClaim Amount: \u20b91,202,225 | Overdue: 58 days\nPredicted Range: \u20b9869,304 - \u20b91,084,267 | Nash Solution: \u20b9976,785\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,202,225 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9180,333. We are willing to clear \u20b9883,339 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9180,333. We are willing to clear \u20b9883,339 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9976,785. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1202225,
+      "p_low": 869304,
+      "p_high": 1084267,
+      "nash": 976785,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0010",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: breach_of_warranty | State: Maharashtra\nClaim Amount: \u20b91,882,322 | Overdue: 122 days\nPredicted Range: \u20b91,222,324 - \u20b91,540,064 | Nash Solution: \u20b91,381,194\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b91,882,322 to Respondent Pvt Ltd over 122 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We refuse to pay the full claim of \u20b91,882,322 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,378,703 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b91,882,322 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,378,703 as full and final settlement.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b91,381,194. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1882322,
+      "p_low": 1222324,
+      "p_high": 1540064,
+      "nash": 1381194,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0011",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Punjab\nClaim Amount: \u20b92,136,753 | Overdue: 91 days\nPredicted Range: \u20b91,491,547 - \u20b91,722,834 | Nash Solution: \u20b91,607,190\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b92,136,753 to Respondent Pvt Ltd over 91 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We refuse to pay the full claim of \u20b92,136,753 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,333,398 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b92,136,753 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,333,398 as full and final settlement.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,333,398 is close to the fair band. I propose bridging the gap at \u20b91,814,150.",
+    "context": {
+      "claim_amount": 2136753,
+      "p_low": 1491547,
+      "p_high": 1722834,
+      "nash": 1607190,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0012",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b93,236,914 | Overdue: 153 days\nPredicted Range: \u20b92,409,138 - \u20b92,965,358 | Nash Solution: \u20b92,687,248\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8372 for \u20b93,236,914 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We refuse to pay the full claim of \u20b93,236,914 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,204,541 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b93,236,914 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,204,541 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,687,248. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3236914,
+      "p_low": 2409138,
+      "p_high": 2965358,
+      "nash": 2687248,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0013",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: cancellation | State: Uttar Pradesh\nClaim Amount: \u20b91,315,174 | Overdue: 160 days\nPredicted Range: \u20b9897,362 - \u20b91,186,778 | Nash Solution: \u20b91,042,070\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b91,315,174 to Respondent Pvt Ltd over 160 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We refuse to pay the full claim of \u20b91,315,174 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9861,703 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b91,315,174 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9861,703 as full and final settlement.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b9897,362 to \u20b91,186,778. I suggest split settlement at \u20b91,106,268 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 1315174,
+      "p_low": 897362,
+      "p_high": 1186778,
+      "nash": 1042070,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0014",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: breach_of_warranty | State: Karnataka\nClaim Amount: \u20b9240,272 | Overdue: 89 days\nPredicted Range: \u20b9147,100 - \u20b9227,206 | Nash Solution: \u20b9187,153\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8299 for \u20b9240,272 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7502 on time. We propose paying \u20b9133,229 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7502 on time. We propose paying \u20b9133,229 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9133,229 is close to the fair band. I propose bridging the gap at \u20b9193,686.",
+    "context": {
+      "claim_amount": 240272,
+      "p_low": 147100,
+      "p_high": 227206,
+      "nash": 187153,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0015",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: quality_issue | State: Karnataka\nClaim Amount: \u20b91,476,183 | Overdue: 162 days\nPredicted Range: \u20b91,026,659 - \u20b91,189,051 | Nash Solution: \u20b91,107,855\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-2964 for \u20b91,476,183 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-9402 on time. We propose paying \u20b9983,199 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-9402 on time. We propose paying \u20b9983,199 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,026,659 to \u20b91,189,051. I suggest split settlement at \u20b91,251,421 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 1476183,
+      "p_low": 1026659,
+      "p_high": 1189051,
+      "nash": 1107855,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0016",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b93,567,892 | Overdue: 59 days\nPredicted Range: \u20b92,319,399 - \u20b93,345,381 | Nash Solution: \u20b92,832,390\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-1919 for \u20b93,567,892 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9535,183. We are willing to clear \u20b92,773,795 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9535,183. We are willing to clear \u20b92,773,795 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b92,832,390. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 3567892,
+      "p_low": 2319399,
+      "p_high": 3345381,
+      "nash": 2832390,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0017",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: breach_of_warranty | State: Karnataka\nClaim Amount: \u20b94,300,906 | Overdue: 107 days\nPredicted Range: \u20b93,100,623 - \u20b93,656,356 | Nash Solution: \u20b93,378,489\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b94,300,906 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We refuse to pay the full claim of \u20b94,300,906 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b93,310,635 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b94,300,906 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b93,310,635 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b93,378,489. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 4300906,
+      "p_low": 3100623,
+      "p_high": 3656356,
+      "nash": 3378489,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0018",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: cancellation | State: Maharashtra\nClaim Amount: \u20b91,333,867 | Overdue: 134 days\nPredicted Range: \u20b9959,678 - \u20b91,134,051 | Nash Solution: \u20b91,046,864\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,333,867 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9200,080. We are willing to clear \u20b9790,629 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9200,080. We are willing to clear \u20b9790,629 if the defect issue is resolved.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9790,629 is close to the fair band. I propose bridging the gap at \u20b91,146,772.",
+    "context": {
+      "claim_amount": 1333867,
+      "p_low": 959678,
+      "p_high": 1134051,
+      "nash": 1046864,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0019",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: partial_delivery | State: Tamil Nadu\nClaim Amount: \u20b91,133,062 | Overdue: 62 days\nPredicted Range: \u20b9726,289 - \u20b9990,363 | Nash Solution: \u20b9858,326\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-3854 for \u20b91,133,062 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5063 on time. We propose paying \u20b9638,110 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5063 on time. We propose paying \u20b9638,110 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9638,110 is close to the fair band. I propose bridging the gap at \u20b9929,675.",
+    "context": {
+      "claim_amount": 1133062,
+      "p_low": 726289,
+      "p_high": 990363,
+      "nash": 858326,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0020",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b93,083,472 | Overdue: 172 days\nPredicted Range: \u20b91,936,662 - \u20b92,490,913 | Nash Solution: \u20b92,213,787\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b93,083,472 to Respondent Pvt Ltd over 172 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9462,520. We are willing to clear \u20b92,257,548 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9462,520. We are willing to clear \u20b92,257,548 if the defect issue is resolved.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,936,662 to \u20b92,490,913. I suggest split settlement at \u20b92,510,067 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 3083472,
+      "p_low": 1936662,
+      "p_high": 2490913,
+      "nash": 2213787,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0021",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: payment_delay | State: Maharashtra\nClaim Amount: \u20b93,329,677 | Overdue: 176 days\nPredicted Range: \u20b92,000,816 - \u20b92,888,113 | Nash Solution: \u20b92,444,464\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b93,329,677 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-8420 on time. We propose paying \u20b92,163,718 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-8420 on time. We propose paying \u20b92,163,718 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,000,816 to \u20b92,888,113. I suggest split settlement at \u20b92,665,246 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 3329677,
+      "p_low": 2000816,
+      "p_high": 2888113,
+      "nash": 2444464,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0022",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: cancellation | State: Maharashtra\nClaim Amount: \u20b93,382,059 | Overdue: 56 days\nPredicted Range: \u20b92,507,871 - \u20b93,045,601 | Nash Solution: \u20b92,776,736\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b93,382,059 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-2326 on time. We propose paying \u20b92,230,575 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-2326 on time. We propose paying \u20b92,230,575 in two equal instalments over 60 days.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,776,736. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3382059,
+      "p_low": 2507871,
+      "p_high": 3045601,
+      "nash": 2776736,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0023",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: cancellation | State: Maharashtra\nClaim Amount: \u20b9999,512 | Overdue: 148 days\nPredicted Range: \u20b9671,977 - \u20b9834,773 | Nash Solution: \u20b9753,375\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-4192 for \u20b9999,512 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5669 on time. We propose paying \u20b9518,325 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5669 on time. We propose paying \u20b9518,325 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9518,325 is close to the fair band. I propose bridging the gap at \u20b9835,744.",
+    "context": {
+      "claim_amount": 999512,
+      "p_low": 671977,
+      "p_high": 834773,
+      "nash": 753375,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0024",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: breach_of_warranty | State: Tamil Nadu\nClaim Amount: \u20b9939,802 | Overdue: 128 days\nPredicted Range: \u20b9601,267 - \u20b9865,729 | Nash Solution: \u20b9733,498\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b9939,802 to Respondent Pvt Ltd over 128 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b9939,802 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9714,315, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b9939,802 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9714,315, which we can settle immediately upon final account reconciliation.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9733,498. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 939802,
+      "p_low": 601267,
+      "p_high": 865729,
+      "nash": 733498,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0025",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: cancellation | State: Maharashtra\nClaim Amount: \u20b92,334,012 | Overdue: 92 days\nPredicted Range: \u20b91,485,579 - \u20b92,132,689 | Nash Solution: \u20b91,809,134\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-2443 for \u20b92,334,012 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We refuse to pay the full claim of \u20b92,334,012 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,449,692 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b92,334,012 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,449,692 as full and final settlement.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,449,692 is close to the fair band. I propose bridging the gap at \u20b91,909,795.",
+    "context": {
+      "claim_amount": 2334012,
+      "p_low": 1485579,
+      "p_high": 2132689,
+      "nash": 1809134,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0026",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: breach_of_warranty | State: Punjab\nClaim Amount: \u20b92,672,468 | Overdue: 141 days\nPredicted Range: \u20b91,993,637 - \u20b92,317,339 | Nash Solution: \u20b92,155,488\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b92,672,468 to Respondent Pvt Ltd over 141 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b92,672,468 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,784,889, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,672,468 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,784,889, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,784,889 is close to the fair band. I propose bridging the gap at \u20b92,333,052.",
+    "context": {
+      "claim_amount": 2672468,
+      "p_low": 1993637,
+      "p_high": 2317339,
+      "nash": 2155488,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0027",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: breach_of_warranty | State: Maharashtra\nClaim Amount: \u20b94,277,642 | Overdue: 57 days\nPredicted Range: \u20b92,923,388 - \u20b93,457,108 | Nash Solution: \u20b93,190,248\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-2656 for \u20b94,277,642 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9641,646. We are willing to clear \u20b93,293,125 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9641,646. We are willing to clear \u20b93,293,125 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b93,190,248. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 4277642,
+      "p_low": 2923388,
+      "p_high": 3457108,
+      "nash": 3190248,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0028",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: quality_issue | State: Karnataka\nClaim Amount: \u20b92,793,289 | Overdue: 59 days\nPredicted Range: \u20b92,048,432 - \u20b92,649,464 | Nash Solution: \u20b92,348,948\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b92,793,289 to Respondent Pvt Ltd over 59 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-3569 on time. We propose paying \u20b92,150,057 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-3569 on time. We propose paying \u20b92,150,057 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,048,432 to \u20b92,649,464. I suggest split settlement at \u20b92,420,860 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 2793289,
+      "p_low": 2048432,
+      "p_high": 2649464,
+      "nash": 2348948,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0029",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: quality_issue | State: Uttar Pradesh\nClaim Amount: \u20b91,845,230 | Overdue: 114 days\nPredicted Range: \u20b91,351,751 - \u20b91,733,921 | Nash Solution: \u20b91,542,836\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,845,230 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We refuse to pay the full claim of \u20b91,845,230 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,012,274 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b91,845,230 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,012,274 as full and final settlement.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,012,274 is close to the fair band. I propose bridging the gap at \u20b91,598,490.",
+    "context": {
+      "claim_amount": 1845230,
+      "p_low": 1351751,
+      "p_high": 1733921,
+      "nash": 1542836,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0030",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: cancellation | State: Uttar Pradesh\nClaim Amount: \u20b94,596,841 | Overdue: 155 days\nPredicted Range: \u20b93,380,857 - \u20b93,883,833 | Nash Solution: \u20b93,632,345\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-9763 for \u20b94,596,841 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b94,596,841 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,570,607, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,596,841 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,570,607, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b93,570,607 is close to the fair band. I propose bridging the gap at \u20b93,988,849.",
+    "context": {
+      "claim_amount": 4596841,
+      "p_low": 3380857,
+      "p_high": 3883833,
+      "nash": 3632345,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0031",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: partial_delivery | State: Maharashtra\nClaim Amount: \u20b9835,348 | Overdue: 84 days\nPredicted Range: \u20b9538,136 - \u20b9753,343 | Nash Solution: \u20b9645,739\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-6329 for \u20b9835,348 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-3779 on time. We propose paying \u20b9460,391 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-3779 on time. We propose paying \u20b9460,391 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b9538,136 to \u20b9753,343. I suggest split settlement at \u20b9686,742 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 835348,
+      "p_low": 538136,
+      "p_high": 753343,
+      "nash": 645739,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0032",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b9162,394 | Overdue: 89 days\nPredicted Range: \u20b997,481 - \u20b9134,739 | Nash Solution: \u20b9116,110\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b9162,394. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b924,359. We are willing to clear \u20b9129,797 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b924,359. We are willing to clear \u20b9129,797 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9116,110. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 162394,
+      "p_low": 97481,
+      "p_high": 134739,
+      "nash": 116110,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0033",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: payment_delay | State: Uttar Pradesh\nClaim Amount: \u20b9561,689 | Overdue: 151 days\nPredicted Range: \u20b9355,264 - \u20b9471,669 | Nash Solution: \u20b9413,466\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-5423 for \u20b9561,689 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6853 on time. We propose paying \u20b9379,389 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6853 on time. We propose paying \u20b9379,389 in two equal instalments over 60 days.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b9413,466. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 561689,
+      "p_low": 355264,
+      "p_high": 471669,
+      "nash": 413466,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0034",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: payment_delay | State: Tamil Nadu\nClaim Amount: \u20b94,326,693 | Overdue: 126 days\nPredicted Range: \u20b93,019,778 - \u20b93,623,281 | Nash Solution: \u20b93,321,529\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b94,326,693 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6394 on time. We propose paying \u20b92,616,092 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6394 on time. We propose paying \u20b92,616,092 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b93,019,778 to \u20b93,623,281. I suggest split settlement at \u20b93,673,235 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4326693,
+      "p_low": 3019778,
+      "p_high": 3623281,
+      "nash": 3321529,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0035",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b94,703,940 | Overdue: 154 days\nPredicted Range: \u20b92,895,393 - \u20b94,464,182 | Nash Solution: \u20b93,679,787\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b94,703,940 to Respondent Pvt Ltd over 154 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9705,591. We are willing to clear \u20b93,561,239 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9705,591. We are willing to clear \u20b93,561,239 if the defect issue is resolved.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b93,679,787. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 4703940,
+      "p_low": 2895393,
+      "p_high": 4464182,
+      "nash": 3679787,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0036",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: breach_of_warranty | State: Tamil Nadu\nClaim Amount: \u20b94,494,442 | Overdue: 81 days\nPredicted Range: \u20b93,359,876 - \u20b94,013,574 | Nash Solution: \u20b93,686,725\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b94,494,442 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: The claimed amount of \u20b94,494,442 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,363,647, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,494,442 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,363,647, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b93,359,876 to \u20b94,013,574. I suggest split settlement at \u20b93,927,159 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4494442,
+      "p_low": 3359876,
+      "p_high": 4013574,
+      "nash": 3686725,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0037",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: cancellation | State: Tamil Nadu\nClaim Amount: \u20b91,250,764 | Overdue: 50 days\nPredicted Range: \u20b9896,268 - \u20b91,161,945 | Nash Solution: \u20b91,029,106\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-5316 for \u20b91,250,764 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We refuse to pay the full claim of \u20b91,250,764 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9879,613 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b91,250,764 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9879,613 as full and final settlement.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b91,029,106. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1250764,
+      "p_low": 896268,
+      "p_high": 1161945,
+      "nash": 1029106,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0038",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: payment_delay | State: Uttar Pradesh\nClaim Amount: \u20b91,404,411 | Overdue: 108 days\nPredicted Range: \u20b9844,288 - \u20b91,215,989 | Nash Solution: \u20b91,030,138\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,404,411 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We refuse to pay the full claim of \u20b91,404,411 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,019,513 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b91,404,411 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,019,513 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b91,030,138. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 1404411,
+      "p_low": 844288,
+      "p_high": 1215989,
+      "nash": 1030138,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0039",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b93,764,255 | Overdue: 141 days\nPredicted Range: \u20b92,478,034 - \u20b93,124,479 | Nash Solution: \u20b92,801,256\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b93,764,255 to Respondent Pvt Ltd over 141 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b93,764,255 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,286,328, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b93,764,255 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,286,328, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,478,034 to \u20b93,124,479. I suggest split settlement at \u20b93,121,144 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 3764255,
+      "p_low": 2478034,
+      "p_high": 3124479,
+      "nash": 2801256,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0040",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Punjab\nClaim Amount: \u20b94,672,587 | Overdue: 158 days\nPredicted Range: \u20b93,455,171 - \u20b94,141,276 | Nash Solution: \u20b93,798,223\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-7194 for \u20b94,672,587 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9700,888. We are willing to clear \u20b93,111,513 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9700,888. We are willing to clear \u20b93,111,513 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b93,798,223. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 4672587,
+      "p_low": 3455171,
+      "p_high": 4141276,
+      "nash": 3798223,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0041",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: quality_issue | State: Tamil Nadu\nClaim Amount: \u20b92,434,775 | Overdue: 95 days\nPredicted Range: \u20b91,483,934 - \u20b92,085,094 | Nash Solution: \u20b91,784,514\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-5477 for \u20b92,434,775 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b92,434,775 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,739,236, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,434,775 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,739,236, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,483,934 to \u20b92,085,094. I suggest split settlement at \u20b91,959,354 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 2434775,
+      "p_low": 1483934,
+      "p_high": 2085094,
+      "nash": 1784514,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0042",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b94,538,356 | Overdue: 161 days\nPredicted Range: \u20b93,055,664 - \u20b93,683,377 | Nash Solution: \u20b93,369,520\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b94,538,356. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9680,753. We are willing to clear \u20b92,918,517 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9680,753. We are willing to clear \u20b92,918,517 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b93,369,520. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 4538356,
+      "p_low": 3055664,
+      "p_high": 3683377,
+      "nash": 3369520,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0043",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: payment_delay | State: Maharashtra\nClaim Amount: \u20b94,058,110 | Overdue: 70 days\nPredicted Range: \u20b92,647,416 - \u20b93,788,282 | Nash Solution: \u20b93,217,849\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b94,058,110. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9608,716. We are willing to clear \u20b92,233,926 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9608,716. We are willing to clear \u20b92,233,926 if the defect issue is resolved.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,647,416 to \u20b93,788,282. I suggest split settlement at \u20b93,352,763 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4058110,
+      "p_low": 2647416,
+      "p_high": 3788282,
+      "nash": 3217849,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0044",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: cancellation | State: Uttar Pradesh\nClaim Amount: \u20b91,745,490 | Overdue: 124 days\nPredicted Range: \u20b91,068,982 - \u20b91,461,681 | Nash Solution: \u20b91,265,331\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,745,490 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: The claimed amount of \u20b91,745,490 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9988,449, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b91,745,490 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9988,449, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,068,982 to \u20b91,461,681. I suggest split settlement at \u20b91,407,236 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 1745490,
+      "p_low": 1068982,
+      "p_high": 1461681,
+      "nash": 1265331,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0045",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: breach_of_warranty | State: Maharashtra\nClaim Amount: \u20b92,871,647 | Overdue: 74 days\nPredicted Range: \u20b91,869,193 - \u20b92,590,924 | Nash Solution: \u20b92,230,058\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b92,871,647. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: The claimed amount of \u20b92,871,647 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,575,691, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,871,647 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,575,691, which we can settle immediately upon final account reconciliation.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,230,058. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 2871647,
+      "p_low": 1869193,
+      "p_high": 2590924,
+      "nash": 2230058,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0046",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: payment_delay | State: Uttar Pradesh\nClaim Amount: \u20b92,577,094 | Overdue: 175 days\nPredicted Range: \u20b91,739,213 - \u20b92,089,551 | Nash Solution: \u20b91,914,382\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-3242 for \u20b92,577,094 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9386,564. We are willing to clear \u20b91,387,300 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9386,564. We are willing to clear \u20b91,387,300 if the defect issue is resolved.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,739,213 to \u20b92,089,551. I suggest split settlement at \u20b92,158,153 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 2577094,
+      "p_low": 1739213,
+      "p_high": 2089551,
+      "nash": 1914382,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0047",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Punjab\nClaim Amount: \u20b92,945,462 | Overdue: 120 days\nPredicted Range: \u20b91,801,882 - \u20b92,730,207 | Nash Solution: \u20b92,266,044\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b92,945,462 to Respondent Pvt Ltd over 120 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b92,945,462 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,622,465, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,945,462 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,622,465, which we can settle immediately upon final account reconciliation.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,266,044. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 2945462,
+      "p_low": 1801882,
+      "p_high": 2730207,
+      "nash": 2266044,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0048",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: breach_of_warranty | State: Tamil Nadu\nClaim Amount: \u20b91,863,246 | Overdue: 121 days\nPredicted Range: \u20b91,168,771 - \u20b91,628,433 | Nash Solution: \u20b91,398,602\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b91,863,246 to Respondent Pvt Ltd over 121 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-9092 on time. We propose paying \u20b91,121,019 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-9092 on time. We propose paying \u20b91,121,019 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,168,771 to \u20b91,628,433. I suggest split settlement at \u20b91,516,008 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 1863246,
+      "p_low": 1168771,
+      "p_high": 1628433,
+      "nash": 1398602,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0049",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: breach_of_warranty | State: Tamil Nadu\nClaim Amount: \u20b94,374,720 | Overdue: 138 days\nPredicted Range: \u20b92,829,862 - \u20b94,001,692 | Nash Solution: \u20b93,415,777\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-3438 for \u20b94,374,720 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b94,374,720 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,078,780, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,374,720 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,078,780, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,829,862 to \u20b94,001,692. I suggest split settlement at \u20b93,602,291 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4374720,
+      "p_low": 2829862,
+      "p_high": 4001692,
+      "nash": 3415777,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0050",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: breach_of_warranty | State: Karnataka\nClaim Amount: \u20b91,435,645 | Overdue: 178 days\nPredicted Range: \u20b9959,739 - \u20b91,199,246 | Nash Solution: \u20b91,079,492\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b91,435,645. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: The claimed amount of \u20b91,435,645 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9729,200, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b91,435,645 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9729,200, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9729,200 is close to the fair band. I propose bridging the gap at \u20b91,197,692.",
+    "context": {
+      "claim_amount": 1435645,
+      "p_low": 959739,
+      "p_high": 1199246,
+      "nash": 1079492,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0051",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: quality_issue | State: Gujarat\nClaim Amount: \u20b94,773,014 | Overdue: 142 days\nPredicted Range: \u20b92,983,255 - \u20b93,911,670 | Nash Solution: \u20b93,447,462\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b94,773,014. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9715,952. We are willing to clear \u20b93,328,097 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9715,952. We are willing to clear \u20b93,328,097 if the defect issue is resolved.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b93,447,462. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 4773014,
+      "p_low": 2983255,
+      "p_high": 3911670,
+      "nash": 3447462,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0052",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: payment_delay | State: Maharashtra\nClaim Amount: \u20b9493,638 | Overdue: 140 days\nPredicted Range: \u20b9304,845 - \u20b9448,522 | Nash Solution: \u20b9376,683\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-5619 for \u20b9493,638 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b974,045. We are willing to clear \u20b9321,494 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b974,045. We are willing to clear \u20b9321,494 if the defect issue is resolved.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9321,494 is close to the fair band. I propose bridging the gap at \u20b9399,241.",
+    "context": {
+      "claim_amount": 493638,
+      "p_low": 304845,
+      "p_high": 448522,
+      "nash": 376683,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0053",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: partial_delivery | State: Gujarat\nClaim Amount: \u20b9673,980 | Overdue: 143 days\nPredicted Range: \u20b9441,514 - \u20b9569,844 | Nash Solution: \u20b9505,679\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b9673,980 to Respondent Pvt Ltd over 143 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b9673,980 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9503,858, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b9673,980 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9503,858, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b9441,514 to \u20b9569,844. I suggest split settlement at \u20b9557,747 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 673980,
+      "p_low": 441514,
+      "p_high": 569844,
+      "nash": 505679,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0054",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: partial_delivery | State: Karnataka\nClaim Amount: \u20b93,549,738 | Overdue: 64 days\nPredicted Range: \u20b92,322,848 - \u20b93,288,469 | Nash Solution: \u20b92,805,658\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b93,549,738 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1488 on time. We propose paying \u20b91,779,282 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1488 on time. We propose paying \u20b91,779,282 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,779,282 is close to the fair band. I propose bridging the gap at \u20b92,936,293.",
+    "context": {
+      "claim_amount": 3549738,
+      "p_low": 2322848,
+      "p_high": 3288469,
+      "nash": 2805658,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0055",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: quality_issue | State: Karnataka\nClaim Amount: \u20b93,675,331 | Overdue: 152 days\nPredicted Range: \u20b92,522,424 - \u20b93,439,449 | Nash Solution: \u20b92,980,936\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b93,675,331 to Respondent Pvt Ltd over 152 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b93,675,331 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,352,268, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b93,675,331 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,352,268, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,522,424 to \u20b93,439,449. I suggest split settlement at \u20b93,098,877 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 3675331,
+      "p_low": 2522424,
+      "p_high": 3439449,
+      "nash": 2980936,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0056",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: breach_of_warranty | State: Karnataka\nClaim Amount: \u20b93,833,180 | Overdue: 127 days\nPredicted Range: \u20b92,505,435 - \u20b93,387,694 | Nash Solution: \u20b92,946,564\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,833,180. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: The claimed amount of \u20b93,833,180 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,415,255, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b93,833,180 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,415,255, which we can settle immediately upon final account reconciliation.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b92,946,564. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 3833180,
+      "p_low": 2505435,
+      "p_high": 3387694,
+      "nash": 2946564,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0057",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: quality_issue | State: Tamil Nadu\nClaim Amount: \u20b91,077,497 | Overdue: 128 days\nPredicted Range: \u20b9684,943 - \u20b9939,485 | Nash Solution: \u20b9812,214\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,077,497 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9161,624. We are willing to clear \u20b9571,669 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9161,624. We are willing to clear \u20b9571,669 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9812,214. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1077497,
+      "p_low": 684943,
+      "p_high": 939485,
+      "nash": 812214,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0058",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: partial_delivery | State: Maharashtra\nClaim Amount: \u20b9666,221 | Overdue: 136 days\nPredicted Range: \u20b9494,726 - \u20b9533,325 | Nash Solution: \u20b9514,025\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b9666,221 to Respondent Pvt Ltd over 136 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We refuse to pay the full claim of \u20b9666,221 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9418,118 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b9666,221 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9418,118 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b9514,025. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 666221,
+      "p_low": 494726,
+      "p_high": 533325,
+      "nash": 514025,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0059",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: cancellation | State: Tamil Nadu\nClaim Amount: \u20b91,022,044 | Overdue: 135 days\nPredicted Range: \u20b9758,195 - \u20b9839,322 | Nash Solution: \u20b9798,758\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b91,022,044 to Respondent Pvt Ltd over 135 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6712 on time. We propose paying \u20b9574,943 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6712 on time. We propose paying \u20b9574,943 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9574,943 is close to the fair band. I propose bridging the gap at \u20b9890,119.",
+    "context": {
+      "claim_amount": 1022044,
+      "p_low": 758195,
+      "p_high": 839322,
+      "nash": 798758,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0060",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: breach_of_warranty | State: Gujarat\nClaim Amount: \u20b9575,961 | Overdue: 156 days\nPredicted Range: \u20b9360,739 - \u20b9464,287 | Nash Solution: \u20b9412,513\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b9575,961. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7895 on time. We propose paying \u20b9429,894 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7895 on time. We propose paying \u20b9429,894 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b9429,894 is close to the fair band. I propose bridging the gap at \u20b9468,350.",
+    "context": {
+      "claim_amount": 575961,
+      "p_low": 360739,
+      "p_high": 464287,
+      "nash": 412513,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0061",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: quality_issue | State: Punjab\nClaim Amount: \u20b91,751,570 | Overdue: 178 days\nPredicted Range: \u20b91,167,233 - \u20b91,648,493 | Nash Solution: \u20b91,407,863\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,751,570 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We refuse to pay the full claim of \u20b91,751,570 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9918,788 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b91,751,570 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9918,788 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b91,407,863. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 1751570,
+      "p_low": 1167233,
+      "p_high": 1648493,
+      "nash": 1407863,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0062",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: quality_issue | State: Gujarat\nClaim Amount: \u20b94,436,557 | Overdue: 113 days\nPredicted Range: \u20b93,020,230 - \u20b93,813,327 | Nash Solution: \u20b93,416,778\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b94,436,557 to Respondent Pvt Ltd over 113 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-4625 on time. We propose paying \u20b93,107,001 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-4625 on time. We propose paying \u20b93,107,001 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b93,020,230 to \u20b93,813,327. I suggest split settlement at \u20b93,728,393 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4436557,
+      "p_low": 3020230,
+      "p_high": 3813327,
+      "nash": 3416778,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0063",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: quality_issue | State: Karnataka\nClaim Amount: \u20b92,320,578 | Overdue: 82 days\nPredicted Range: \u20b91,570,514 - \u20b92,155,424 | Nash Solution: \u20b91,862,969\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-9219 for \u20b92,320,578 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b92,320,578 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,168,295, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,320,578 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,168,295, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,168,295 is close to the fair band. I propose bridging the gap at \u20b91,945,546.",
+    "context": {
+      "claim_amount": 2320578,
+      "p_low": 1570514,
+      "p_high": 2155424,
+      "nash": 1862969,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0064",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: breach_of_warranty | State: Karnataka\nClaim Amount: \u20b9429,670 | Overdue: 166 days\nPredicted Range: \u20b9316,020 - \u20b9353,967 | Nash Solution: \u20b9334,993\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b9429,670 to Respondent Pvt Ltd over 166 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5998 on time. We propose paying \u20b9269,591 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5998 on time. We propose paying \u20b9269,591 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b9316,020 to \u20b9353,967. I suggest split settlement at \u20b9372,845 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 429670,
+      "p_low": 316020,
+      "p_high": 353967,
+      "nash": 334993,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0065",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: breach_of_warranty | State: Gujarat\nClaim Amount: \u20b91,523,763 | Overdue: 157 days\nPredicted Range: \u20b91,016,688 - \u20b91,397,210 | Nash Solution: \u20b91,206,949\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-9499 for \u20b91,523,763 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9228,564. We are willing to clear \u20b9862,543 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9228,564. We are willing to clear \u20b9862,543 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b91,206,949. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1523763,
+      "p_low": 1016688,
+      "p_high": 1397210,
+      "nash": 1206949,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0066",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: breach_of_warranty | State: Maharashtra\nClaim Amount: \u20b9301,003 | Overdue: 106 days\nPredicted Range: \u20b9182,053 - \u20b9261,646 | Nash Solution: \u20b9221,849\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b9301,003. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We refuse to pay the full claim of \u20b9301,003 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9216,708 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b9301,003 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b9216,708 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b9221,849. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 301003,
+      "p_low": 182053,
+      "p_high": 261646,
+      "nash": 221849,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0067",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b93,764,856 | Overdue: 151 days\nPredicted Range: \u20b92,300,736 - \u20b93,469,695 | Nash Solution: \u20b92,885,215\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b93,764,856 to Respondent Pvt Ltd over 151 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We refuse to pay the full claim of \u20b93,764,856 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,858,138 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b93,764,856 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,858,138 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,885,215. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3764856,
+      "p_low": 2300736,
+      "p_high": 3469695,
+      "nash": 2885215,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0068",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: partial_delivery | State: Maharashtra\nClaim Amount: \u20b94,285,396 | Overdue: 132 days\nPredicted Range: \u20b93,148,489 - \u20b93,853,326 | Nash Solution: \u20b93,500,907\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b94,285,396 to Respondent Pvt Ltd over 132 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b94,285,396 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,052,389, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,285,396 includes unapproved interest and shipping overcharges. The principal balance is only \u20b93,052,389, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b93,148,489 to \u20b93,853,326. I suggest split settlement at \u20b93,716,942 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4285396,
+      "p_low": 3148489,
+      "p_high": 3853326,
+      "nash": 3500907,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0069",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: quality_issue | State: Uttar Pradesh\nClaim Amount: \u20b9794,968 | Overdue: 84 days\nPredicted Range: \u20b9482,865 - \u20b9742,160 | Nash Solution: \u20b9612,512\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b9794,968. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9119,245. We are willing to clear \u20b9416,101 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9119,245. We are willing to clear \u20b9416,101 if the defect issue is resolved.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b9482,865 to \u20b9742,160. I suggest split settlement at \u20b9638,916 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 794968,
+      "p_low": 482865,
+      "p_high": 742160,
+      "nash": 612512,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0070",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: payment_delay | State: Tamil Nadu\nClaim Amount: \u20b94,199,731 | Overdue: 77 days\nPredicted Range: \u20b93,046,779 - \u20b93,565,434 | Nash Solution: \u20b93,306,106\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8072 for \u20b94,199,731 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We refuse to pay the full claim of \u20b94,199,731 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b93,011,270 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b94,199,731 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b93,011,270 as full and final settlement.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b93,046,779 to \u20b93,565,434. I suggest split settlement at \u20b93,623,255 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4199731,
+      "p_low": 3046779,
+      "p_high": 3565434,
+      "nash": 3306106,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0071",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: partial_delivery | State: Punjab\nClaim Amount: \u20b92,654,000 | Overdue: 127 days\nPredicted Range: \u20b91,813,239 - \u20b92,244,610 | Nash Solution: \u20b92,028,924\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b92,654,000. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We refuse to pay the full claim of \u20b92,654,000 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,658,269 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b92,654,000 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,658,269 as full and final settlement.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b92,028,924. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 2654000,
+      "p_low": 1813239,
+      "p_high": 2244610,
+      "nash": 2028924,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0072",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: payment_delay | State: Karnataka\nClaim Amount: \u20b92,007,168 | Overdue: 97 days\nPredicted Range: \u20b91,265,055 - \u20b91,824,432 | Nash Solution: \u20b91,544,743\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b92,007,168 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9301,075. We are willing to clear \u20b91,370,782 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9301,075. We are willing to clear \u20b91,370,782 if the defect issue is resolved.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,370,782 is close to the fair band. I propose bridging the gap at \u20b91,636,111.",
+    "context": {
+      "claim_amount": 2007168,
+      "p_low": 1265055,
+      "p_high": 1824432,
+      "nash": 1544743,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0073",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: textiles | Dispute: quality_issue | State: Tamil Nadu\nClaim Amount: \u20b93,483,608 | Overdue: 167 days\nPredicted Range: \u20b92,535,762 - \u20b92,960,421 | Nash Solution: \u20b92,748,091\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-6729 for \u20b93,483,608 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1462 on time. We propose paying \u20b92,269,760 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1462 on time. We propose paying \u20b92,269,760 in two equal instalments over 60 days.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b92,748,091. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 3483608,
+      "p_low": 2535762,
+      "p_high": 2960421,
+      "nash": 2748091,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0074",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: quality_issue | State: Tamil Nadu\nClaim Amount: \u20b9428,897 | Overdue: 161 days\nPredicted Range: \u20b9296,329 - \u20b9383,336 | Nash Solution: \u20b9339,832\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b9428,897 to Respondent Pvt Ltd over 161 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b9428,897 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9253,366, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b9428,897 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9253,366, which we can settle immediately upon final account reconciliation.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9339,832. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 428897,
+      "p_low": 296329,
+      "p_high": 383336,
+      "nash": 339832,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0075",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: breach_of_warranty | State: Tamil Nadu\nClaim Amount: \u20b94,350,841 | Overdue: 162 days\nPredicted Range: \u20b92,885,098 - \u20b93,910,214 | Nash Solution: \u20b93,397,656\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-1223 for \u20b94,350,841 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We refuse to pay the full claim of \u20b94,350,841 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,723,323 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b94,350,841 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,723,323 as full and final settlement.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,885,098 to \u20b93,910,214. I suggest split settlement at \u20b93,617,969 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4350841,
+      "p_low": 2885098,
+      "p_high": 3910214,
+      "nash": 3397656,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0076",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: partial_delivery | State: Uttar Pradesh\nClaim Amount: \u20b93,774,942 | Overdue: 111 days\nPredicted Range: \u20b92,279,488 - \u20b93,269,250 | Nash Solution: \u20b92,774,369\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,774,942. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6683 on time. We propose paying \u20b92,036,539 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-6683 on time. We propose paying \u20b92,036,539 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,279,488 to \u20b93,269,250. I suggest split settlement at \u20b93,027,215 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 3774942,
+      "p_low": 2279488,
+      "p_high": 3269250,
+      "nash": 2774369,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0077",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: partial_delivery | State: Tamil Nadu\nClaim Amount: \u20b93,786,523 | Overdue: 158 days\nPredicted Range: \u20b92,518,264 - \u20b93,312,134 | Nash Solution: \u20b92,915,199\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,786,523. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We refuse to pay the full claim of \u20b93,786,523 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,257,825 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b93,786,523 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,257,825 as full and final settlement.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b92,915,199. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 3786523,
+      "p_low": 2518264,
+      "p_high": 3312134,
+      "nash": 2915199,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0078",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: quality_issue | State: Maharashtra\nClaim Amount: \u20b93,105,368 | Overdue: 101 days\nPredicted Range: \u20b91,911,931 - \u20b92,666,142 | Nash Solution: \u20b92,289,036\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b93,105,368 to Respondent Pvt Ltd over 101 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: The claimed amount of \u20b93,105,368 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,080,961, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b93,105,368 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,080,961, which we can settle immediately upon final account reconciliation.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,289,036. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3105368,
+      "p_low": 1911931,
+      "p_high": 2666142,
+      "nash": 2289036,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0079",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: quality_issue | State: Maharashtra\nClaim Amount: \u20b91,136,617 | Overdue: 171 days\nPredicted Range: \u20b9820,478 - \u20b9987,955 | Nash Solution: \u20b9904,216\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b91,136,617 to Respondent Pvt Ltd over 171 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9170,492. We are willing to clear \u20b9875,622 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9170,492. We are willing to clear \u20b9875,622 if the defect issue is resolved.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b9904,216. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 1136617,
+      "p_low": 820478,
+      "p_high": 987955,
+      "nash": 904216,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0080",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Tamil Nadu\nClaim Amount: \u20b93,354,515 | Overdue: 99 days\nPredicted Range: \u20b92,346,667 - \u20b92,765,597 | Nash Solution: \u20b92,556,132\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,354,515. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1289 on time. We propose paying \u20b91,985,618 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1289 on time. We propose paying \u20b91,985,618 in two equal instalments over 60 days.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,556,132. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3354515,
+      "p_low": 2346667,
+      "p_high": 2765597,
+      "nash": 2556132,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0081",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: payment_delay | State: Karnataka\nClaim Amount: \u20b94,685,209 | Overdue: 75 days\nPredicted Range: \u20b93,117,007 - \u20b93,980,727 | Nash Solution: \u20b93,548,867\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8267 for \u20b94,685,209 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b94,685,209 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,897,004, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,685,209 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,897,004, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b92,897,004 is close to the fair band. I propose bridging the gap at \u20b93,901,108.",
+    "context": {
+      "claim_amount": 4685209,
+      "p_low": 3117007,
+      "p_high": 3980727,
+      "nash": 3548867,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0082",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: breach_of_warranty | State: Uttar Pradesh\nClaim Amount: \u20b94,424,794 | Overdue: 84 days\nPredicted Range: \u20b93,238,602 - \u20b93,582,653 | Nash Solution: \u20b93,410,627\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-5217 for \u20b94,424,794 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b94,424,794 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,653,924, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,424,794 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,653,924, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b92,653,924 is close to the fair band. I propose bridging the gap at \u20b93,831,698.",
+    "context": {
+      "claim_amount": 4424794,
+      "p_low": 3238602,
+      "p_high": 3582653,
+      "nash": 3410627,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0083",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: payment_delay | State: Punjab\nClaim Amount: \u20b94,869,751 | Overdue: 126 days\nPredicted Range: \u20b93,574,936 - \u20b94,497,652 | Nash Solution: \u20b94,036,294\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b94,869,751. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1143 on time. We propose paying \u20b93,117,346 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-1143 on time. We propose paying \u20b93,117,346 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b93,574,936 to \u20b94,497,652. I suggest split settlement at \u20b94,222,343 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4869751,
+      "p_low": 3574936,
+      "p_high": 4497652,
+      "nash": 4036294,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0084",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: breach_of_warranty | State: Maharashtra\nClaim Amount: \u20b92,986,713 | Overdue: 176 days\nPredicted Range: \u20b91,971,586 - \u20b92,663,709 | Nash Solution: \u20b92,317,647\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b92,986,713. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7903 on time. We propose paying \u20b92,012,297 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-7903 on time. We propose paying \u20b92,012,297 in two equal instalments over 60 days.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,317,647. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 2986713,
+      "p_low": 1971586,
+      "p_high": 2663709,
+      "nash": 2317647,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0085",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: payment_delay | State: Uttar Pradesh\nClaim Amount: \u20b93,009,158 | Overdue: 139 days\nPredicted Range: \u20b92,145,552 - \u20b92,454,318 | Nash Solution: \u20b92,299,935\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,009,158. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: The claimed amount of \u20b93,009,158 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,859,929, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b93,009,158 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,859,929, which we can settle immediately upon final account reconciliation.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,299,935. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3009158,
+      "p_low": 2145552,
+      "p_high": 2454318,
+      "nash": 2299935,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0086",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: pharma | Dispute: breach_of_warranty | State: Uttar Pradesh\nClaim Amount: \u20b92,958,822 | Overdue: 176 days\nPredicted Range: \u20b91,999,883 - \u20b92,410,208 | Nash Solution: \u20b92,205,045\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8957 for \u20b92,958,822 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b92,958,822 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,713,398, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,958,822 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,713,398, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,713,398 is close to the fair band. I propose bridging the gap at \u20b92,479,352.",
+    "context": {
+      "claim_amount": 2958822,
+      "p_low": 1999883,
+      "p_high": 2410208,
+      "nash": 2205045,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0087",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: quality_issue | State: Punjab\nClaim Amount: \u20b92,611,798 | Overdue: 90 days\nPredicted Range: \u20b91,843,741 - \u20b92,241,617 | Nash Solution: \u20b92,042,679\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-4451 for \u20b92,611,798 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We refuse to pay the full claim of \u20b92,611,798 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,666,611 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b92,611,798 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b91,666,611 as full and final settlement.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,843,741 to \u20b92,241,617. I suggest split settlement at \u20b92,227,769 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 2611798,
+      "p_low": 1843741,
+      "p_high": 2241617,
+      "nash": 2042679,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0088",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Gujarat\nClaim Amount: \u20b93,771,558 | Overdue: 147 days\nPredicted Range: \u20b92,473,875 - \u20b93,057,337 | Nash Solution: \u20b92,765,606\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,771,558. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We refuse to pay the full claim of \u20b93,771,558 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,110,201 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b93,771,558 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,110,201 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,765,606. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3771558,
+      "p_low": 2473875,
+      "p_high": 3057337,
+      "nash": 2765606,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0089",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: quality_issue | State: Karnataka\nClaim Amount: \u20b91,788,643 | Overdue: 119 days\nPredicted Range: \u20b91,134,679 - \u20b91,468,264 | Nash Solution: \u20b91,301,471\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b91,788,643 to Respondent Pvt Ltd over 119 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-3972 on time. We propose paying \u20b91,249,587 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-3972 on time. We propose paying \u20b91,249,587 in two equal instalments over 60 days.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b91,134,679 to \u20b91,468,264. I suggest split settlement at \u20b91,461,661 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 1788643,
+      "p_low": 1134679,
+      "p_high": 1468264,
+      "nash": 1301471,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0090",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: cancellation | State: Uttar Pradesh\nClaim Amount: \u20b94,301,142 | Overdue: 167 days\nPredicted Range: \u20b92,822,250 - \u20b93,861,985 | Nash Solution: \u20b93,342,117\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-1002 for \u20b94,301,142 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5207 on time. We propose paying \u20b93,365,703 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5207 on time. We propose paying \u20b93,365,703 in two equal instalments over 60 days.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b93,342,117. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 4301142,
+      "p_low": 2822250,
+      "p_high": 3861985,
+      "nash": 3342117,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0091",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: auto_components | Dispute: partial_delivery | State: Karnataka\nClaim Amount: \u20b92,588,574 | Overdue: 159 days\nPredicted Range: \u20b91,625,463 - \u20b92,142,863 | Nash Solution: \u20b91,884,163\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-8226 for \u20b92,588,574 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9388,286. We are willing to clear \u20b91,997,925 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9388,286. We are willing to clear \u20b91,997,925 if the defect issue is resolved.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b91,884,163. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 2588574,
+      "p_low": 1625463,
+      "p_high": 2142863,
+      "nash": 1884163,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0092",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: quality_issue | State: Punjab\nClaim Amount: \u20b94,089,909 | Overdue: 148 days\nPredicted Range: \u20b92,483,078 - \u20b93,354,600 | Nash Solution: \u20b92,918,839\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We supplied goods worth \u20b94,089,909 to Respondent Pvt Ltd over 148 days ago. The agreed credit period was 30 days, but we have received zero payment. We demand immediate settlement plus MSMED interest.\n[RESPONDENT]: We refuse to pay the full claim of \u20b94,089,909 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,706,170 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b94,089,909 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,706,170 as full and final settlement.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b92,918,839. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 4089909,
+      "p_low": 2483078,
+      "p_high": 3354600,
+      "nash": 2918839,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0093",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: quality_issue | State: Tamil Nadu\nClaim Amount: \u20b91,476,623 | Overdue: 54 days\nPredicted Range: \u20b91,096,245 - \u20b91,204,972 | Nash Solution: \u20b91,150,608\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b91,476,623 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: The claimed amount of \u20b91,476,623 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,118,944, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b91,476,623 includes unapproved interest and shipping overcharges. The principal balance is only \u20b91,118,944, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b91,118,944 is close to the fair band. I propose bridging the gap at \u20b91,286,434.",
+    "context": {
+      "claim_amount": 1476623,
+      "p_low": 1096245,
+      "p_high": 1204972,
+      "nash": 1150608,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0094",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: partial_delivery | State: Karnataka\nClaim Amount: \u20b94,083,476 | Overdue: 64 days\nPredicted Range: \u20b92,495,702 - \u20b93,633,920 | Nash Solution: \u20b93,064,811\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b94,083,476 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5888 on time. We propose paying \u20b92,278,642 in two equal instalments over 60 days.",
+    "input": "[RESPONDENT]: Due to severe liquidity constraints in our sector, we could not process invoice NO-5888 on time. We propose paying \u20b92,278,642 in two equal instalments over 60 days.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b92,278,642 is close to the fair band. I propose bridging the gap at \u20b93,289,589.",
+    "context": {
+      "claim_amount": 4083476,
+      "p_low": 2495702,
+      "p_high": 3633920,
+      "nash": 3064811,
+      "dispute_type": "partial_delivery"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0095",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Karnataka\nClaim Amount: \u20b9902,698 | Overdue: 120 days\nPredicted Range: \u20b9566,415 - \u20b9788,235 | Nash Solution: \u20b9677,325\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-3314 for \u20b9902,698 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b9902,698 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9692,999, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b9902,698 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9692,999, which we can settle immediately upon final account reconciliation.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b9677,325. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 902698,
+      "p_low": 566415,
+      "p_high": 788235,
+      "nash": 677325,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0096",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: cancellation | State: Karnataka\nClaim Amount: \u20b93,860,400 | Overdue: 130 days\nPredicted Range: \u20b92,612,505 - \u20b93,151,748 | Nash Solution: \u20b92,882,126\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-9472 for \u20b93,860,400 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9579,060. We are willing to clear \u20b92,517,096 if the defect issue is resolved.",
+    "input": "[RESPONDENT]: We acknowledge the purchase order, but nearly 25% of the supplied materials failed quality inspection. We estimate total loss at \u20b9579,060. We are willing to clear \u20b92,517,096 if the defect issue is resolved.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b92,882,126. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3860400,
+      "p_low": 2612505,
+      "p_high": 3151748,
+      "nash": 2882126,
+      "dispute_type": "cancellation"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0097",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: breach_of_warranty | State: Uttar Pradesh\nClaim Amount: \u20b93,775,158 | Overdue: 85 days\nPredicted Range: \u20b92,766,630 - \u20b93,466,792 | Nash Solution: \u20b93,116,711\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: As a micro-enterprise, our cash flow is completely choked due to unpaid invoices of \u20b93,775,158. We are open to a reasonable structured payment plan, but we need an immediate commitment today.\n[RESPONDENT]: We refuse to pay the full claim of \u20b93,775,158 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,164,213 as full and final settlement.",
+    "input": "[RESPONDENT]: We refuse to pay the full claim of \u20b93,775,158 because the delivery was delayed by 45 days, causing downstream penalties. We offer \u20b92,164,213 as full and final settlement.",
+    "output": "To avoid lengthy MSEFC arbitration proceedings, let us focus on a mutually beneficial outcome. The Nash optimal settlement amount is \u20b93,116,711. Claimant, would you accept this amount if respondent guarantees immediate electronic wire transfer?",
+    "context": {
+      "claim_amount": 3775158,
+      "p_low": 2766630,
+      "p_high": 3466792,
+      "nash": 3116711,
+      "dispute_type": "breach_of_warranty"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0098",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: food_processing | Dispute: payment_delay | State: Uttar Pradesh\nClaim Amount: \u20b92,857,713 | Overdue: 155 days\nPredicted Range: \u20b91,733,086 - \u20b92,422,067 | Nash Solution: \u20b92,077,576\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b92,857,713 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: The claimed amount of \u20b92,857,713 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,011,098, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b92,857,713 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,011,098, which we can settle immediately upon final account reconciliation.",
+    "output": "Let us maintain a constructive discussion. The statutory timeline under MSMED Act Section 18 requires conciliation within 90 days. Respondent's current proposal of \u20b92,011,098 is close to the fair band. I propose bridging the gap at \u20b92,295,399.",
+    "context": {
+      "claim_amount": 2857713,
+      "p_low": 1733086,
+      "p_high": 2422067,
+      "nash": 2077576,
+      "dispute_type": "payment_delay"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0099",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: manufacturing | Dispute: quality_issue | State: Uttar Pradesh\nClaim Amount: \u20b94,128,828 | Overdue: 179 days\nPredicted Range: \u20b92,986,490 - \u20b93,844,527 | Nash Solution: \u20b93,415,508\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: We delivered the requested batch worth \u20b94,128,828 in full. Respondent Pvt Ltd has raised frivolous quality complaints only after payment became 90 days overdue. This is unacceptable.\n[RESPONDENT]: The claimed amount of \u20b94,128,828 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,573,000, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b94,128,828 includes unapproved interest and shipping overcharges. The principal balance is only \u20b92,573,000, which we can settle immediately upon final account reconciliation.",
+    "output": "We have heard both claimant's cash flow constraints and respondent's liquidity challenges. The predicted fair settlement range for this dispute is \u20b92,986,490 to \u20b93,844,527. I suggest split settlement at \u20b93,557,659 with 50% upfront payment within 7 days.",
+    "context": {
+      "claim_amount": 4128828,
+      "p_low": 2986490,
+      "p_high": 3844527,
+      "nash": 3415508,
+      "dispute_type": "quality_issue"
+    }
+  },
+  {
+    "id": "MSEFC-SIM-0100",
+    "instruction": "You are NegotiateAI \u2014 an impartial AI mediator specialising in Indian MSME payment disputes under the MSMED Act 2006.\nCASE CONTEXT:\nIndustry: it_services | Dispute: quality_issue | State: Gujarat\nClaim Amount: \u20b91,314,351 | Overdue: 125 days\nPredicted Range: \u20b9799,753 - \u20b91,057,097 | Nash Solution: \u20b9928,425\nRELEVANT LAW:\nMSMED Act Section 15 (Mandatory payment within 45 days), Section 16 (Compound interest at 3x Bank Rate).\n\n\n=== DIALOGUE HISTORY ===\n[CLAIMANT]: Invoice NO-4341 for \u20b91,314,351 remains outstanding despite 5 written reminders. Under Section 15 of MSMED Act 2006, payment is mandatory within 45 days. We cannot absorb further delays.\n[RESPONDENT]: The claimed amount of \u20b91,314,351 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9720,634, which we can settle immediately upon final account reconciliation.",
+    "input": "[RESPONDENT]: The claimed amount of \u20b91,314,351 includes unapproved interest and shipping overcharges. The principal balance is only \u20b9720,634, which we can settle immediately upon final account reconciliation.",
+    "output": "I acknowledge the concerns from both sides. Under Section 15 and Section 16 of the MSMED Act 2006, buyers are legally obligated to pay compound interest at 3x the Bank Rate for delayed payments beyond 45 days. However, to resolve this amicably today, I recommend both parties consider a settlement around \u20b9928,425. Respondent, can you commit to this schedule?",
+    "context": {
+      "claim_amount": 1314351,
+      "p_low": 799753,
+      "p_high": 1057097,
+      "nash": 928425,
+      "dispute_type": "quality_issue"
+    }
+  }
+]

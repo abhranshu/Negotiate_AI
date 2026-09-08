@@ -1,0 +1,37 @@
+# ── VCS ───────────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Local Python environments (must NEVER be copied into the image) ──
+venv/
+.venv/
+env/
+*.egg-info/
+
+# ── Python caches & build artifacts ──────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Local DB & secrets ────────────────────────────────────────────────
+*.db
+*.sqlite3
+!data/chroma/*.sqlite3
+.env
+.env.local
+
+# ── Local notebooks / scratch ────────────────────────────────────────
+*.ipynb
+
+# ── Heavy training/unused data that must stay out of the image ───────
+# Keep-away: 2.2GB CDIP invoice image dataset is NOT needed at runtime
+data/chainyo___rvl-cdip-invoice/
+output/
+# Large checkpoints / intermediate training artifacts
+*.pt
+*.ckpt
+*.bin
+models/*.bin
