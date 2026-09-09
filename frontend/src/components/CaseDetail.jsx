@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import API from '../api';
+import API, { getApiError } from '../api';
 import { css, fmt } from '../theme';
 import { Badge, Spinner, Alert, EmptyState, Tab } from './UI';
 import PredictionPanel from './PredictionPanel';
@@ -242,7 +242,7 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
       await API.patch('/api/cases/' + c.id + '/description', { description: cleaned });
       onRefresh();
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Could not save transcript');
+      setErr(getApiError(e, 'Could not save transcript'));
     } finally {
       setSavingDesc(false);
     }
@@ -297,7 +297,7 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
       setVoiceResult(r.data);
       if (r.data?.description) setVoiceTranscript(r.data.description);
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Voice processing failed');
+      setErr(getApiError(e, 'Voice processing failed'));
     } finally {
       setLoadingV(false);
     }
@@ -313,7 +313,7 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
       onRefresh();
       setDocFiles([]);
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Document upload failed');
+      setErr(getApiError(e, 'Document upload failed'));
     } finally {
       setLoadingD(false);
     }

@@ -65,6 +65,13 @@ export function Alert({ msg, type }) {
     info: 'var(--primary)',
   };
   const c = colors[type] || 'var(--primary)';
+  // Never render non-string values as React children — normalize defensively
+  // (prevents "Objects are not valid as a React child").
+  const text = typeof msg === 'string'
+    ? msg
+    : Array.isArray(msg)
+      ? msg.filter(m => typeof m === 'string' || typeof m === 'number').join(', ')
+      : JSON.stringify(msg);
   return (
     <div className="animate-fade-in-up" style={{
       display: 'flex', alignItems: 'center', gap: 8,
@@ -76,7 +83,7 @@ export function Alert({ msg, type }) {
         ? c + '33'
         : 'rgba(0,102,102,0.2)',
       color: c,
-    }}><span>{icons[type] || 'ℹ️'}</span>{msg}</div>
+    }}><span>{icons[type] || 'ℹ️'}</span>{text}</div>
   );
 }
 

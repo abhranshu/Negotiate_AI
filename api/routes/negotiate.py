@@ -19,13 +19,14 @@ from api.models.user import User
 from api.schemas.case import NegotiateRequest, NegotiateResponse, MessageOut
 from api.auth import get_current_user
 from api.ws_manager import manager
+from api.config import settings
 
 router = APIRouter(prefix="/api/cases", tags=["Negotiation"])
 
 _SESSIONS: dict = {}          # in-memory session cache; swap for Redis in production
 _SESSION_LAST_ACCESS: dict = {}  # case_id -> monotonic timestamp (for pruning)
 _SESSION_TTL_SECONDS = 30 * 60   # idle sessions are dropped after 30 minutes
-_SESSION_MAX = 100               # hard cap on cached sessions
+_SESSION_MAX = settings.NEGOTIATION_SESSION_CACHE_MAX  # hard cap on cached sessions
 
 # Neutral mediator fallback used when the AI module is unavailable or errors.
 # Shared by the REST and WebSocket paths (previously duplicated in four places).

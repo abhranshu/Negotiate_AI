@@ -18,7 +18,8 @@ else:
 engine = create_engine(
     database_url,
     connect_args=connect_args,
-    pool_size=5,
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=2,
     pool_recycle=300,
     pool_pre_ping=True,  # verify each pooled connection is alive before use —
                          # Supabase's pooler closes idle connections, which

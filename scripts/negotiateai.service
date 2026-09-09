@@ -1,0 +1,34 @@
+[Unit]
+Description=NegotiateAI - MSME ODR FastAPI service
+After=network.target
+
+[Service]
+Type=simple
+User=negotiateai
+Group=negotiateai
+
+WorkingDirectory=/opt/negotiateai
+Environment="PATH=/opt/negotiateai/.venv/bin:/usr/bin:/bin"
+EnvironmentFile=/etc/negotiateai/.env
+
+ExecStart=/opt/negotiateai/.venv/bin/uvicorn api.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 1 \
+    --log-level info
+
+# Graceful shutdown is enough for a single worker API service.
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+
+# Basic security hardening for a local API service.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/negotiateai /opt/negotiateai/.venv /opt/negotiateai/api/uploads
+StateDirectory=negotiateai
+
+[Install]
+WantedBy=multi-user.target

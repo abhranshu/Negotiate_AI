@@ -1,6 +1,10 @@
 """
 NegotiateAI — FastAPI application entry point.
-Run with:  uvicorn api.main:app --reload --port 8000
+
+Run directly on the low-resource VM with:
+    uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 1
+
+Do not use --reload in production. Keep workers=1 on the 7.6 GB box.
 Docs at:   http://localhost:8000/docs
 """
 import os
@@ -14,6 +18,14 @@ from api.database import engine, Base
 
 # Import all models so Alembic can autogenerate and so the app can use them.
 import api.models  # noqa: F401
+
+# If you run this behind a reverse proxy, set PROXY_COUNT in .env so Starlette
+# reads X-Forwarded-For correctly. Otherwise leave it at 0.
+if settings.PROXY_COUNT:
+    from starlette.middleware.proxy_fix import ProxyFix
+    app_proxy_fix = ProxyFix(x_for=settings.PROXY_COUNT, x_proto=settings.PROXY_COUNT, x_host=settings.PROXY_COUNT, x_prefix=settings.PROXY_COUNT)
+else:
+    app_proxy_fix = None
 
 from api.routes.auth       import router as auth_router
 from api.routes.cases      import router as cases_router
@@ -92,12 +104,17 @@ app = FastAPI(
     ),
     version     = "0.1.0",
     lifespan    = lifespan,
+    debug       = settings.DEBUG,
 )
+
+# Trust proxy headers when running behind a reverse proxy / load balancer.
+if app_proxy_fix is not None:
+    app.add_middleware(app_proxy_fix)
 
 # ── CORS (allow all origins in development; restrict in production) ────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = ["*"],
+    allow_origins     = settings.ALLOWED_ORIGINS,
     allow_credentials = True,
     allow_methods     = ["*"],
     allow_headers     = ["*"],

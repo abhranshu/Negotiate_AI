@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import API from '../api';
+import API, { getApiError } from '../api';
 import { css, fmt, sentiColor } from '../theme';
 import { Badge, Spinner, Alert, EmptyState } from './UI';
 
@@ -324,7 +324,7 @@ export default function NegotiationChat({ caseData, onUpdate }) {
         }));
       }
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Message failed to send');
+      setErr(getApiError(e, 'Message failed to send'));
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import API from '../api';
+import API, { getApiError } from '../api';
 import { css } from '../theme';
 import { Spinner, Alert } from './UI';
 
@@ -47,7 +47,7 @@ export default function CreateCase({ onClose, onCreated }) {
       });
       onCreated();
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Failed to create case');
+      setErr(getApiError(e, 'Failed to create case'));
     } finally {
       setLoading(false);
     }

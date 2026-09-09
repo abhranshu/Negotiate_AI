@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import API from '../api';
+import API, { getApiError } from '../api';
 import { css, fmt } from '../theme';
 import { Badge, Spinner, Alert, EmptyState } from './UI';
 
@@ -50,7 +50,7 @@ export default function SettlementPanel({ caseData, onUpdate }) {
       setData(r.data);
       onUpdate(prev => ({ ...prev, agreement_text: r.data.agreement_text }));
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Settlement generation failed');
+      setErr(getApiError(e, 'Settlement generation failed'));
     } finally {
       setLoading(false);
     }

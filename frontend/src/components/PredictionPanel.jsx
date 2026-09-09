@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import API from '../api';
+import API, { getApiError } from '../api';
 import { css, fmt, pct, confColor } from '../theme';
 import { Badge, Spinner, Alert, EmptyState } from './UI';
 
@@ -143,7 +143,7 @@ export default function PredictionPanel({ caseData, onUpdate, onNavigateToNegoti
       setHasRun(true);
       onUpdate(prev => ({ ...prev, ...r.data }));
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Prediction failed. Check backend logs.');
+      setErr(getApiError(e, 'Prediction failed. Check backend logs.'));
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import API from '../api';
+import API, { getApiError } from '../api';
 import { css } from '../theme';
 import { Badge, Spinner } from './UI';
 
@@ -31,7 +31,7 @@ export default function AuthScreen({ onLogin, onGuestLogin }) {
       }
       onLogin();
     } catch (e) {
-      setErr(e.response?.data?.detail || 'Something went wrong');
+      setErr(getApiError(e, 'Something went wrong'));
     } finally {
       setLoading(false);
     }
@@ -180,7 +180,7 @@ export default function AuthScreen({ onLogin, onGuestLogin }) {
               border: '1px solid rgba(186,26,26,0.2)',
               borderRadius: 8,
             }}>
-              {err}
+              {typeof err === 'string' ? err : JSON.stringify(err)}
             </div>
           )}
 
