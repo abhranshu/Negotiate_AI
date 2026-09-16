@@ -57,7 +57,7 @@ ENV PYTHONPATH=/app \
     PYTHONUNBUFFERED=1
 
 # ── Health check ───────────────────────────────────────────────────────────────
-# start-period=180s: LegalParam (11GB) + int8 quantization takes ~1-2 min at boot
+# start-period=180s: local LLM + int8 quantization may take a few minutes at boot
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 

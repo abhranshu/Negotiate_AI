@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt } from '../theme';
 import { Badge, Spinner, Alert, EmptyState } from './UI';
 
-function ValidationCheck({ label, pass }) {
+const ValidationCheck = React.memo(function ValidationCheck({ label, pass }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
@@ -30,7 +30,7 @@ function ValidationCheck({ label, pass }) {
       </span>
     </div>
   );
-}
+});
 
 export default function SettlementPanel({ caseData, onUpdate }) {
   const [data, setData]     = useState(null);
@@ -78,14 +78,14 @@ export default function SettlementPanel({ caseData, onUpdate }) {
   const agreedAmt = data?.agreed_amount || caseData.agreement_amount;
   const text      = data?.agreement_text || caseData.agreement_text || '';
 
-  const checks = text ? [
+  const checks = useMemo(() => text ? [
     { label: 'Parties identified',           pass: /claimant|respondent/i.test(text) },
     { label: 'Agreed amount present',       pass: /\d{4,}/.test(text) },
     { label: 'Payment timeline defined',    pass: /days|date|instalment|schedule/i.test(text) },
     { label: 'Full & final settlement',     pass: /full and final/i.test(text) },
     { label: 'MSMED Act / Contract Act cited', pass: /msmed|indian contract act|1872/i.test(text) },
     { label: 'Signature block present',     pass: /signed|signature/i.test(text) },
-  ] : [];
+  ] : [], [text]);
 
   return (
     <div>

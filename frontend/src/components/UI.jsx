@@ -1,7 +1,7 @@
 import React from 'react';
 import { css } from '../theme';
 
-export function Spinner() {
+export const Spinner = React.memo(function Spinner() {
   return (
     <span style={{
       display: 'inline-block', width: 14, height: 14,
@@ -11,9 +11,9 @@ export function Spinner() {
       animation: 'spin 0.7s linear infinite',
     }} />
   );
-}
+});
 
-export function Badge({ text, color }) {
+export const Badge = React.memo(function Badge({ text, color }) {
   return (
     <span style={{
       ...css.badge,
@@ -28,35 +28,35 @@ export function Badge({ text, color }) {
         : color + '44',
     }}>{text}</span>
   );
-}
+});
 
-export function Stat({ label, value, color }) {
+export const Stat = React.memo(function Stat({ label, value, color }) {
   return (
     <div style={css.metric}>
       <span style={{ ...css.metricVal, color: color || 'var(--primary)' }}>{value}</span>
       <div style={css.metricLbl}>{label}</div>
     </div>
   );
-}
+});
 
-export function Section({ icon, title, children }) {
+export const Section = React.memo(function Section({ icon, title, children }) {
   return (
     <div style={css.card}>
       <div style={css.title}><span>{icon}</span> {title}</div>
       {children}
     </div>
   );
-}
+});
 
-export function ProgressBar({ pct, color }) {
+export const ProgressBar = React.memo(function ProgressBar({ pct, color }) {
   return (
     <div style={css.progress}>
       <div style={{ ...css.bar, width: (pct || 0) + '%', background: color || 'var(--primary)' }} />
     </div>
   );
-}
+});
 
-export function Alert({ msg, type }) {
+export const Alert = React.memo(function Alert({ msg, type }) {
   if (!msg) return null;
   const icons = { error: '⚠️', success: '✅', info: 'ℹ️' };
   const colors = {
@@ -85,9 +85,9 @@ export function Alert({ msg, type }) {
       color: c,
     }}><span>{icons[type] || 'ℹ️'}</span>{text}</div>
   );
-}
+});
 
-export function EmptyState({ icon, text, subtext }) {
+export const EmptyState = React.memo(function EmptyState({ icon, text, subtext }) {
   return (
     <div className="animate-scale-in" style={{ textAlign: 'center', padding: '44px 20px', color: 'var(--text-secondary)' }}>
       <div style={{
@@ -100,9 +100,9 @@ export function EmptyState({ icon, text, subtext }) {
       <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.6, color: 'var(--text-secondary)' }}>{subtext}</div>
     </div>
   );
-}
+});
 
-export function Tab({ active, onClick, label }) {
+export const Tab = React.memo(function Tab({ active, onClick, label }) {
   return (
     <button style={{
       ...css.tab,
@@ -115,4 +115,4 @@ export function Tab({ active, onClick, label }) {
       {label}
     </button>
   );
-}
+});

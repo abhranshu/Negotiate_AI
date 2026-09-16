@@ -39,8 +39,7 @@ class Settings(BaseSettings):
     # HuggingFace model id loaded when USE_LOCAL_MODEL=true.
     LOCAL_MODEL_ID: str = "Qwen/Qwen2.5-3B-Instruct"
     # int8-dynamic-quantize the model on CPU (~2-3x faster, ~60% less memory).
-    # Only applied to standard models on CPU; ignored on CUDA (fp16) and for
-    # models with custom remote code (e.g. bharatgenai/LegalParam).
+    # Applied on CPU only; ignored on CUDA (fp16 already wins).
     LOCAL_MODEL_QUANTIZE: bool = True
 
     # ── Auth ───────────────────────────────────────────────────────────────────

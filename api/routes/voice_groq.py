@@ -119,7 +119,7 @@ def _ner_regex_only(transcript: str, ner_error: str | None = None) -> dict:
 
     amounts = []
     for m in re.finditer(
-        r"(?:INR|Rs\.?|â?’?|â'?)\s*([\d,]+(?:\.\d{1,2})?)"
+        r"(?:INR|Rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)"
         r"|(\d[\d,]*(?:\.\d{1,2})?)\s*(?:lakhs?|crores?|rupees?)",
         transcript,
         re.IGNORECASE,

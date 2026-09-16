@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import API from '../api';
 import { css, fmt } from '../theme';
 import { Badge, Spinner, EmptyState, Alert } from './UI';
@@ -20,7 +20,7 @@ const STATUS_LABELS = {
   agreement: 'Agreement', closed: 'Closed', escalated: 'Escalated',
 };
 
-export default function CaseDashboard({ user, onSelectCase, onCreateCase, refreshKey }) {
+export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateCase, refreshKey }) {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -33,12 +33,12 @@ export default function CaseDashboard({ user, onSelectCase, onCreateCase, refres
       .finally(() => setLoading(false));
   }, [refreshKey]);
 
-  const stats = [
+  const stats = useMemo(() => [
     { label: 'Total Cases',   value: cases.length,          color: 'var(--primary)' },
     { label: 'Active',        value: cases.filter(c => c.status === 'in_progress').length, color: '#F59E0B' },
     { label: 'Agreed',        value: cases.filter(c => c.status === 'agreement').length,     color: '#10B981' },
     { label: 'Total Claim',   value: fmt(cases.reduce((s, c) => s + (c.claim_amount || 0), 0)), color: 'var(--primary)' },
-  ];
+  ], [cases]);
 
   return (
     <div style={{ animation: 'fadeInUp 0.5s ease-out both' }}>
@@ -216,7 +216,7 @@ export default function CaseDashboard({ user, onSelectCase, onCreateCase, refres
                   <th style={css.tableHead}>Claim Amount</th>
                   <th style={css.tableHead}>Status</th>
                   <th style={css.tableHead}>Created</th>
-                  <th style={css.tableHead} style={{ width: 120, textAlign: 'right' }}>Actions</th>
+                  <th style={{ ...css.tableHead, width: 120, textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -304,4 +304,4 @@ export default function CaseDashboard({ user, onSelectCase, onCreateCase, refres
       </div>
     </div>
   );
-}
+})

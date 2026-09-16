@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt, sentiColor } from '../theme';
 import { Badge, Spinner, Alert, EmptyState } from './UI';
@@ -13,7 +13,7 @@ const PHASE_COLORS = {
   deadlock:   '#BA1A1A',
 };
 
-function SentimentIcon({ s }) {
+const SentimentIcon = React.memo(function SentimentIcon({ s }) {
   const map = {
     cooperative:  '😊',
     conciliatory: '🤝',
@@ -22,9 +22,9 @@ function SentimentIcon({ s }) {
     hostile:      '😠',
   };
   return <span style={{ fontSize: 13 }}>{map[s] || '💬'}</span>;
-}
+});
 
-function PhaseTracker({ current }) {
+const PhaseTracker = React.memo(function PhaseTracker({ current }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 0,
@@ -67,9 +67,9 @@ function PhaseTracker({ current }) {
       })}
     </div>
   );
-}
+});
 
-function ChatBubble({ m, myParty }) {
+const ChatBubble = React.memo(function ChatBubble({ m, myParty }) {
   const isMe        = m.party === myParty;
   const isMediator  = m.party === 'mediator';
   const baseColor   = isMediator ? '#8B5CF6' : isMe ? 'var(--primary)' : 'var(--border)';
@@ -134,9 +134,9 @@ function ChatBubble({ m, myParty }) {
       </div>
     </div>
   );
-}
+});
 
-function DealMeter({ claim, cOffer, rOffer }) {
+const DealMeter = React.memo(function DealMeter({ claim, cOffer, rOffer }) {
   if (!claim) return null;
   const toPct = v => Math.min(100, Math.max(0, (v / claim) * 100));
 
@@ -216,7 +216,7 @@ function DealMeter({ claim, cOffer, rOffer }) {
       </div>
     </div>
   );
-}
+});
 
 export default function NegotiationChat({ caseData, onUpdate }) {
   const [messages, setMessages]       = useState([]);
@@ -289,10 +289,16 @@ export default function NegotiationChat({ caseData, onUpdate }) {
     });
   }, [messages, streamingText]);
 
-  const lastC = [...messages].reverse()
-    .find(m => m.party === 'claimant' && m.offer)?.offer ?? null;
-  const lastR = [...messages].reverse()
-    .find(m => m.party === 'respondent' && m.offer)?.offer ?? null;
+  const lastC = useMemo(() =>
+    [...messages].reverse()
+      .find(m => m.party === 'claimant' && m.offer)?.offer ?? null,
+    [messages]
+  );
+  const lastR = useMemo(() =>
+    [...messages].reverse()
+      .find(m => m.party === 'respondent' && m.offer)?.offer ?? null,
+    [messages]
+  );
 
   const send = async () => {
     if (!input.trim()) return;
@@ -319,7 +325,7 @@ export default function NegotiationChat({ caseData, onUpdate }) {
       }]);
       setLastMeta(r.data);
       if (r.data.agreement_reached) {
-        onUpdate(prev => ({
+        onUpdateRef.current(prev => ({
           ...prev, agreement_amount: r.data.agreement_amount
         }));
       }
@@ -330,12 +336,12 @@ export default function NegotiationChat({ caseData, onUpdate }) {
     }
   };
 
-  const quickReplies = [
+  const quickReplies = useMemo(() => [
     'I am ready to settle at a fair amount.',
     'Your offer is too low considering the delay.',
     'Let us find a middle ground.',
     'I accept the proposed settlement terms.',
-  ];
+  ], []);
 
   return (
     <div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import AuthScreen from './AuthScreen';
@@ -28,29 +28,29 @@ function AppShell() {
     setLoading(false);
   }
 
-  function handleLogin() { checkSession(); }
+  const handleLogin = useCallback(() => { checkSession(); }, []);
 
-  function handleGuestLogin() {
+  const handleGuestLogin = useCallback(() => {
     setUser({ full_name: 'Demo User', email: 'demo@negotiate.ai', role: 'claimant', is_guest: true });
-  }
+  }, []);
 
-  function handleLogout() {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     setUser(null);
     setView('dashboard');
     setSelectedCase(null);
-  }
+  }, []);
 
-  function handleSelectCase(caseItem) {
+  const handleSelectCase = useCallback((caseItem) => {
     setSelectedCase(caseItem);
     setView('case');
     navigate('/app/case');
-  }
+  }, [navigate]);
 
-  function handleCaseCreated() {
+  const handleCaseCreated = useCallback(() => {
     setView('dashboard');
     setRefreshKey(k => k + 1);
-  }
+  }, []);
 
   if (loading) {
     return (

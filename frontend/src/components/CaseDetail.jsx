@@ -23,7 +23,7 @@ const STATUS_LABELS = {
   agreement: 'Agreement', closed: 'Closed', escalated: 'Escalated',
 };
 
-function InfoCard({ icon, label, value, color }) {
+const InfoCard = React.memo(function InfoCard({ icon, label, value, color }) {
   return (
     <div style={{
       background: 'var(--surface)',
@@ -46,10 +46,10 @@ function InfoCard({ icon, label, value, color }) {
       </div>
     </div>
   );
-}
+});
 
 /* ─── Overview Tab ── */
-function OverviewTab({ c, docs, onRefresh }) {
+const OverviewTab = React.memo(function OverviewTab({ c, docs, onRefresh }) {
   const stats = [
     { icon: '💰', label: 'Claim Amount',   value: fmt(c.claim_amount),          color: 'var(--primary)' },
     { icon: '⏱️', label: 'Overdue Days',   value: c.overdue_days ? c.overdue_days + ' days' : '—', color: '#F59E0B' },
@@ -217,10 +217,10 @@ function OverviewTab({ c, docs, onRefresh }) {
       )}
     </div>
   );
-}
+});
 
 /* ─── Documents & Voice Tab ── */
-function DocsVoiceTab({ c, docs, onRefresh }) {
+const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
   const [voiceFile, setVoiceFile]     = useState(null);
   const [docFiles, setDocFiles]       = useState([]);
   const [voiceResult, setVoiceResult] = useState(null);
@@ -575,7 +575,15 @@ function DocsVoiceTab({ c, docs, onRefresh }) {
       </div>
     </div>
   );
-}
+});
+
+const CASE_TABS = [
+  { key: 'overview',    label: 'Overview' },
+  { key: 'docs',        label: 'Documents & Voice' },
+  { key: 'prediction',  label: 'AI Prediction' },
+  { key: 'negotiate',   label: 'Negotiate' },
+  { key: 'settlement',  label: 'Settlement' },
+];
 
 /* ─── Main CaseDetail ── */
 export default function CaseDetail({ caseData, onBack, onUpdate }) {
@@ -599,25 +607,17 @@ export default function CaseDetail({ caseData, onBack, onUpdate }) {
     setLoading(true);
     try {
       const [cr, dr] = await Promise.all([
-        API.get('/api/cases/' + c.id),
-        API.get('/api/cases/' + c.id + '/documents'),
+        API.get('/api/cases/' + caseData.id),
+        API.get('/api/cases/' + caseData.id + '/documents'),
       ]);
       setC(cr.data);
       setDocs(dr.data);
       onUpdateRef.current(prev => ({ ...prev, ...cr.data }));
     } catch { /* silent */ }
     finally { setLoading(false); }
-  }, [c.id]);
+  }, [caseData.id]);
 
   useEffect(() => { refreshCase(); }, [refreshCase]);
-
-  const TABS = [
-    { key: 'overview',    label: 'Overview' },
-    { key: 'docs',        label: 'Documents & Voice' },
-    { key: 'prediction',  label: 'AI Prediction' },
-    { key: 'negotiate',   label: 'Negotiate' },
-    { key: 'settlement',  label: 'Settlement' },
-  ];
 
   return (
     <div style={{ animation: 'fadeInUp 0.4s ease-out both' }}>
@@ -690,7 +690,7 @@ export default function CaseDetail({ caseData, onBack, onUpdate }) {
         border: '1px solid var(--border)',
         overflowX: 'auto',
       }}>
-        {TABS.map(t => (
+        {CASE_TABS.map(t => (
           <Tab
             key={t.key}
             active={tab === t.key}

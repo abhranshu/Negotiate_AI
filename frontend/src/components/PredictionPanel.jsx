@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt, pct, confColor } from '../theme';
 import { Badge, Spinner, Alert, EmptyState } from './UI';
@@ -24,7 +24,7 @@ const FACTOR_INSIGHTS = {
   doc_amount_interaction: { icon: '🔗', desc: 'Combined effect of docs and claim size' },
 };
 
-function FactorBar({ factor }) {
+const FactorBar = React.memo(function FactorBar({ factor }) {
   const maxAbs = 0.5;
   const w     = Math.min(Math.abs(factor.impact) / maxAbs * 100, 100);
   const color = factor.direction === 'positive' ? '#10B981' : '#BA1A1A';
@@ -73,9 +73,9 @@ function FactorBar({ factor }) {
       )}
     </div>
   );
-}
+});
 
-function SettlementGauge({ prob }) {
+const SettlementGauge = React.memo(function SettlementGauge({ prob }) {
   const pctVal = Math.round((prob || 0) * 100);
   const color  = pctVal >= 65 ? '#10B981' : pctVal >= 40 ? '#F59E0B' : '#BA1A1A';
   const angle  = (pctVal / 100) * 360;
@@ -125,7 +125,7 @@ function SettlementGauge({ prob }) {
       </div>
     </div>
   );
-}
+});
 
 export default function PredictionPanel({ caseData, onUpdate, onNavigateToNegotiate }) {
   const [result, setResult]     = useState(null);

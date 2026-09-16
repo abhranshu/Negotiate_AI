@@ -4,8 +4,7 @@ Module 4 — Real-Time Multilingual Negotiation AI
 Components:
   - RoBERTa sentiment analyser (detects deadlock / hostility in real time)
   - Game-theoretic bargaining strategy engine (Nash / Rubinstein framework)
-  - LLM negotiation moderator (LLaMA/Mistral with RAG over legal corpus)
-  - IndicTrans2 real-time translation
+  - LLM negotiation moderator (Qwen / local instruct model with RAG over legal corpus)
 
 Data sources for fine-tuning:
   - MultiWOZ 2.4 negotiation dialogues:   https://huggingface.co/datasets/multi_woz_v22
@@ -22,11 +21,7 @@ import asyncio
 from dataclasses import dataclass, field, asdict
 from typing import Optional, AsyncGenerator
 from enum import Enum
-from transformers import (
-    pipeline as hf_pipeline,
-    AutoTokenizer,
-    AutoModelForCausalLM,
-)
+from transformers import pipeline as hf_pipeline
 import torch
 
 from api.config import settings
@@ -291,21 +286,13 @@ Current case context will be provided in each message."""
 
 
 # ─── Process-wide model singleton ─────────────────────────────────────────────
-# The 11GB LegalParam checkpoint is loaded ONCE per process and shared by every
+# The configured LLM checkpoint is loaded ONCE per process and shared by every
 # NegotiationSession/case. Without this, each new case would re-load the whole
 # model (1-2 min) on its first message.
 import threading as _threading
 
 _LOCAL_PIPE  = None
 _PIPE_LOCK   = _threading.Lock()
-
-
-_LEGALPARAM_ID = "bharatgenai/LegalParam"
-
-
-def _is_legalparam(model_id: str) -> bool:
-    """True for the legacy LegalParam model (custom remote code, needs <5)."""
-    return model_id == _LEGALPARAM_ID
 
 
 def _build_local_pipe():
@@ -316,10 +303,6 @@ def _build_local_pipe():
     (LOCAL_MODEL_QUANTIZE, default on) for ~2-3x faster inference and ~60%
     less memory; on CUDA it loads in fp16.
 
-    bharatgenai/LegalParam (legacy, selectable via LOCAL_MODEL_ID): the 11GB
-    legal model with custom remote code — requires transformers<5 and the
-    rope_scaling compatibility fix.
-
     Returns the cached pipeline (singleton — safe to call repeatedly).
     """
     global _LOCAL_PIPE
@@ -327,33 +310,10 @@ def _build_local_pipe():
         return _LOCAL_PIPE
 
     from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
-    import transformers as _tf
     import torch
 
     model_id = (settings.LOCAL_MODEL_ID or "Qwen/Qwen2.5-3B-Instruct").strip()
-    legacy = _is_legalparam(model_id)
-    print(f"[Moderator] Loading {model_id} ({'legacy LegalParam' if legacy else 'standard instruct'} mode)...")
-
-    config = None
-    if legacy:
-        # This model's remote code targets the legacy tuple KV-cache that
-        # transformers 4.x uses. On transformers 5.x generation crashes with
-        # "'DynamicCache' object is not subscriptable" — refuse loudly instead.
-        hf_major = int(_tf.__version__.split(".")[0])
-        if hf_major >= 5:
-            raise RuntimeError(
-                "bharatgenai/LegalParam requires transformers<5 (its custom code "
-                "uses the legacy KV-cache format). Install transformers==4.48.3 "
-                "in your environment."
-            )
-        # Fix for Transformers >= 4.45 compatibility with this specific model
-        config = AutoConfig.from_pretrained(model_id, trust_remote_code=True)
-        if hasattr(config, "rope_scaling") and config.rope_scaling is not None:
-            if "type" not in config.rope_scaling and "rope_type" in config.rope_scaling:
-                config.rope_scaling["type"] = config.rope_scaling["rope_type"]
-
-    # Load tokenizer explicitly — pipeline can fail to load it when config is pre-built
-    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=legacy)
+    print(f"[Moderator] Loading {model_id} (standard instruct mode)...")
 
     # Load the model on the GPU when available (fp16 — much faster inference),
     # otherwise fall back to fp32 CPU. device_map="auto" places the model on
@@ -366,18 +326,15 @@ def _build_local_pipe():
     print(f"[Moderator] Loading model weights ({'fp16 on CUDA' if use_cuda else 'fp32 on CPU'})...")
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        config=config,
-        trust_remote_code=legacy,
         device_map=device_map,
         low_cpu_mem_usage=True if use_cuda else False,
         torch_dtype=load_dtype,
     )
 
-    # ── int8 dynamic quantization (CPU only, standard models only) ──────────
+    # ── int8 dynamic quantization (CPU only) ──────────────────────────────
     # Quantizes all nn.Linear layers to int8 at runtime: ~2-3x faster CPU
-    # matmul and ~60% lower memory. Not applied to LegalParam (its remote code
-    # misbehaves with quantized weights) or on CUDA (fp16 already wins).
-    if not use_cuda and settings.LOCAL_MODEL_QUANTIZE and not legacy:
+    # matmul and ~60% lower memory. Skipped on CUDA (fp16 already wins).
+    if not use_cuda and settings.LOCAL_MODEL_QUANTIZE:
         print("[Moderator] Applying int8 dynamic quantization (CPU)...")
         model = torch.quantization.quantize_dynamic(
             model,
@@ -391,19 +348,16 @@ def _build_local_pipe():
     _LOCAL_PIPE = _pipeline(
         "text-generation",
         model=model,
-        tokenizer=tokenizer,
-        trust_remote_code=legacy,
     )
-    print(f"[Moderator] Model loaded successfully ({'fp16 on CUDA' if use_cuda else 'int8-quantized CPU' if settings.LOCAL_MODEL_QUANTIZE and not legacy else 'fp32 on CPU'}).")
+    print(f"[Moderator] Model loaded successfully ({'fp16 on CUDA' if use_cuda else 'int8-quantized CPU' if settings.LOCAL_MODEL_QUANTIZE else 'fp32 on CPU'}).")
     return _LOCAL_PIPE
 
 
 def _format_chat_prompt(tokenizer, prompt: str) -> str:
-    """Format the mediator prompt the way the loaded model expects.
+    """Format the mediator prompt using the model's chat template.
 
     Standard instruct models (e.g. Qwen) expose a chat_template — use it so
-    the model sees proper <|im_start|> markers. Legacy LegalParam has no chat
-    template, so keep its trained <user>/<assistant> marker format.
+    the model sees proper <|im_start|> markers.
     """
     template = getattr(tokenizer, "chat_template", None)
     if template:
@@ -414,8 +368,8 @@ def _format_chat_prompt(tokenizer, prompt: str) -> str:
                 add_generation_prompt=True,
             )
         except Exception:
-            pass  # fall through to the legacy format
-    return f"<user>\n{prompt}<assistant>\n"
+            pass
+    return prompt
 
 
 async def _stream_tokens(pipe, formatted: str, max_new_tokens: int = 256) -> AsyncGenerator[str, None]:

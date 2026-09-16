@@ -76,11 +76,11 @@ async def lifespan(app: FastAPI):
     if settings.USE_LOCAL_MODEL:
         try:
             from AIML.negotiation_ai import _build_local_pipe
-            print("⏳ Pre-loading LegalParam model (CPU, ~11GB)...")
+            print(f"⏳ Pre-loading local model ({settings.LOCAL_MODEL_ID})...")
             _build_local_pipe()
-            print("✅ LegalParam model ready")
+            print("✅ Local model ready")
         except Exception as e:
-            print(f"⚠️  LegalParam pre-load failed ({e}) — will retry on first message")
+            print(f"⚠️  Local model pre-load failed ({e}) — will retry on first message")
 
         # Pre-load sentiment model too (saves ~5-15s on first message)
         try:
