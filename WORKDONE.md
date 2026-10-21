@@ -57,3 +57,7 @@ Files changed this session
 - Supabase DB —  BUYER  →  respondent  data migration
 
 Not changed: any app screens, auth code, or the RAG corpus files themselves.
+
+
+
+python -m AIML.legal_rag --query "deemed acceptance of goods section 8 payment liability" --k 3 2>&1 | head -n 25
