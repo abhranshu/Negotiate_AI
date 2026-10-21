@@ -49,7 +49,7 @@ export const T = {
   red:          '#BA1A1A',
   yellow:       '#F59E0B',
   purple:       '#3C454C',
-  muted:        '#6F7979',
+  muted:        '#5C6666',   // darkened from #6F7979: 4.4:1 on white failed AA for the 11px sentiment badge
   text:         '#191C1D',
   textSecondary:'#3F4948',
 };

@@ -18,8 +18,11 @@ Supported language codes (ISO 639):
     kn=Kannada, ml=Malayalam, gu=Gujarati, pa=Punjabi, or=Odia
 """
 
-import torch
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import os
+
+# Heavy imports (torch, transformers, IndicTransToolkit) are lazy — see
+# IndicTranslator below. Slim Bedrock images never construct the translator,
+# so this module imports fine without the ~2GB ML stack.
 
 # ─── Language code maps ──────────────────────────────────────────────────────
 
@@ -60,6 +63,8 @@ class IndicTranslator:
     """
 
     def __init__(self, device: str = None):
+        import torch
+
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self._en_indic_loaded = False
         self._indic_en_loaded = False
@@ -84,6 +89,9 @@ class IndicTranslator:
 
     def _load_en_indic(self):
         if not self._en_indic_loaded:
+            import torch
+            from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
             print(f"[Translator] Loading EN→Indic model ({EN_INDIC_MODEL})...")
             self._en_indic_tokenizer = AutoTokenizer.from_pretrained(
                 EN_INDIC_MODEL, trust_remote_code=True
@@ -98,6 +106,9 @@ class IndicTranslator:
 
     def _load_indic_en(self):
         if not self._indic_en_loaded:
+            import torch
+            from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
             print(f"[Translator] Loading Indic→EN model ({INDIC_EN_MODEL})...")
             self._indic_en_tokenizer = AutoTokenizer.from_pretrained(
                 INDIC_EN_MODEL, trust_remote_code=True
@@ -128,6 +139,7 @@ class IndicTranslator:
         model,
     ) -> list[str]:
         self._load_processor()
+        import torch
 
         batch = self._ip.preprocess_batch(
             sentences, src_lang=src_lang, tgt_lang=tgt_lang

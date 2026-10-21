@@ -15,14 +15,19 @@ Data sources for fine-tuning:
 """
 
 import json
+import re
 import time
 import math
 import asyncio
+from collections import deque
 from dataclasses import dataclass, field, asdict
 from typing import Optional, AsyncGenerator
 from enum import Enum
-from transformers import pipeline as hf_pipeline
-import torch
+
+# Heavy imports (torch, transformers) are lazy — see
+# NegotiationSentimentAnalyser.__init__ and _load_local_pipe() below.
+# The Bedrock path (USE_BEDROCK=true) never loads them, so slim images
+# without the ~2GB ML stack import and run this module fine.
 
 from api.config import settings
 
@@ -121,6 +126,9 @@ class NegotiationSentimentAnalyser:
 
     def __init__(self, model_name: str = "cardiffnlp/twitter-roberta-base-sentiment"):
         try:
+            from transformers import pipeline as hf_pipeline
+            import torch
+
             self.pipe = hf_pipeline(
                 "text-classification",
                 model=model_name,
@@ -292,49 +300,130 @@ Current case context will be provided in each message."""
 import threading as _threading
 
 _LOCAL_PIPE  = None
-_PIPE_LOCK   = _threading.Lock()
+_PIPE_LOCK   = _threading.Lock()   # serialises generation
+_LOAD_LOCK   = _threading.Lock()   # serialises loading (single-flight)
+_PIPE_INFO: dict = {}
+
+
+def _resolve_device_mode(torch) -> str:
+    """'cuda' or 'cpu' — what LOCAL_MODEL_DEVICE asks for, minus wishful thinking."""
+    mode = (getattr(settings, "LOCAL_MODEL_DEVICE", "auto") or "auto").strip().lower()
+    if mode == "cpu":
+        return "cpu"
+    if mode == "cuda":
+        if not torch.cuda.is_available():
+            print("[Moderator] LOCAL_MODEL_DEVICE=cuda but CUDA is unavailable — using CPU.")
+            return "cpu"
+        return "cuda"
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def _placement(model):
+    """(blocks on GPU, blocks on CPU) from accelerate's placement map.
+
+    accelerate records GPU placement as a bare int (0 for cuda:0) and offload as
+    a string ("cpu" / "disk"), so both forms have to be understood — counting
+    only "cuda*" strings reports every block as unplaced.
+    """
+    device_map = getattr(model, "hf_device_map", None)
+    if not device_map:
+        return (0, 0)
+    gpu = cpu = 0
+    for placement in device_map.values():
+        if isinstance(placement, int) or str(placement).startswith("cuda"):
+            gpu += 1
+        elif str(placement) == "cpu":
+            cpu += 1
+    return (gpu, cpu)
+
+
+def _max_new_tokens() -> int:
+    """Per-turn generation cap (settings.LOCAL_MODEL_MAX_NEW_TOKENS)."""
+    try:
+        return max(32, int(getattr(settings, "LOCAL_MODEL_MAX_NEW_TOKENS", 128)))
+    except (TypeError, ValueError):
+        return 128
 
 
 def _build_local_pipe():
     """Load the configured local model once per process (singleton).
 
-    Default (LOCAL_MODEL_ID, e.g. Qwen2.5-3B-Instruct): a small standard
+    Default (LOCAL_MODEL_ID, e.g. Qwen2.5-1.5B-Instruct): a small standard
     instruct model that is fast on CPU. On CPU it is int8-dynamic-quantized
     (LOCAL_MODEL_QUANTIZE, default on) for ~2-3x faster inference and ~60%
     less memory; on CUDA it loads in fp16.
 
     Returns the cached pipeline (singleton — safe to call repeatedly).
+
+    Blocking. Never call this from an async handler: use
+    ensure_local_pipe_loaded() so a cold load cannot stall the event loop.
     """
     global _LOCAL_PIPE
-    if _LOCAL_PIPE is not None:
+    if _LOCAL_PIPE is not None:        # fast path — no lock contention
         return _LOCAL_PIPE
 
-    from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
+    # Single-flight. Without this, two messages arriving before the first load
+    # finished each loaded a complete second copy of the model — two sets of
+    # weights fighting for the same VRAM (which is what pushed the model onto
+    # the CPU) and a duplicated "Some parameters are on the meta device..."
+    # warning in the log.
+    with _LOAD_LOCK:
+        if _LOCAL_PIPE is not None:
+            return _LOCAL_PIPE
+        _LOCAL_PIPE = _load_local_pipe()
+    return _LOCAL_PIPE
+
+
+def _load_local_pipe():
+    from transformers import AutoModelForCausalLM
     import torch
 
-    model_id = (settings.LOCAL_MODEL_ID or "Qwen/Qwen2.5-3B-Instruct").strip()
-    print(f"[Moderator] Loading {model_id} (standard instruct mode)...")
+    model_id = (settings.LOCAL_MODEL_ID or "Qwen/Qwen2.5-1.5B-Instruct").strip()
+    mode     = _resolve_device_mode(torch)
+    on_gpu   = mode == "cuda"
+    forced   = (getattr(settings, "LOCAL_MODEL_DEVICE", "auto") or "auto").strip().lower()
+    print(f"[Moderator] Loading {model_id} ({mode})...")
 
-    # Load the model on the GPU when available (fp16 — much faster inference),
-    # otherwise fall back to fp32 CPU. device_map="auto" places the model on
-    # the GPU and spills any layers that don't fit in VRAM to CPU instead of
-    # crashing. low_cpu_mem_usage=True streams shards one-at-a-time to avoid
-    # OOM during load.
-    use_cuda = torch.cuda.is_available()
-    device_map = "auto" if use_cuda else None
-    load_dtype = torch.float16 if use_cuda else torch.float32
-    print(f"[Moderator] Loading model weights ({'fp16 on CUDA' if use_cuda else 'fp32 on CPU'})...")
+    # device_map="auto": accelerate fills the GPU and spills whatever does not
+    # fit to CPU rather than crashing. That keeps the mediator working when VRAM
+    # is tight, but spilled layers are orders of magnitude slower — so report it
+    # instead of letting a slow reply look like a hang. With
+    # LOCAL_MODEL_DEVICE=cuda we ask for the GPU only: an outright OOM is much
+    # easier to act on than a mystery slowdown.
+    if on_gpu:
+        free_gib   = round(torch.cuda.mem_get_info()[0] / (1024 ** 3), 1)
+        device_map = "cuda:0" if forced == "cuda" else "auto"
+        print(f"[Moderator] CUDA available — {free_gib} GiB free VRAM")
+    else:
+        device_map = None
+
+    # bf16 on CPU unless we are about to int8-quantize. Two reasons:
+    #   1. the oneDNN dynamic-int8 op requires float32 input, so quantizing a
+    #      bf16 model raises "data type of input should be float";
+    #   2. bf16 loads in ~3 GB vs ~6 GB for fp32 and (measured on this model)
+    #      generates faster *and* in far better quality than int8.
+    quantizing = (not on_gpu) and bool(settings.LOCAL_MODEL_QUANTIZE)
+    if on_gpu:
+        load_dtype, dtype_label = torch.float16, "fp16 on CUDA"
+    elif quantizing:
+        load_dtype, dtype_label = torch.float32, "fp32 on CPU (int8 to follow)"
+    else:
+        load_dtype, dtype_label = torch.bfloat16, "bf16 on CPU"
+    print(f"[Moderator] Loading model weights ({dtype_label})...")
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         device_map=device_map,
-        low_cpu_mem_usage=True if use_cuda else False,
+        # Always stream the weights: the legacy loader materialises the full
+        # checkpoint at once, which on CPU peaked at ~9.2 GB for the 1.5B model
+        # and OOM-killed the container before serving a single request.
+        low_cpu_mem_usage=True,
         torch_dtype=load_dtype,
     )
 
     # ── int8 dynamic quantization (CPU only) ──────────────────────────────
     # Quantizes all nn.Linear layers to int8 at runtime: ~2-3x faster CPU
     # matmul and ~60% lower memory. Skipped on CUDA (fp16 already wins).
-    if not use_cuda and settings.LOCAL_MODEL_QUANTIZE:
+    if not on_gpu and settings.LOCAL_MODEL_QUANTIZE:
         print("[Moderator] Applying int8 dynamic quantization (CPU)...")
         model = torch.quantization.quantize_dynamic(
             model,
@@ -343,36 +432,135 @@ def _build_local_pipe():
         )
         print("[Moderator] Quantization complete.")
 
-    # Build the pipeline
+    if on_gpu:
+        n_gpu, n_cpu = _placement(model)
+        if n_cpu:
+            total = max(1, n_gpu + n_cpu)
+            print(
+                f"[Moderator] WARNING: {n_cpu}/{total} blocks ({round(100 * n_cpu / total)}%) "
+                "were pushed to CPU because the model did not fit in VRAM. "
+                "Replies will be slow. Free VRAM (close GPU-heavy apps such as "
+                "browsers and game launchers), set LOCAL_MODEL_ID to a smaller "
+                "model, or set LOCAL_MODEL_DEVICE=cpu for int8 on CPU."
+            )
+        else:
+            print(f"[Moderator] All {n_gpu} blocks resident on GPU")
+
     from transformers import pipeline as _pipeline
-    _LOCAL_PIPE = _pipeline(
-        "text-generation",
-        model=model,
-    )
-    print(f"[Moderator] Model loaded successfully ({'fp16 on CUDA' if use_cuda else 'int8-quantized CPU' if settings.LOCAL_MODEL_QUANTIZE else 'fp32 on CPU'}).")
-    return _LOCAL_PIPE
+    # Pass the tokenizer explicitly. Older transformers (<=4.46) cannot guess a
+    # tokenizer from a model object and raise "Impossible to guess which
+    # tokenizer to use", which would silently drop us to the rule-based path.
+    pipe = _pipeline("text-generation", model=model, tokenizer=model_id)
+
+    _PIPE_INFO.update({
+        "model_id": model_id,
+        "mode": mode,
+        "max_new_tokens": _max_new_tokens(),
+    })
+    where = "int8-quantized CPU" if quantizing else \
+            ("bf16 CPU" if not on_gpu else "CUDA")
+    print(f"[Moderator] Model loaded successfully ({where}, max_new_tokens={_max_new_tokens()}).")
+    return pipe
 
 
-def _format_chat_prompt(tokenizer, prompt: str) -> str:
+# Output shapes that mean the model has drifted off the mediator task and
+# into scraped-web continuation. Every one of these was observed in real
+# generations from the current prompt (e.g. "created with just one click at
+# your own risk!", "khanacademy.com", "Error Code = kErrorLoadingVideo...").
+_DEGENERATE_PATTERNS = [
+    r"<\s*(br|/p|/div|p|div|span|/span|/a|a)\b",   # HTML markup
+    r"https?://|www\.",                              # URLs
+    r"&[a-z]+;|&#\d+;",                              # HTML entities
+    r"=+ ?[><=]|<==|===>>",                           # ascii-art banners
+    r"error\s*code\s*=|error\s*\d{3,}",              # error pages
+    r"(click here|subscribe|unsubscribe|cookie|terms of service|privacy policy)",
+    r"\b(support|info|sales)@[a-z0-9.-]+\b",          # scraped contact blocks
+    r"khanacademy|youtube\.com|facebook\.com|twitter\.com|wordpress",
+    r"please (try again later|contact (support|the admin))",
+    # Web-form / forum boilerplate — observed verbatim in real generations.
+    # These are plain English with no markup, so the patterns above miss them;
+    # they are also far too specific to ever match a genuine mediator reply.
+    r"spam filter|friendly neighborhood",
+    r"submissions must contain|do not support anonymous",
+    r"include all elements required|needs information including",
+    r"do reply online|follow-up requests via",
+    r"kindly do reply|contact you about your feedback",
+    r"^(hi|hello|hey)[.!]?$",                         # non-answers
+    r"^(sorry|apologies|i cannot|i can't|i'm sorry)\b.{0,10}$",
+]
+_DEGENERATE_RE = re.compile("|".join(f"(?:{p})" for p in _DEGENERATE_PATTERNS), re.I)
+
+
+def looks_degenerate(text: str) -> bool:
+    """True when a candidate is not a usable mediator reply.
+
+    Catches both the classic failure modes (too short, token-repetition) and
+    the observed one: fluent English that has nothing to do with the case,
+    scraped from the model's pre-training web corpus. Any hit means retry
+    with a tightened sampler, then fall back to the rule-based mediator.
+    """
+    if not text:
+        return True
+    stripped = text.strip()
+    if len(stripped) < 40:                 # "(1)" / "N/A." fragments
+        return True
+    words = stripped.split()
+    if len(words) < 8:
+        return True
+    if len(set(w.lower() for w in words)) / len(words) < 0.45:   # "1.500/1.500/..."
+        return True
+    if _DEGENERATE_RE.search(stripped):    # markup / URLs / error pages
+        return True
+    return False
+
+
+async def ensure_local_pipe_loaded():
+    """Load the model off the event loop, before a session needs it.
+
+    Callers await this *before* constructing a NegotiationSession. A cold load
+    takes 1-2 minutes: run on the event loop it does not just delay this request,
+    it stalls every other one — and a loop that cannot answer uvicorn's WebSocket
+    ping within its 20s default gets the socket closed, which is what silently
+    swallowed negotiation messages. After the first call this is a dict lookup.
+    """
+    if _LOCAL_PIPE is not None:
+        return _LOCAL_PIPE
+    return await asyncio.to_thread(_build_local_pipe)
+
+
+def _format_chat_prompt(tokenizer, prompt: str, system: str = None) -> str:
     """Format the mediator prompt using the model's chat template.
 
+    The mediator persona MUST be a ``system`` message, not part of the user
+    turn. Embedding it in the user turn (the previous behaviour) makes Qwen
+    treat the whole block — persona, case facts and RAG dump — as *user input
+    to be commented on*, so it happily continues with unrelated scraped-web
+    text instead of role-playing the mediator.
+
     Standard instruct models (e.g. Qwen) expose a chat_template — use it so
-    the model sees proper <|im_start|> markers.
+    the model sees proper <|im_start|> markers and role tags.
     """
+    system = system or SYSTEM_PROMPT
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user",   "content": prompt},
+    ]
     template = getattr(tokenizer, "chat_template", None)
     if template:
         try:
             return tokenizer.apply_chat_template(
-                [{"role": "user", "content": prompt}],
+                messages,
                 tokenize=False,
                 add_generation_prompt=True,
             )
         except Exception:
             pass
-    return prompt
+    # Fallback for a tokenizer with no template: mirror the plain-text layout
+    # but keep the roles explicit so the model still knows who is speaking.
+    return f"{system}\n\n{prompt}"
 
 
-async def _stream_tokens(pipe, formatted: str, max_new_tokens: int = 256) -> AsyncGenerator[str, None]:
+async def _stream_tokens(pipe, formatted: str, max_new_tokens: int = None) -> AsyncGenerator[str, None]:
     """Run blocking generation on a worker thread and yield decoded text chunks.
 
     Uses AsyncTextIteratorStreamer + a worker thread so the event loop is never
@@ -384,6 +572,8 @@ async def _stream_tokens(pipe, formatted: str, max_new_tokens: int = 256) -> Asy
     """
     from transformers import AsyncTextIteratorStreamer
 
+    if max_new_tokens is None:
+        max_new_tokens = _max_new_tokens()
     tokenizer = pipe.tokenizer
     inputs    = tokenizer(formatted, return_tensors="pt").to(pipe.model.device)
     streamer  = AsyncTextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
@@ -443,14 +633,19 @@ def _get_sentiment_analyser() -> "NegotiationSentimentAnalyser":
 
 
 def _get_rag_retriever():
-    """Process-wide TF-IDF LegalRetriever (keyword_only=True — fast)."""
+    """Process-wide LegalRetriever singleton.
+
+    Vector (chromadb ONNX) when chromadb is installed — this is what grounds
+    the mediator's section citations in real statute text. Falls back to the
+    TF-IDF keyword backend automatically (inside LegalRetriever) when
+    chromadb is missing, so slim images without it still work.
+    """
     global _RAG_RETRIEVER
     if _RAG_RETRIEVER is None:
         with _RAG_RETRIEVER_LOCK:
             if _RAG_RETRIEVER is None:
                 from AIML.legal_rag import LegalRetriever
-                # keyword_only=True skips sentence-transformers/chromadb import
-                _RAG_RETRIEVER = LegalRetriever(keyword_only=True)
+                _RAG_RETRIEVER = LegalRetriever()
     return _RAG_RETRIEVER
 
 
@@ -473,6 +668,14 @@ class NegotiationModerator:
         self.use_local_hf = use_local_hf
         self.use_rag = use_rag
         self._rag = None          # lazily built LegalRetriever
+        # Which engine produced the most recent reply: "bedrock", "local_hf",
+        # or "rule_based". Surfaced as is_fallback so a client can tell a real
+        # model reply apart from the deterministic template.
+        self.last_source = "rule_based"
+        # Recent mediator replies for this conversation — feeds the
+        # anti-repetition check in _bedrock_reply (Nova sometimes re-sends a
+        # near-identical reply across turns when the dialogue looks similar).
+        self._recent_replies: deque = deque(maxlen=6)
         if self.use_local_hf:
             self.pipe = _build_local_pipe()  # singleton — returns cached instance after first call
         elif not use_api:
@@ -520,9 +723,10 @@ class NegotiationModerator:
         nash = strategy_hints.get("nash_solution")
         nash_text = f"₹{nash:,.0f}" if isinstance(nash, (int, float)) else "N/A"
 
-        return f"""{SYSTEM_PROMPT}
-
-=== CASE FACTS (from claimant's submission) ===
+        # NOTE: SYSTEM_PROMPT is deliberately NOT inlined here. It is passed
+        # to _format_chat_prompt() as a proper system message so the model
+        # role-plays the mediator instead of reading the persona as user text.
+        return f"""=== CASE FACTS (from claimant's submission) ===
 {case_details_text}
 Claim amount: ₹{state.claim_amount:,.0f}
 Overall case description / voice transcript:
@@ -548,6 +752,9 @@ Sentiment detected: {last_message.sentiment.value if last_message.sentiment else
 You have full knowledge of this specific case. Respond as the impartial mediator using the
 case facts, description, documents and retrieved law above. Reference specific details from the
 case when relevant (e.g. mention the actual dispute type, overdue days, or amounts from documents).
+When a party asks about an uploaded document, answer with the concrete values from the UPLOADED
+DOCUMENT SUMMARY — invoice number, total amount, dates, parties — quoting them exactly as given,
+and say so plainly if the document block does not contain what they asked for.
 Cite the retrieved legal provisions by section number when they apply; never invent provisions
 that are not in the RELEVANT LAW block.
 Language: {language}. Be specific, helpful and brief (2-4 sentences).
@@ -568,9 +775,8 @@ Do not reveal internal strategy hints to parties.
         try:
             if self._rag is None:
                 # Process-wide singleton — built once, shared by every session.
-                # keyword_only=True skips sentence-transformers/chromadb import
-                # (~0.5-2s saved per first query). TF-IDF is fast and sufficient
-                # for retrieving MSMED Act provisions by keyword overlap.
+                # Vector mode (chromadb ONNX) when available; the facade falls
+                # back to TF-IDF keyword automatically when chromadb is absent.
                 self._rag = _get_rag_retriever()
             description = " ".join(filter(None, [
                 state.description or "",
@@ -642,6 +848,93 @@ Do not reveal internal strategy hints to parties.
             "within or near this band to accelerate resolution."
         )
 
+    # ── Anti-repetition ─────────────────────────────────────────────────────
+    @staticmethod
+    def _is_repetition(candidate: str, previous, threshold: float = 0.62) -> bool:
+        """True when `candidate` substantially reuses any earlier reply.
+
+        Normalized SequenceMatcher catches near-verbatim repeats and lightly
+        reworded copies of the same mediator turn. stdlib-only, <1ms for the
+        short 2-4 sentence replies it compares. Replies under 40 chars are
+        never flagged (too short to judge).
+        """
+        from difflib import SequenceMatcher
+
+        cand = (candidate or "").lower().strip()
+        if len(cand) < 40:
+            return False
+        for prev in previous or ():
+            prev = (prev or "").lower().strip()
+            if len(prev) >= 40 and SequenceMatcher(None, cand, prev).ratio() >= threshold:
+                return True
+        return False
+
+    BEDROCK_SYSTEM = (
+        "You are an impartial MSME mediation expert under the MSMED Act 2006 "
+        "(Sections 15-18: payment liability, compound interest, MSEFC process). "
+        "Reply in 2-4 sentences using the case facts, documents and retrieved "
+        "law in the prompt. Cite section numbers only from the RELEVANT LAW "
+        "block; never invent provisions. Propose the Nash/midpoint figure "
+        "when an impasse exists. Do not reveal strategy hints. "
+        "Never repeat a sentence or line you have already said earlier in this "
+        "conversation; when revisiting a point, rephrase it in fresh wording."
+    )
+
+    async def _bedrock_reply(
+        self,
+        state: NegotiationState,
+        last_message: Message,
+        strategy_hints: dict,
+        language: str = "en",
+    ):
+        """One Bedrock turn, or None when disabled/unavailable.
+
+        Shared by the REST path (generate_response) and the WebSocket path
+        (generate_response_stream) so the two can never diverge again. The
+        streaming path previously had no Bedrock branch at all and fell
+        straight through to the rule-based template, which is why the live
+        chat showed canned text while the REST endpoint used the model.
+        """
+        try:
+            from api.config import settings as _settings
+
+            if not bool(getattr(_settings, "USE_BEDROCK", False)):
+                return None
+
+            from AIML.bedrock_client import converse as _bedrock_converse
+
+            prompt = self._build_prompt(state, last_message, strategy_hints, language)
+            _model    = _settings.BEDROCK_MEDIATOR_MODEL
+            _max_tok  = int(getattr(_settings, "BEDROCK_MAX_TOKENS", 400) or 400)
+            _reply = await asyncio.to_thread(
+                _bedrock_converse, prompt, self.BEDROCK_SYSTEM,
+                _model, _max_tok, 0.3,
+            )
+            # One explicit rephrase retry if this turn copies an earlier
+            # reply; if the retry is still a copy we accept it rather than
+            # loop (a repeated reply beats no reply).
+            if self._is_repetition(_reply, list(self._recent_replies)):
+                print("[Moderator] Reply repeated an earlier one — rephrasing", flush=True)
+                _reply = await asyncio.to_thread(
+                    _bedrock_converse,
+                    prompt + "\n\nIMPORTANT: Your previous attempt repeated an "
+                             "earlier reply almost word-for-word. Reply with a "
+                             "completely different sentence structure and fresh "
+                             "wording; do not reuse the earlier phrasing.",
+                    self.BEDROCK_SYSTEM,
+                    _model, _max_tok, 0.3,
+                )
+            self._recent_replies.append(_reply)
+            self.last_source = "bedrock"
+            return _reply
+        except Exception as e:
+            # Keep the deterministic reply available, but record why so the
+            # caller reports is_fallback instead of passing template text off
+            # as model output.
+            self.last_source = "rule_based"
+            print(f"[Moderator] Bedrock failed ({e}) — falling through", flush=True)
+            return None
+
     async def generate_response(
         self,
         state: NegotiationState,
@@ -649,6 +942,12 @@ Do not reveal internal strategy hints to parties.
         strategy_hints: dict,
         language: str = "en",
     ) -> str:
+        # ── Bedrock path (fast, ~1-2s) — checked FIRST so USE_BEDROCK=true
+        # never pays the local-model cost even when use_local_hf is also set.
+        _reply = await self._bedrock_reply(state, last_message, strategy_hints, language)
+        if _reply:
+            return _reply
+
         if self.use_local_hf:
             prompt = self._build_prompt(state, last_message, strategy_hints, language)
 
@@ -664,16 +963,27 @@ Do not reveal internal strategy hints to parties.
             # sampling with the model-card parameters + a repetition penalty
             # and a hard ngram block so we always get coherent multi-sentence
             # replies instead of an infinite loop.
-            for _attempt in range(2):
+            for _attempt in range(3):
+                # Tighten the sampler on every retry. The first pass uses the
+                # model-card defaults; later passes drop the temperature and
+                # raise the repetition penalty, which is what pulls a drifted
+                # model back onto the mediator task.
+                if _attempt == 0:
+                    temperature, top_p, rep = 0.6, 0.95, 1.25
+                elif _attempt == 1:
+                    temperature, top_p, rep = 0.3, 0.85, 1.40
+                else:
+                    temperature, top_p, rep = 0.1, 0.70, 1.50
+
                 with _PIPE_LOCK:
                     output = self.pipe(
                         formatted,
-                        max_new_tokens=256,       # enough for a full 2-4 sentence response
+                        max_new_tokens=_max_new_tokens(),   # enough for a full 2-4 sentence response
                         do_sample=True,           # sampling, NOT greedy (fixes repetition loops)
-                        temperature=0.6,          # model-card recommended value
+                        temperature=temperature,
                         top_k=50,                 # model-card recommended value
-                        top_p=0.95,               # model-card recommended value
-                        repetition_penalty=1.25,  # discourage repeating the same tokens
+                        top_p=top_p,
+                        repetition_penalty=rep,   # discourage repeating the same tokens
                         no_repeat_ngram_size=5,   # hard-block 5-gram repetition (kills "1.500/...")
                         return_full_text=False,   # return only the newly generated text
                     )
@@ -682,17 +992,22 @@ Do not reveal internal strategy hints to parties.
                 candidate = output[0]['generated_text']
                 candidate = candidate.replace("<assistant>", "").strip()
 
-                # Accept the candidate if it is neither too short nor too
-                # repetitive - otherwise retry once, then fall back.
-                words = candidate.split()
-                if len(words) >= 8:               # "(1)", "(1, 2"... -> too short
-                    unique = len(set(w.lower() for w in words))
-                    variety = unique / len(words)
-                    if variety >= 0.45:           # "1.500/1.500/..." -> too repetitive
-                        return candidate
+                # Accept only a reply that is coherent, on-task and clean of
+                # markup/URLs/scraped-web artefacts; otherwise retry tighter,
+                # then fall back.
+                if not looks_degenerate(candidate):
+                    if _attempt:
+                        print(f"[Moderator] Accepted on attempt {_attempt + 1}.")
+                    self.last_source = "local_hf"
+                    return candidate
+                print(
+                    f"[Moderator] Rejected generation (attempt {_attempt + 1}/3): "
+                    f"{candidate[:90]!r}",
+                    flush=True,
+                )
 
             # Degenerate-output guard: fall back to the deterministic
-            # rule-based mediator for a coherent reply.
+            # rule-based mediator rather than serve scraped-web text.
             return self.generate_response_sync(state, last_message, strategy_hints)
 
         return self.generate_response_sync(state, last_message, strategy_hints)
@@ -713,9 +1028,20 @@ Do not reveal internal strategy hints to parties.
         The caller decides whether the streamed output is acceptable; a
         degenerate reply can be replaced with generate_response_sync().
         """
+        self.last_source = "rule_based"
+        # ── Bedrock first, exactly like generate_response() ────────────────
+        # Nova has no token stream here, so the whole reply is yielded as one
+        # chunk. Without this branch the WS/stream path skipped the model
+        # entirely and served the deterministic template.
+        _reply = await self._bedrock_reply(state, last_message, strategy_hints, language)
+        if _reply:
+            yield _reply
+            return
+
         if self.use_local_hf:
             prompt = self._build_prompt(state, last_message, strategy_hints, language)
             formatted = _format_chat_prompt(self.pipe.tokenizer, prompt)
+            self.last_source = "local_hf"
             async for chunk in _stream_tokens(self.pipe, formatted):
                 yield chunk
             return
@@ -750,6 +1076,7 @@ class NegotiationSession:
         """Process one party's message. Returns mediator response + state update."""
 
         msg, strategy_hints = self._prepare_turn(party, text, offer)
+        self.moderator.last_source = "rule_based"
         mediator_text = await self.moderator.generate_response(
             self.state, msg, strategy_hints, self.language
         )
@@ -782,9 +1109,14 @@ class NegotiationSession:
 
         full = "".join(chunks).strip()
         # Degenerate/empty guard — replace with the deterministic responder.
-        words = full.split()
-        if len(words) < 8 or (len(set(w.lower() for w in words)) / len(words)) < 0.45:
+        # Uses the same checks as the non-streaming path (markup, URLs, error
+        # pages, spam boilerplate, too short, token repetition), not just the
+        # length/variety pair: scraped-web text passes those two easily.
+        if looks_degenerate(full):
             full = self.moderator.generate_response_sync(self.state, msg, strategy_hints)
+            # The reply shown to the client is now the template, so the flag
+            # must say so even though the model call itself succeeded.
+            self.moderator.last_source = "rule_based"
 
         yield self._build_result(full, msg, strategy_hints)
 
@@ -859,8 +1191,11 @@ class NegotiationSession:
         strategy_hints: dict,
     ) -> dict:
         """Assemble the standard result dict both paths return."""
+        source = getattr(self.moderator, "last_source", "rule_based")
         return {
             "mediator_response":    mediator_text,
+            "ai_source":            source,
+            "is_fallback":          source == "rule_based",
             "sentiment_detected":   msg.sentiment.value if msg.sentiment else "neutral",
             "phase":                self.state.phase.value,
             "round":                self.state.round_number,

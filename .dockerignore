@@ -35,3 +35,44 @@ output/
 *.ckpt
 *.bin
 models/*.bin
+
+# Heavy local-only dirs that must NOT be sent as build context
+# (the image only needs api/, AIML/, models/, data/legal, data/chroma)
+frontend/
+Kotlin/
+uploads/
+test_uploads/
+data/samples/
+research_Paper/
+scripts/
+tests/
+docs/
+output/
+
+# Logs, scratch files, local DBs — never in the image
+*.log
+*.txt
+!requirements_deploy.txt
+cv_out.txt
+design.html
+fix.md
+status.md
+WORKDONE.md
+RAG.md
+FINE_TUNE.md
+DATA_SOURCES.md
+BUILD_PROMPT.md
+CHANGES_AND_SETUP_GUIDE.md
+DESIGN.md
+NegotiateAI_Diagnostic_Audit.md
+importantfile.md
+information.md
+phases.md
+script.md
+AGENTS.md
+README.md
+demo_phase2.py
+download_indictrans2.py
+verify-deploy.sh
+start.sh
+railway.toml

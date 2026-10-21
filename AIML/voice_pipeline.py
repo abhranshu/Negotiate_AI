@@ -16,18 +16,17 @@ Data sources:
 
 import re
 import json
-import torch
-import spacy
-import whisper
 import numpy as np
 from dataclasses import dataclass, field, asdict
 from typing import Optional
-from transformers import (
-    AutoTokenizer,
-    AutoModelForTokenClassification,
-    pipeline as hf_pipeline,
-)
-from translation_service import get_translator
+
+# Heavy imports (torch, whisper, transformers, spacy model) are lazy — see
+# LegalNER/IndianASR below. Bedrock path never touches them, so slim images
+# without the ~2GB ML stack still import this module fine.
+try:
+    import spacy
+except ModuleNotFoundError:
+    spacy = None
 
 
 # ─── Data classes ────────────────────────────────────────────────────────────
@@ -68,6 +67,15 @@ class IndianASR:
     """
 
     def __init__(self, model_size: str = "medium"):
+        try:
+            import torch
+            import whisper
+        except ModuleNotFoundError as e:
+            raise RuntimeError(
+                "IndianASR needs torch+openai-whisper, which are not installed "
+                f"on the slim Bedrock image ({e}). Use the /voice offline path "
+                "or install the full ML stack."
+            )
         print(f"[ASR] Loading Whisper {model_size}...")
         self.model = whisper.load_model(model_size)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -134,6 +142,15 @@ class LegalNER:
 
     def __init__(self, model_name: str = "dslim/bert-base-NER"):
         print(f"[NER] Loading NER model: {model_name}")
+        try:
+            import torch
+            from transformers import pipeline as hf_pipeline
+        except ModuleNotFoundError as e:
+            raise RuntimeError(
+                "LegalNER needs torch+transformers, which are not installed "
+                f"on the slim Bedrock image ({e}). Use Bedrock review or "
+                "install the full ML stack."
+            )
         self.ner_pipeline = hf_pipeline(
             "ner",
             model=model_name,
@@ -201,6 +218,24 @@ class LegalNER:
         best = max(scores, key=scores.get)
         total = sum(scores.values()) or 1
         return best, scores[best] / total
+
+
+# ─── Process-wide NER cache ───────────────────────────────────────────────────
+
+def get_legal_ner(model_name: str = "dslim/bert-base-NER") -> LegalNER:
+    """Return the shared LegalNER pipeline for `model_name`.
+
+    Constructing LegalNER loads a BERT tokenisation/classification pipeline.
+    The voice route did that on every audio upload; it now happens once per
+    process. LegalNER.extract() only reads the pipeline, so sharing is safe.
+    """
+    from api.cache import ML_MODEL_CACHE
+
+    return ML_MODEL_CACHE.get_or_create(
+        ("legal_ner", model_name),
+        lambda: LegalNER(model_name=model_name),
+        ttl=None,
+    )
 
 
 # ─── Main pipeline ────────────────────────────────────────────────────────────

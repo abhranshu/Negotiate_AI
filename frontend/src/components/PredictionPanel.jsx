@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt, pct, confColor } from '../theme';
-import { Badge, Spinner, Alert, EmptyState } from './UI';
+import { Badge, Alert, Button } from './UI';
 
 const FACTOR_INSIGHTS = {
   claim_amount_inr:       { icon: '💰', desc: 'Higher claim amounts tend to lower settlement odds' },
@@ -209,23 +209,16 @@ export default function PredictionPanel({ caseData, onUpdate, onNavigateToNegoti
           </div>
         )}
 
-        <button
-          style={{
-            ...css.btn,
-            marginTop: 14,
-            padding: '10px 24px',
-            fontSize: 13,
-            background: '#3B82F6',
-            color: '#fff',
-            boxShadow: '0 2px 8px rgba(59,130,246,0.25)',
-          }}
+        <Button
+          variant="accent"
+          loading={loading}
           onClick={runPrediction}
-          disabled={loading}
+          style={{ marginTop: 14 }}
         >
           {loading
-            ? <><Spinner /> Training model if needed & running prediction...</>
+            ? 'Training model if needed & running prediction…'
             : hasPrediction ? 'Re-run Prediction' : 'Run ML Prediction'}
-        </button>
+        </Button>
         {loading && (
           <div style={{
             fontSize: 11, color: 'var(--text-secondary)',
@@ -242,7 +235,7 @@ export default function PredictionPanel({ caseData, onUpdate, onNavigateToNegoti
       {(hasPrediction || hasRun) && probability != null && (
         <>
           {/* Main metrics */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="grid-cols-2" style={{ display: 'grid', gap: 16 }}>
             <div style={{
               background: 'var(--surface-container-lowest)',
               border: '1px solid var(--border)',
@@ -284,11 +277,7 @@ export default function PredictionPanel({ caseData, onUpdate, onNavigateToNegoti
               }}>
                 Prediction Summary
               </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 10,
-              }}>
+              <div className="grid-cols-2" style={{ display: 'grid', gap: 10 }}>
                 {[
                   { label: 'Range Low',       value: fmt(rangeLow),    color: '#10B981' },
                   { label: 'Range High',      value: fmt(rangeHigh),   color: '#06B6D4' },
@@ -456,18 +445,9 @@ export default function PredictionPanel({ caseData, onUpdate, onNavigateToNegoti
                 Use these predictions to enter the AI-mediated negotiation room
               </div>
             </div>
-            <button
-              style={{
-                ...css.btn,
-                background: '#3B82F6',
-                color: '#fff',
-                padding: '10px 20px',
-                boxShadow: '0 2px 8px rgba(59,130,246,0.25)',
-              }}
-              onClick={onNavigateToNegotiate}
-            >
+            <Button variant="accent" onClick={onNavigateToNegotiate}>
               Go to Negotiation →
-            </button>
+            </Button>
           </div>
         </>
       )}

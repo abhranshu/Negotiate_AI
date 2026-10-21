@@ -37,10 +37,43 @@ class Settings(BaseSettings):
     # The low-resource VM deploy uses USE_LOCAL_MODEL=false (rule-based).
     USE_LOCAL_MODEL: bool = False
     # HuggingFace model id loaded when USE_LOCAL_MODEL=true.
-    LOCAL_MODEL_ID: str = "Qwen/Qwen2.5-3B-Instruct"
-    # int8-dynamic-quantize the model on CPU (~2-3x faster, ~60% less memory).
-    # Applied on CPU only; ignored on CUDA (fp16 already wins).
-    LOCAL_MODEL_QUANTIZE: bool = True
+    LOCAL_MODEL_ID: str = "Qwen/Qwen2.5-1.5B-Instruct"
+    # int8-dynamic-quantize the model on CPU.
+    #
+    # MEASURED: leave this FALSE. On Qwen2.5-1.5B-Instruct with the mediator
+    # prompt (same seed-independent sampling settings), the int8 path produced
+    # incoherent scraped-web text in 4/4 runs and took 140-155s per 96 tokens,
+    # while the unquantized bf16 path produced a coherent mediator reply in
+    # 34s on the identical prompt. int8 here costs quality *and* speed, and
+    # loading fp32 first (required, since the oneDNN int8 op rejects bf16
+    # input) peaks at ~9.2 GB — which OOM-killed the container. bf16 loads in
+    # ~3 GB, so the default path also fixes the crash-loop.
+    # Only re-enable if you re-measure on your target CPU.
+    # Applied on CPU only; ignored on CUDA (fp16 already wins there).
+    LOCAL_MODEL_QUANTIZE: bool = False
+    # Where the local model runs: auto | cuda | cpu.
+    #   auto — GPU when CUDA is available. accelerate spills whatever does not
+    #          fit in VRAM to CPU, which keeps working but is much slower.
+    #   cuda — GPU only. Fails loudly instead of silently spilling to CPU, so you
+    #          never have to guess whether the GPU is actually being used.
+    #   cpu  — ignore the GPU entirely (int8 quantized, see LOCAL_MODEL_QUANTIZE).
+    LOCAL_MODEL_DEVICE: str = "auto"
+    # Cap on generated tokens per mediator turn. The system prompt asks for 2-4
+    # sentences, so a bigger cap only lengthens the worst-case wait — and with
+    # any layers spilled to CPU that wait is what makes the chat look hung.
+    LOCAL_MODEL_MAX_NEW_TOKENS: int = 128
+
+    # ── AWS Bedrock (Nova Micro default) ─────────────────────────────────────
+    # USE_BEDROCK=true routes the mediator + document review through Bedrock
+    # (fast, ~1-2s) instead of the local HF model (slow on CPU, 30-150s).
+    # Model IDs are inference-profile safe: "amazon.nova-micro-v1:0" works
+    # today; swap to "us.anthropic.claude-haiku-4-5-20251001-v1:0" via env
+    # once Anthropic Marketplace access is enabled on the account.
+    USE_BEDROCK: bool = False
+    AWS_REGION_BEDROCK: str = "us-east-1"
+    BEDROCK_MEDIATOR_MODEL: str = "amazon.nova-micro-v1:0"
+    BEDROCK_DOC_MODEL: str = "amazon.nova-micro-v1:0"
+    BEDROCK_MAX_TOKENS: int = 400
 
     # ── Auth ───────────────────────────────────────────────────────────────────
     # WARNING: the default below is a fake dev-only value. Set SECRET_KEY in
@@ -86,6 +119,19 @@ class Settings(BaseSettings):
     # In-memory session cache is fine for this single-VM deploy; keep the cap
     # conservative so RAM is left for uvicorn + Postgres client.
     NEGOTIATION_SESSION_CACHE_MAX: int = 50
+
+    # ── Caching ────────────────────────────────────────────────────────────────
+    # Each authenticated request normally does one `SELECT` of the user row, and
+    # in the deployed setup the database is remote (Supabase pooler), so that is
+    # a full network round-trip per request. Cache the row for this many seconds.
+    #
+    # This is user-specific data, so the TTL is deliberately short and any
+    # endpoint that writes a user row must call api.auth.invalidate_user_cache().
+    # Set to 0 to disable the cache entirely (every request hits the DB).
+    AUTH_USER_CACHE_TTL_SECONDS: float = 60.0
+    # Hard cap on cached user rows. When full, expired entries are dropped
+    # first, then the oldest-inserted entry.
+    AUTH_USER_CACHE_MAX: int = 512
 
 
 settings = Settings()

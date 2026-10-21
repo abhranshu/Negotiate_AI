@@ -1,0 +1,9 @@
+# CRA build output — deploy artifacts, not source
+/build
+# Local env overrides that may contain machine-specific values
+.env.local
+.env.development.local
+.env.production.local
+# Dependencies / caches
+/node_modules
+/.cache

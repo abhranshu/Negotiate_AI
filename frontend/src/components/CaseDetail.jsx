@@ -1,10 +1,36 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt } from '../theme';
-import { Badge, Spinner, Alert, EmptyState, Tab } from './UI';
-import PredictionPanel from './PredictionPanel';
-import NegotiationChat from './NegotiationChat';
-import SettlementPanel from './SettlementPanel';
+import { Badge, Spinner, Alert, Tab, Button, Skeleton, SkeletonCard } from './UI';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
+
+// ── Tab-level code splitting ──────────────────────────────────────────────────
+// The three heavy panels (ML prediction + SHAP charts, the negotiation room with
+// its WebSocket, the settlement generator) are each their own chunk. A user who
+// only reads the overview never downloads any of them.
+const PredictionPanel = lazy(() => import('./PredictionPanel'));
+const NegotiationChat = lazy(() => import('./NegotiationChat'));
+const SettlementPanel = lazy(() => import('./SettlementPanel'));
+
+function PanelFallback() {
+  return (
+    <div style={{ textAlign: 'center', padding: 60 }}>
+      <div style={{
+        width: 24, height: 24, margin: '0 auto 12px',
+        border: '3px solid var(--border)',
+        borderTopColor: 'var(--primary)',
+        borderRadius: '50%',
+        animation: 'spin 0.7s linear infinite',
+      }} />
+      <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+        Loading module…
+      </div>
+    </div>
+  );
+}
+
+// Pause length before the dispute description is autosaved while typing.
+const TRANSCRIPT_AUTOSAVE_MS = 800;
 
 const STATUS_COLORS = {
   draft:       '#6F7979',
@@ -70,7 +96,7 @@ const OverviewTab = React.memo(function OverviewTab({ c, docs, onRefresh }) {
   return (
     <div>
       {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="grid-cols-3" style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
         {stats.map(s => <InfoCard key={s.label} {...s} />)}
       </div>
 
@@ -160,7 +186,7 @@ const OverviewTab = React.memo(function OverviewTab({ c, docs, onRefresh }) {
           }}>
             Quick Prediction Summary
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          <div className="grid-cols-3" style={{ display: 'grid', gap: 12 }}>
             <div style={{
               textAlign: 'center', padding: '12px 8px',
               background: 'var(--surface)',
@@ -231,22 +257,32 @@ const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
   const [loadingD, setLoadingD]       = useState(false);
   const [err, setErr]                 = useState('');
   const recognitionRef = useRef(null);
+  // Set while the textarea has focus: the save refreshes the case, and that
+  // refresh must not overwrite what is currently being typed.
+  const transcriptEditingRef = useRef(false);
 
-  useEffect(() => { setVoiceTranscript(c.description || ''); }, [c.description]);
+  useEffect(() => {
+    if (!transcriptEditingRef.current) setVoiceTranscript(c.description || '');
+  }, [c.description]);
 
-  const saveTranscript = useCallback(async (text) => {
+  const saveTranscript = useCallback(async (text, { silent = false } = {}) => {
     const cleaned = text.trim();
     if (!cleaned) return;
     setSavingDesc(true);
     try {
       await API.patch('/api/cases/' + c.id + '/description', { description: cleaned });
-      onRefresh();
+      // Silent: a background autosave shouldn't flip CaseDetail into its
+      // loading state, which would tear this tab down mid-edit.
+      onRefresh({ silent });
     } catch (e) {
       setErr(getApiError(e, 'Could not save transcript'));
     } finally {
       setSavingDesc(false);
     }
   }, [c.id, onRefresh]);
+
+  const { debounced: autosaveTranscript, flush: flushTranscript } =
+    useDebouncedCallback((text) => saveTranscript(text, { silent: true }), TRANSCRIPT_AUTOSAVE_MS);
 
   const toggleDictation = () => {
     setErr('');
@@ -347,39 +383,23 @@ const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
         </p>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{
-            ...css.btnGhost,
-            color: 'var(--text-secondary)',
-            borderColor: 'var(--border)',
-          }}>
+          <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
             {voiceFile ? '✓ ' + voiceFile.name : 'Choose Audio File'}
-            <input type="file" accept="audio/*" style={{ display: 'none' }}
+            <input type="file" accept="audio/*" className="visually-hidden"
               onChange={e => setVoiceFile(e.target.files[0])} />
           </label>
           <button
-            style={{
-              ...css.btnGhost,
-              background: listening ? 'rgba(245,158,11,0.1)' : 'var(--surface)',
-              color: listening ? '#D97706' : 'var(--text-secondary)',
-              borderColor: listening ? '#D97706' : 'var(--border)',
-            }}
+            type="button"
+            className={listening ? 'btn btn-secondary' : 'btn btn-ghost'}
+            aria-pressed={listening}
+            style={listening ? { borderColor: 'var(--warning)', color: 'var(--warning)' } : undefined}
             onClick={toggleDictation}
           >
             {listening ? '⏹ Stop Dictation' : '🎙️ Dictate Description'}
           </button>
-          <button
-            style={{
-              ...css.btn,
-              background: 'var(--primary)',
-              color: 'var(--on-primary)',
-              boxShadow: '0 2px 8px rgba(0,102,102,0.25)',
-            }}
-            onClick={uploadVoice}
-            disabled={!voiceFile || loadingV}
-          >
-            {loadingV && <Spinner />}
-            {loadingV ? 'Processing...' : 'Process Voice'}
-          </button>
+          <Button variant="primary" onClick={uploadVoice} loading={loadingV} disabled={!voiceFile}>
+            {loadingV ? 'Processing…' : 'Process Voice'}
+          </Button>
         </div>
 
         <div style={{ marginTop: 16 }}>
@@ -393,8 +413,15 @@ const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
             }}
             value={voiceTranscript}
             placeholder="Speak into the mic and the description will appear here..."
-            onChange={e => setVoiceTranscript(e.target.value)}
-            onBlur={() => saveTranscript(voiceTranscript)}
+            onChange={e => {
+              setVoiceTranscript(e.target.value);
+              autosaveTranscript(e.target.value);
+            }}
+            onFocus={() => { transcriptEditingRef.current = true; }}
+            onBlur={() => {
+              transcriptEditingRef.current = false;
+              flushTranscript();
+            }}
           />
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -403,20 +430,14 @@ const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
             <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
               {savingDesc ? 'Saving transcript...' : 'Edit the transcript before saving.'}
             </div>
-            <button
-              style={{
-                ...css.btnGhost,
-                background: 'var(--surface)',
-                color: 'var(--primary)',
-                borderColor: 'var(--primary)',
-                fontSize: 12,
-                padding: '8px 14px',
-              }}
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={savingDesc}
               onClick={() => saveTranscript(voiceTranscript)}
-              disabled={savingDesc}
             >
-              {savingDesc ? 'Saving...' : 'Save Description'}
-            </button>
+              {savingDesc ? 'Saving…' : 'Save Description'}
+            </Button>
           </div>
         </div>
 
@@ -427,11 +448,7 @@ const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
             }}>
               ✓ Voice Processing Complete
             </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 8,
-            }}>
+            <div className="grid-cols-2" style={{ display: 'grid', gap: 8 }}>
               {Object.entries(voiceResult).map(([k, v]) => (
                 v && v !== '' && (
                   <div key={k} style={{
@@ -482,29 +499,15 @@ const DocsVoiceTab = React.memo(function DocsVoiceTab({ c, docs, onRefresh }) {
         </p>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{
-            ...css.btnGhost,
-            color: 'var(--text-secondary)',
-            borderColor: 'var(--border)',
-          }}>
+          <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
             {docFiles.length ? '✓ ' + docFiles.length + ' file(s) selected' : 'Choose Documents'}
             <input type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-              style={{ display: 'none' }}
+              className="visually-hidden"
               onChange={e => setDocFiles(Array.from(e.target.files))} />
           </label>
-          <button
-            style={{
-              ...css.btn,
-              background: '#3B82F6',
-              color: '#fff',
-              boxShadow: '0 2px 8px rgba(59,130,246,0.25)',
-            }}
-            onClick={uploadDocs}
-            disabled={!docFiles.length || loadingD}
-          >
-            {loadingD && <Spinner />}
-            {loadingD ? 'Uploading...' : 'Upload & Analyse'}
-          </button>
+          <Button variant="accent" onClick={uploadDocs} loading={loadingD} disabled={!docFiles.length}>
+            {loadingD ? 'Uploading…' : 'Upload & Analyse'}
+          </Button>
         </div>
 
         {docs.length > 0 && (
@@ -586,38 +589,101 @@ const CASE_TABS = [
 ];
 
 /* ─── Main CaseDetail ── */
-export default function CaseDetail({ caseData, onBack, onUpdate }) {
+function CaseDetail({ caseData, onBack, onUpdate }) {
   const [c, setC]         = useState(caseData);
   const [docs, setDocs]   = useState([]);
   const [tab, setTab]     = useState('overview');
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const onUpdateRef        = useRef(onUpdate);
   onUpdateRef.current = onUpdate;
+  // Mirror of `c`, readable outside a setState updater.
+  const cRef               = useRef(caseData);
+  const loadedOnceRef      = useRef(false);
+
+  // Tabs are mounted when first opened and then kept mounted, so tabbing away
+  // and back no longer rebuilds the panel or throws away its state (chat
+  // history, uploaded files, prediction result). Inactive panels stay in the
+  // DOM but are hidden — for the negotiation room that also keeps its
+  // WebSocket alive while the user looks at another tab.
+  const [visitedTabs, setVisitedTabs] = useState(() => new Set([tab]));
+
+  useEffect(() => {
+    setVisitedTabs(prev => (prev.has(tab) ? prev : new Set(prev).add(tab)));
+  }, [tab]);
+
+  // The active tab is mounted in the same pass it is selected (no blank frame
+  // before the effect above commits).
+  const isTabMounted = (key) => key === tab || visitedTabs.has(key);
+
+  // Inactive panels are display:none'd rather than unmounted. The fade-in is
+  // re-added on each switch because the element itself never remounts, so a
+  // changing `key` can no longer replay it.
+  const panelStyle = (key) => ({
+    display: tab === key ? 'block' : 'none',
+    animation: tab === key ? 'fadeInUp 0.3s ease-out both' : 'none',
+  });
 
   // When local c state changes, notify parent so AppShell's selectedCase stays in sync.
+  // Computed outside the updater so the updater stays pure (React may call it twice
+  // in StrictMode) and so the parent only re-renders once per change.
   const setCAndNotify = useCallback((patch) => {
-    setC(prev => {
-      const next = typeof patch === 'function' ? patch(prev) : { ...prev, ...patch };
-      onUpdateRef.current(prev => ({ ...prev, ...next }));
-      return next;
-    });
+    const prev = cRef.current;
+    const next = typeof patch === 'function' ? patch(prev) : { ...prev, ...patch };
+    cRef.current = next;
+    setC(next);
+    onUpdateRef.current(prev => ({ ...prev, ...next }));
   }, []);
 
-  const refreshCase = useCallback(async () => {
-    setLoading(true);
+  const refreshCase = useCallback(async ({ silent = false } = {}) => {
+    // Only the very first load blocks the view — it has nothing to show yet.
+    // Every later refresh updates the data in place: swapping the tab area for
+    // a spinner would unmount all the mounted panels above and defeat the
+    // whole point of keeping them alive.
+    const blocking = !silent && !loadedOnceRef.current;
+    if (blocking) setLoading(true);
+    else if (!silent) setRefreshing(true);
     try {
       const [cr, dr] = await Promise.all([
         API.get('/api/cases/' + caseData.id),
         API.get('/api/cases/' + caseData.id + '/documents'),
       ]);
+      cRef.current = cr.data;
       setC(cr.data);
       setDocs(dr.data);
       onUpdateRef.current(prev => ({ ...prev, ...cr.data }));
+      loadedOnceRef.current = true;
     } catch { /* silent */ }
-    finally { setLoading(false); }
+    finally {
+      if (blocking) setLoading(false);
+      if (!silent) setRefreshing(false);
+    }
   }, [caseData.id]);
 
   useEffect(() => { refreshCase(); }, [refreshCase]);
+
+  const handleTabSelect = useCallback((key) => setTab(key), []);
+  const handleGoToNegotiate = useCallback(() => setTab('negotiate'), []);
+
+  // Arrow keys move between tabs (WAI-ARIA tabs pattern). Home/End jump to the
+  // first/last tab. Focus follows selection so the keyboard lands on the tab
+  // that is now showing.
+  const handleTabKeys = useCallback((e) => {
+    const i = CASE_TABS.findIndex(t => t.key === tab);
+    let next = null;
+    if (e.key === 'ArrowRight') next = (i + 1) % CASE_TABS.length;
+    else if (e.key === 'ArrowLeft') next = (i - 1 + CASE_TABS.length) % CASE_TABS.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = CASE_TABS.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    const key = CASE_TABS[next].key;
+    setTab(key);
+    requestAnimationFrame(() => {
+      const el = document.getElementById('case-tab-' + key);
+      if (el) el.focus();
+    });
+  }, [tab]);
 
   return (
     <div style={{ animation: 'fadeInUp 0.4s ease-out both' }}>
@@ -626,16 +692,9 @@ export default function CaseDetail({ caseData, onBack, onUpdate }) {
         display: 'flex', alignItems: 'center', gap: 16,
         marginBottom: 20, flexWrap: 'wrap',
       }}>
-        <button
-          style={{
-            ...css.btnGhost,
-            color: 'var(--text-secondary)',
-            borderColor: 'var(--border)',
-          }}
-          onClick={onBack}
-        >
+        <Button variant="ghost" onClick={onBack} className="no-print">
           ← Back to Dashboard
-        </button>
+        </Button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
@@ -670,64 +729,131 @@ export default function CaseDetail({ caseData, onBack, onUpdate }) {
             {fmt(c.claim_amount)} claimed
           </div>
         </div>
-        <button
-          style={{
-            ...css.btnGhost,
-            color: 'var(--text-secondary)',
-            borderColor: 'var(--border)',
-          }}
-          onClick={() => window.print()}
-        >
+        <Button variant="ghost" onClick={() => window.print()} className="no-print">
           🖨️ Print
-        </button>
+        </Button>
       </div>
 
       {/* Tab bar */}
-      <div style={{
-        display: 'flex', gap: 4, marginBottom: 20,
-        background: 'var(--surface)',
-        borderRadius: 8, padding: 4,
-        border: '1px solid var(--border)',
-        overflowX: 'auto',
-      }}>
+      <div
+        role="tablist"
+        aria-label="Case sections"
+        onKeyDown={handleTabKeys}
+        className="case-tabbar no-print"
+        style={{
+          display: 'flex', gap: 4, marginBottom: 20,
+          background: 'var(--surface-container-low)',
+          borderRadius: 8, padding: 4,
+          border: '1px solid var(--border)',
+          overflowX: 'auto',
+        }}
+      >
         {CASE_TABS.map(t => (
           <Tab
             key={t.key}
+            id={'case-tab-' + t.key}
+            panelId={'case-panel-' + t.key}
             active={tab === t.key}
-            onClick={() => setTab(t.key)}
+            value={t.key}
+            onSelect={handleTabSelect}
             label={t.label}
           />
         ))}
+        {refreshing && (
+          <span style={{
+            marginLeft: 'auto', alignSelf: 'center', paddingRight: 8,
+            fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap',
+          }}>
+            Refreshing…
+          </span>
+        )}
       </div>
 
       {/* Tab content */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60 }}>
-          <div style={{
-            width: 24, height: 24, margin: '0 auto 12px',
-            border: '3px solid var(--border)',
-            borderTopColor: 'var(--primary)',
-            borderRadius: '50%',
-            animation: 'spin 0.7s linear infinite',
-          }} />
-          <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-            Loading...
+        /* First load only — later refreshes update in place (see refreshCase),
+           so this skeleton never replaces panels that are already open. */
+        <div aria-busy="true">
+          <div className="grid-cols-3" style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="card" style={{ padding: '16px 18px' }}>
+                <Skeleton width="45%" height={10} style={{ marginBottom: 10 }} />
+                <Skeleton width="70%" height={19} />
+              </div>
+            ))}
           </div>
+          <SkeletonCard lines={3} />
         </div>
       ) : (
-        <div key={tab} style={{ animation: 'fadeInUp 0.3s ease-out both' }}>
-          {tab === 'overview'   && <OverviewTab c={c} docs={docs} onRefresh={refreshCase} />}
-          {tab === 'docs'       && <DocsVoiceTab c={c} docs={docs} onRefresh={refreshCase} />}
-          {tab === 'prediction' && (
-            <PredictionPanel
-              caseData={c} onUpdate={setCAndNotify}
-              onNavigateToNegotiate={() => setTab('negotiate')}
-            />
+        <>
+          {isTabMounted('overview') && (
+            <div
+              role="tabpanel"
+              id="case-panel-overview"
+              aria-labelledby="case-tab-overview"
+              style={panelStyle('overview')}
+            >
+              <OverviewTab c={c} docs={docs} onRefresh={refreshCase} />
+            </div>
           )}
-          {tab === 'negotiate'  && <NegotiationChat caseData={c} onUpdate={setCAndNotify} />}
-          {tab === 'settlement' && <SettlementPanel caseData={c} onUpdate={setCAndNotify} />}
-        </div>
+          {isTabMounted('docs') && (
+            <div
+              role="tabpanel"
+              id="case-panel-docs"
+              aria-labelledby="case-tab-docs"
+              style={panelStyle('docs')}
+            >
+              <DocsVoiceTab c={c} docs={docs} onRefresh={refreshCase} />
+            </div>
+          )}
+          {/* Each lazy panel gets its own Suspense boundary: a shared one would
+              swap the already-visible tab out for a spinner while a newly
+              opened tab's chunk downloads. */}
+          {isTabMounted('prediction') && (
+            <div
+              role="tabpanel"
+              id="case-panel-prediction"
+              aria-labelledby="case-tab-prediction"
+              style={panelStyle('prediction')}
+            >
+              <Suspense fallback={<PanelFallback />}>
+                <PredictionPanel
+                  caseData={c} onUpdate={setCAndNotify}
+                  onNavigateToNegotiate={handleGoToNegotiate}
+                />
+              </Suspense>
+            </div>
+          )}
+          {isTabMounted('negotiate') && (
+            <div
+              role="tabpanel"
+              id="case-panel-negotiate"
+              aria-labelledby="case-tab-negotiate"
+              style={panelStyle('negotiate')}
+            >
+              <Suspense fallback={<PanelFallback />}>
+                <NegotiationChat caseData={c} onUpdate={setCAndNotify} />
+              </Suspense>
+            </div>
+          )}
+          {isTabMounted('settlement') && (
+            <div
+              role="tabpanel"
+              id="case-panel-settlement"
+              aria-labelledby="case-tab-settlement"
+              style={panelStyle('settlement')}
+            >
+              <Suspense fallback={<PanelFallback />}>
+                <SettlementPanel caseData={c} onUpdate={setCAndNotify} />
+              </Suspense>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
+
+// CaseDetail only draws the active tab, but it still re-renders whenever AppShell
+// re-renders (view changes, refreshKey bumps). Memo keeps those out.
+export default React.memo(CaseDetail);

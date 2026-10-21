@@ -8,7 +8,7 @@ from sqlalchemy import (
     Column, String, Float, Integer, Boolean,
     DateTime, ForeignKey, JSON, Enum as SAEnum, Text
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, joinedload, selectinload
 import enum
 
 from api.database import Base
@@ -122,3 +122,21 @@ class Message(Base):
     timestamp  = Column(DateTime, default=datetime.utcnow)
 
     case = relationship("Case", back_populates="messages")
+
+
+# ── Eager-load options for Case queries ───────────────────────────────────────
+# Case relationships default to lazy="select", so reading `case.claimant` or
+# `case.documents` emits its own SELECT at that moment — one per relationship.
+# That is invisible while a request happens to touch the relationship anyway,
+# but it turns into N+1 whenever a loop or a serializer walks the graph, and it
+# fires again after any commit (SQLAlchemy expires loaded instances on commit).
+#
+# Pass these to .options(...) so a request fetches what it needs in one round
+# trip instead. Two different strategies, for two different shapes:
+#   * parties are many-to-one  → joinedload: one JOIN, no row duplication
+#   * documents are one-to-many → selectinload: one extra query, and it does not
+#     repeat the case row (Document.extracted_text is up to 4 KB each, so a
+#     JOIN would multiply that by the number of documents)
+CASE_WITH_PARTIES   = (joinedload(Case.claimant), joinedload(Case.respondent))
+CASE_WITH_DOCUMENTS = (selectinload(Case.documents),)
+CASE_WITH_CONTEXT   = CASE_WITH_PARTIES + CASE_WITH_DOCUMENTS

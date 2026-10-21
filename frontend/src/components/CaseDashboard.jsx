@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import API from '../api';
 import { css, fmt } from '../theme';
-import { Badge, Spinner, EmptyState, Alert } from './UI';
+import { EmptyState, Alert, Button, Badge, Skeleton, SkeletonTableRows } from './UI';
 
 const DISPUTE_ICONS = {
   delayed_payment: '⏰', non_payment: '🚫', short_payment: '📉',
@@ -9,9 +9,9 @@ const DISPUTE_ICONS = {
 };
 const STATUS_COLORS = {
   draft:       '#6F7979',
-  submitted:   '#3B82F6',
-  in_progress: '#F59E0B',
-  agreement:   '#10B981',
+  submitted:   '#1D4ED8',
+  in_progress: '#B45309',
+  agreement:   '#0E9F6E',
   closed:      '#006666',
   escalated:   '#BA1A1A',
 };
@@ -26,12 +26,17 @@ export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateC
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    setLoading(true);
+    // Guest/demo mode has no JWT — don't hit the API, it would 401 and
+    // overwrite the real error state with "Failed to load cases".
+    if (user?.is_guest) { setCases([]); setLoading(false); return; }
+    let cancelled = false;
+    setLoading(true); setErr('');
     API.get('/api/cases')
-      .then(r => setCases(r.data))
-      .catch(() => setErr('Failed to load cases'))
-      .finally(() => setLoading(false));
-  }, [refreshKey]);
+      .then(r => { if (!cancelled) setCases(r.data); })
+      .catch(() => { if (!cancelled) setErr('Failed to load cases'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [refreshKey, user?.is_guest]);
 
   const stats = useMemo(() => [
     { label: 'Total Cases',   value: cases.length,          color: 'var(--primary)' },
@@ -56,126 +61,45 @@ export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateC
             Manage and resolve your MSME payment disputes
           </p>
         </div>
-        <button
-          style={{
-            ...css.btn,
-            background: 'var(--primary)',
-            color: 'var(--on-primary)',
-            padding: '10px 20px',
-            fontSize: 14,
-            boxShadow: '0 2px 8px rgba(0,102,102,0.25)',
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-          }}
-          onClick={onCreateCase}
-        >
-          <span>+</span> New Case
-        </button>
+        <Button variant="primary" onClick={onCreateCase}>
+          <span aria-hidden="true">+</span> New Case
+        </Button>
       </div>
 
-      {/* Stats cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 16,
-        marginBottom: 24
-      }}>
-        {stats.map((s, i) => (
-          <div
-            key={s.label}
-            className="app-card-hover"
-            style={{
-              background: 'var(--surface-container-lowest)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              padding: '20px 16px',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{
-              fontSize: 32, fontWeight: 800,
-              color: s.color,
-              marginBottom: 6,
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              {s.value}
+      {/* Stats cards. While loading these show skeletons rather than zeros:
+          the previous version rendered "0" first and then jumped to the real
+          numbers, which read as wrong data and shifted the layout. */}
+      <div className="grid-cols-4" style={{ display: 'grid', gap: 16, marginBottom: 24 }}>
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="card" style={{ padding: '20px 16px', textAlign: 'center' }}>
+              <Skeleton width={72} height={30} radius="var(--r-sm)" style={{ margin: '0 auto 10px' }} />
+              <Skeleton width={92} height={11} style={{ margin: '0 auto' }} />
             </div>
-            <div style={{
-              fontSize: 12, color: 'var(--text-secondary)',
-              fontWeight: 500, margin: 0
-            }}>
-              {s.label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ML Pipeline status bar */}
-      <div className="app-card-hover"
-        style={{
-          background: 'var(--surface-container-lowest)',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          padding: '16px 20px',
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)',
-          marginBottom: 14, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-          5-Step ML Pipeline
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto' }}>
-          {[
-            { icon: '🎙️', label: 'Voice Input',   desc: 'Whisper ASR + NER' },
-            { icon: '📄',  label: 'Document AI',   desc: 'OCR + DistilBERT' },
-            { icon: '📊',  label: 'Prediction',    desc: 'XGBoost + SHAP' },
-            { icon: '🤝',  label: 'Negotiation',   desc: 'Game Theory + LLM' },
-            { icon: '📜',  label: 'Settlement',    desc: 'MSMED Compliant PDF' },
-          ].map((step, i) => (
-            <React.Fragment key={step.label}>
+          ))
+        ) : (
+          stats.map(s => (
+            <div
+              key={s.label}
+              className="card card-hover"
+              style={{ padding: '20px 16px', textAlign: 'center' }}
+            >
               <div style={{
-                flex: 1,
-                textAlign: 'center',
-                padding: '12px 8px',
-                background: 'var(--surface)',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                minWidth: 100,
+                fontSize: 32, fontWeight: 800, color: s.color,
+                marginBottom: 6, letterSpacing: '-0.02em',
               }}>
-                <div style={{ fontSize: 22, marginBottom: 4 }}>{step.icon}</div>
-                <div style={{
-                  fontSize: 11, fontWeight: 600, color: 'var(--on-surface)',
-                  marginBottom: 2
-                }}>{step.label}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
-                  {step.desc}
-                </div>
+                {s.value}
               </div>
-              {i < 4 && (
-                <div style={{
-                  color: 'var(--border)',
-                  fontSize: 16,
-                  padding: '0 4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  alignSelf: 'center',
-                }}>
-                  →
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                {s.label}
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Cases table */}
-      <div className="app-card-hover"
-        style={{
-          background: 'var(--surface-container-lowest)',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          padding: '20px',
-        }}
-      >
+      <div className="card" style={{ padding: 20 }}>
         <div style={{
           fontSize: 15, fontWeight: 700, marginBottom: 16,
           color: 'var(--on-surface)'
@@ -187,28 +111,24 @@ export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateC
           <Alert msg={err} type="error" />
         )}
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 48 }}>
-            <div style={{
-              width: 24, height: 24, margin: '0 auto 12px',
-              border: '3px solid var(--border)',
-              borderTopColor: 'var(--primary)',
-              borderRadius: '50%',
-              animation: 'spin 0.7s linear infinite',
-            }} />
-            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-              Loading cases...
-            </div>
-          </div>
-        ) : cases.length === 0 ? (
+        {!loading && cases.length === 0 ? (
+          user?.is_guest ? (
+            <EmptyState
+              icon="👋"
+              text="Welcome to the demo"
+              subtext="You're exploring without an account — sign in to load real cases, or create a case to try the AI pipeline."
+            />
+          ) : (
           <EmptyState
             icon="📁"
             text="No cases yet"
             subtext="Create your first dispute case to get started with the AI pipeline"
+            action={<Button variant="primary" onClick={onCreateCase}>Create your first case</Button>}
           />
+          )
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="institutional">
+          <div className="table-wrap">
+            <table className="institutional" aria-busy={loading || undefined}>
               <thead>
                 <tr>
                   <th style={css.tableHead}>Case</th>
@@ -220,12 +140,20 @@ export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateC
                 </tr>
               </thead>
               <tbody>
-                {cases.map(c => (
+                {loading && <SkeletonTableRows rows={4} cols={6} />}
+                {!loading && cases.map(c => (
                   <tr
                     key={c.id}
-                    className="app-card-hover"
-                    style={{ cursor: 'pointer' }}
+                    className="is-clickable"
+                    tabIndex={0}
+                    aria-label={`Open case ${c.case_number || c.id}`}
                     onClick={() => onSelectCase(c)}
+                    onKeyDown={e => {
+                      // Only when the row itself is focused — otherwise the
+                      // nested "Open" button would trigger this a second time.
+                      if (e.target !== e.currentTarget) return;
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCase(c); }
+                    }}
                   >
                     <td style={css.tableCell}>
                       <div style={{ fontWeight: 600, fontSize: 13 }}>
@@ -254,18 +182,10 @@ export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateC
                       </span>
                     </td>
                     <td style={css.tableCell}>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        borderRadius: 100,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        background: (STATUS_COLORS[c.status] || '#6F7979') + '18',
-                        color: STATUS_COLORS[c.status] || '#6F7979',
-                        border: '1px solid ' + (STATUS_COLORS[c.status] || '#6F7979') + '44',
-                      }}>
-                        {STATUS_LABELS[c.status] || c.status}
-                      </span>
+                      <Badge
+                        text={STATUS_LABELS[c.status] || c.status}
+                        color={STATUS_COLORS[c.status] || '#6F7979'}
+                      />
                     </td>
                     <td style={css.tableCell}>
                       <span style={{
@@ -277,23 +197,13 @@ export default React.memo(function CaseDashboard({ user, onSelectCase, onCreateC
                       </span>
                     </td>
                     <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                      <button
-                        style={{
-                          background: 'var(--primary)',
-                          color: 'var(--on-primary)',
-                          border: 'none',
-                          borderRadius: 8,
-                          padding: '8px 16px',
-                          fontSize: 13,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 8px rgba(0,102,102,0.2)',
-                          transition: 'all 0.2s',
-                        }}
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={e => { e.stopPropagation(); onSelectCase(c); }}
                       >
                         Open →
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}

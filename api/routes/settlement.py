@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.models.case import Case, CaseStatus
+from api.models.case import Case, CaseStatus, CASE_WITH_PARTIES
 from api.models.user import User
 from api.schemas.case import SettlementOut
 from api.auth import get_current_user
@@ -82,7 +82,14 @@ def generate_settlement(
     Generate a legally valid settlement agreement for a settled case.
     Requires the negotiation to have reached an agreement amount.
     """
-    case = db.query(Case).filter(Case.id == case_id).first()
+    # Parties are needed to fill in the agreement: load them with the case
+    # (previously two lazy SELECTs on top of this one).
+    case = (
+        db.query(Case)
+        .options(*CASE_WITH_PARTIES)
+        .filter(Case.id == case_id)
+        .first()
+    )
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     if case.claimant_id != current_user.id and case.respondent_id != current_user.id:

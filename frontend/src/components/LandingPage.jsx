@@ -88,36 +88,40 @@ function FloatingOrbs() {
 function Navbar({ onNavigate }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(function () {
-    const handler = function () { setScrolled(window.scrollY > 40); };
+    // A passive scroll listener fires far more often than the screen paints.
+    // Coalesce it down to at most one state update per animation frame.
+    var frame = null;
+    const handler = function () {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(function () {
+        frame = null;
+        setScrolled(window.scrollY > 40);
+      });
+    };
     window.addEventListener('scroll', handler, { passive: true });
-    return function () { window.removeEventListener('scroll', handler); };
+    return function () {
+      window.removeEventListener('scroll', handler);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
   }, []);
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-      padding: '0 40px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      background: scrolled ? 'rgba(10,15,30,0.85)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(20px)' : 'none',
-      WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-      borderBottom: scrolled ? '1px solid rgba(30,45,69,0.5)' : '1px solid transparent',
-      transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ fontSize: 28 }}>⚖️</div>
-        <span style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-display)' }}>
-          <span className="gradient-text-static">Negotiate</span>
-          <span style={{ color: T.text }}>AI</span>
-        </span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 32, fontSize: 14, fontWeight: 500 }}>
-        {['Features', 'How It Works', 'Modules', 'Stats'].map(function (item) {
-          return <a key={item} href={'#' + item.toLowerCase().replace(/ /g, '-')}
-            style={{ color: T.muted, textDecoration: 'none', transition: 'color 0.25s', cursor: 'pointer' }}>{item}</a>;
-        })}
-        <button onClick={() => onNavigate('/app')}
-          style={{ padding: '10px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-body)', background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', color: '#fff' }}>
-          Launch App →
-        </button>
+    <nav className={'site-nav' + (scrolled ? ' is-scrolled' : '')}>
+      <div className="site-nav-inner">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span aria-hidden="true" style={{ fontSize: 26 }}>⚖️</span>
+          <span style={{ fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-display)' }}>
+            <span className="gradient-text-static">Negotiate</span>
+            <span style={{ color: T.text }}>AI</span>
+          </span>
+        </div>
+        <div className="site-nav-links">
+          {['Features', 'How It Works', 'Modules', 'Stats'].map(function (item) {
+            return <a key={item} className="site-nav-link" href={'#' + item.toLowerCase().replace(/ /g, '-')}>{item}</a>;
+          })}
+          <button type="button" className="btn btn-primary" onClick={() => onNavigate('/app')}>
+            Launch App →
+          </button>
+        </div>
       </div>
     </nav>
   );
@@ -175,35 +179,35 @@ export default function LandingPage() {
       <Navbar onNavigate={navigate} />
  
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="grid-bg" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 40px 80px', overflow: 'hidden' }}>
+      <section className="hero-shell" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <FloatingOrbs />
         <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: 900 }}>
-          <div className="animate-fade-in-down" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 20px', borderRadius: 50, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', fontSize: 13, fontWeight: 600, color: T.accent, marginBottom: 32 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: T.green, animation: 'dot-pulse 2s infinite' }} />
+          <div className="hero-eyebrow animate-fade-in-down" style={{ marginBottom: 32 }}>
+            <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', animation: 'dot-pulse 2s infinite' }} />
             Powered by XGBoost + Game Theory + Legal LLM
           </div>
           <h1 className="hero-title animate-fade-in-up" style={{ fontSize: '4rem', fontWeight: 900, lineHeight: 1.1, fontFamily: 'var(--font-display)', marginBottom: 24 }}>
             AI-Powered <span className="gradient-text">MSME Dispute</span><br />Resolution Platform
           </h1>
-          <p className="hero-subtitle animate-fade-in-up delay-2" style={{ fontSize: 18, color: T.muted, lineHeight: 1.7, maxWidth: 640, margin: '0 auto 40px' }}>
+          <p className="hero-subtitle animate-fade-in-up delay-2" style={{ fontSize: 18, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 640, margin: '0 auto 40px' }}>
             Resolve payment disputes under the <strong style={{ color: T.text }}>MSMED Act 2006</strong> using voice intake, document intelligence, predictive analytics, and AI-mediated negotiation.
           </p>
           <div className="animate-fade-in-up delay-3" style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn-primary" style={{ fontSize: 16, padding: '16px 40px' }} onClick={() => navigate('/app')}>⚖️ Start Resolving Disputes</button>
-            <button className="btn-outline" style={{ fontSize: 16, padding: '16px 40px' }} onClick={() => { const el = document.getElementById('how-it-works'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}>See How It Works ↓</button>
+            <button type="button" className="btn btn-primary btn-lg" onClick={() => navigate('/app')}>⚖️ Start Resolving Disputes</button>
+            <button type="button" className="btn btn-secondary btn-lg" onClick={() => { const el = document.getElementById('how-it-works'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}>See How It Works ↓</button>
           </div>
           <div className="animate-fade-in-up delay-4" style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 48, flexWrap: 'wrap' }}>
             {['MSMED Act 2006', '5-Step ML Pipeline', 'Multilingual Voice', 'Legal LLM'].map(tag =>
-              <span key={tag} style={{ padding: '6px 16px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: T.muted }}>{tag}</span>
+              <span key={tag} className="hero-tag">{tag}</span>
             )}
           </div>
-          <div className="animate-fade-in-up delay-5 animate-float" style={{ marginTop: 64, padding: '24px 32px', borderRadius: 20, background: 'rgba(15,22,38,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(30,45,69,0.6)', display: 'inline-flex', alignItems: 'center', gap: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+          <div className="hero-pipeline animate-fade-in-up delay-5 animate-float">
             {PIPELINE.map((step, i) => (
               <React.Fragment key={step.label}>
                 <div style={{ textAlign: 'center', minWidth: 70 }}>
                   <div style={{ fontSize: 28, marginBottom: 4 }}>{step.icon}</div>
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{step.label}</div>
-                  <div style={{ fontSize: 10, color: T.muted }}>{step.desc}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{step.desc}</div>
                 </div>
                 {i < 4 && <div style={{ color: T.border, fontSize: 20 }}>→</div>}
               </React.Fragment>
@@ -213,16 +217,16 @@ export default function LandingPage() {
       </section>
  
       {/* ── STATS ────────────────────────────────────────────────────────── */}
-      <section id="stats" style={{ padding: '80px 40px' }}>
+      <section id="stats" className="landing-section is-tight">
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
+          <div className="stats-grid grid-cols-4" style={{ display: 'grid', gap: 20 }}>
             {STATS.map((stat, i) => (
               <RevealDiv key={stat.label} delay={i * 0.1}>
-                <div style={{ textAlign: 'center', padding: '32px 16px', borderRadius: 16, background: 'rgba(15,22,38,0.6)', border: '1px solid rgba(30,45,69,0.4)' }}>
+                <div className="stat-panel">
                   <div style={{ fontSize: 40, fontWeight: 900, color: stat.color, fontFamily: 'var(--font-display)' }}>
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                   </div>
-                  <div style={{ fontSize: 13, color: T.muted, marginTop: 6 }}>{stat.label}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>{stat.label}</div>
                 </div>
               </RevealDiv>
             ))}
@@ -232,20 +236,20 @@ export default function LandingPage() {
       <div className="section-divider" />
  
       {/* ── FEATURES ─────────────────────────────────────────────────────── */}
-      <section id="features" style={{ padding: '100px 40px' }}>
+      <section id="features" className="landing-section">
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <RevealDiv style={{ textAlign: 'center', marginBottom: 64 }}>
             <span style={{ display: 'inline-block', padding: '6px 16px', borderRadius: 20, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', fontSize: 12, fontWeight: 700, color: T.accent, marginBottom: 16, textTransform: 'uppercase' }}>Why NegotiateAI</span>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)', marginBottom: 16 }}>End-to-End <span className="gradient-text">Dispute Resolution</span></h2>
-            <p style={{ fontSize: 16, color: T.muted, maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>From voice intake to legally binding settlement — every step powered by AI.</p>
+            <p style={{ fontSize: 16, color: 'var(--text-secondary)', maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>From voice intake to legally binding settlement — every step powered by AI.</p>
           </RevealDiv>
-          <div className="features-grid stagger-children" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+          <div className="features-grid grid-cols-3" style={{ display: 'grid', gap: 20 }}>
             {FEATURES.map((f, i) => (
               <RevealDiv key={f.title} delay={i * 0.08}>
                 <div className="glass-card" style={{ padding: '28px 24px', height: '100%' }}>
                   <div style={{ width: 52, height: 52, borderRadius: 14, background: f.color + '15', border: '1px solid ' + f.color + '33', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 16 }}>{f.icon}</div>
                   <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 10 }}>{f.title}</h3>
-                  <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
                 </div>
               </RevealDiv>
             ))}
@@ -255,14 +259,14 @@ export default function LandingPage() {
       <div className="section-divider" />
  
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ padding: '100px 40px' }}>
+      <section id="how-it-works" className="landing-section">
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <RevealDiv style={{ textAlign: 'center', marginBottom: 64 }}>
             <span style={{ display: 'inline-block', padding: '6px 16px', borderRadius: 20, background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', fontSize: 12, fontWeight: 700, color: T.accent2, marginBottom: 16, textTransform: 'uppercase' }}>Process</span>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)', marginBottom: 16 }}>How It <span className="gradient-text">Works</span></h2>
-            <p style={{ fontSize: 16, color: T.muted, maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>Five steps from intake to legally binding settlement.</p>
+            <p style={{ fontSize: 16, color: 'var(--text-secondary)', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>Five steps from intake to legally binding settlement.</p>
           </RevealDiv>
-          <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }}>
+          <div className="steps-grid" style={{ display: 'grid', gap: 0 }}>
             {STEPS.map((step, i) => (
               <RevealDiv key={step.num} direction={i % 2 === 0 ? 'left' : 'right'} delay={0.05}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 32, padding: '28px 32px' }}>
@@ -272,7 +276,7 @@ export default function LandingPage() {
                       <span style={{ fontSize: 22 }}>{step.icon}</span>
                       <h3 style={{ fontSize: 17, fontWeight: 700 }}>{step.title}</h3>
                     </div>
-                    <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.7, margin: 0, maxWidth: 700 }}>{step.desc}</p>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0, maxWidth: 700 }}>{step.desc}</p>
                   </div>
                 </div>
               </RevealDiv>
@@ -283,14 +287,14 @@ export default function LandingPage() {
       <div className="section-divider" />
  
       {/* ── MODULES ──────────────────────────────────────────────────────── */}
-      <section id="modules" style={{ padding: '100px 40px' }}>
+      <section id="modules" className="landing-section">
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <RevealDiv style={{ textAlign: 'center', marginBottom: 64 }}>
             <span style={{ display: 'inline-block', padding: '6px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', fontSize: 12, fontWeight: 700, color: T.purple, marginBottom: 16, textTransform: 'uppercase' }}>Technology</span>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)', marginBottom: 16 }}>Under the <span className="gradient-text">Hood</span></h2>
-            <p style={{ fontSize: 16, color: T.muted, maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>State-of-the-art ML, purpose-built for Indian MSME dispute resolution.</p>
+            <p style={{ fontSize: 16, color: 'var(--text-secondary)', maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>State-of-the-art ML, purpose-built for Indian MSME dispute resolution.</p>
           </RevealDiv>
-          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div className="features-grid grid-cols-2" style={{ display: 'grid', gap: 20 }}>
             {MODULES.map((m, i) => (
               <RevealDiv key={m.title} delay={i * 0.08}>
                 <div className="glass-card" style={{ padding: '24px', height: '100%' }}>
@@ -301,7 +305,7 @@ export default function LandingPage() {
                       <div style={{ fontSize: 11, color: m.color, fontWeight: 600, marginTop: 2 }}>{m.tech}</div>
                     </div>
                   </div>
-                  <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.7, margin: 0 }}>{m.desc}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{m.desc}</p>
                 </div>
               </RevealDiv>
             ))}
@@ -311,31 +315,31 @@ export default function LandingPage() {
       <div className="section-divider" />
  
       {/* ── QUOTE ────────────────────────────────────────────────────────── */}
-      <section style={{ padding: '100px 40px' }}>
+      <section className="landing-section">
         <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
           <RevealDiv>
             <div style={{ fontSize: 48, marginBottom: 16 }}>💬</div>
-            <blockquote style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.7, fontStyle: 'italic', color: T.text, margin: '0 0 24px' }}>
+            <blockquote className="quote-panel">
               "Under the MSMED Act, 95% of disputes should be resolved within 90 days. Yet the average is 487 days. NegotiateAI aims to bring that back under 45."
             </blockquote>
-            <div style={{ fontSize: 13, color: T.muted }}>— Based on MSME Samadhan data analysis</div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>— Based on MSME Samadhan data analysis</div>
           </RevealDiv>
         </div>
       </section>
       <div className="section-divider" />
  
       {/* ── CTA ──────────────────────────────────────────────────────────── */}
-      <section style={{ padding: '100px 40px' }}>
+      <section className="landing-section">
         <RevealDiv>
-          <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center', padding: '60px 40px', borderRadius: 24, position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(6,182,212,0.1))', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <div className="cta-panel">
             <div style={{ position: 'absolute', top: '-50%', left: '50%', transform: 'translateX(-50%)', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 2 }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>⚖️</div>
               <h2 style={{ fontSize: '2.2rem', fontWeight: 800, fontFamily: 'var(--font-display)', marginBottom: 16 }}>Ready to Resolve <span className="gradient-text">Disputes</span>?</h2>
-              <p style={{ fontSize: 16, color: T.muted, maxWidth: 500, margin: '0 auto 32px', lineHeight: 1.7 }}>Start using the AI-powered MSMED dispute resolution platform. No credit card required for demo mode.</p>
+              <p style={{ fontSize: 16, color: 'var(--text-secondary)', maxWidth: 500, margin: '0 auto 32px', lineHeight: 1.7 }}>Start using the AI-powered MSMED dispute resolution platform. No credit card required for demo mode.</p>
               <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button className="btn-primary" style={{ fontSize: 16, padding: '16px 40px' }} onClick={() => navigate('/app')}>🚀 Launch Platform</button>
-                <button className="btn-outline" style={{ fontSize: 16, padding: '16px 40px' }} onClick={() => navigate('/app')}>👤 Try Demo Mode</button>
+                <button type="button" className="btn btn-primary btn-lg" onClick={() => navigate('/app')}>🚀 Launch Platform</button>
+                <button type="button" className="btn btn-secondary btn-lg" onClick={() => navigate('/app')}>👤 Try Demo Mode</button>
               </div>
             </div>
           </div>
@@ -343,13 +347,13 @@ export default function LandingPage() {
       </section>
  
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer style={{ padding: '40px 40px 32px', borderTop: '1px solid rgba(30,45,69,0.4)', textAlign: 'center' }}>
+      <footer className="site-footer">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
           <span style={{ fontSize: 20 }}>⚖️</span>
           <span style={{ fontSize: 16, fontWeight: 700 }}><span className="gradient-text-static">Negotiate</span>AI</span>
         </div>
-        <p style={{ fontSize: 12, color: T.muted, lineHeight: 1.7, maxWidth: 480, margin: '0 auto 16px' }}>AI-powered MSME Online Dispute Resolution platform compliant with the MSMED Act, 2006.</p>
-        <div style={{ fontSize: 11, color: T.muted }}>© 2026 NegotiateAI. All rights reserved.</div>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 16px' }}>AI-powered MSME Online Dispute Resolution platform compliant with the MSMED Act, 2006.</p>
+        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>© 2026 NegotiateAI. All rights reserved.</div>
       </footer>
     </div>
   );

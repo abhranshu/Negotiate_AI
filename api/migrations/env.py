@@ -54,6 +54,8 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
+    with context.begin_transaction():
+        context.run_migrations()
 
 
 def _get_database_url():
@@ -61,9 +63,6 @@ def _get_database_url():
     if url is None:
         url = os.environ.get('DATABASE_URL', 'sqlite:///default.db')
     return url.strip()
-
-    with context.begin_transaction():
-        context.run_migrations()
 
 
 def run_migrations_online() -> None:

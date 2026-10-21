@@ -5,7 +5,7 @@ import AuthScreen from './AuthScreen';
 import CaseDashboard from './CaseDashboard';
 import CaseDetail from './CaseDetail';
 import CreateCase from './CreateCase';
-import { css } from '../theme';
+import { Button } from './UI';
 
 function AppShell() {
   const [user, setUser]     = useState(null);
@@ -16,6 +16,21 @@ function AppShell() {
   const navigate = useNavigate();
 
   useEffect(() => { checkSession(); }, []);
+
+  // Start every view at the top. Opening a case from halfway down the dashboard
+  // otherwise kept the old scroll offset and left the case header off-screen.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view, selectedCase?.id]);
+
+  // Per-view document title, so browser tabs and history entries are
+  // distinguishable instead of all reading "NegotiateAI".
+  useEffect(() => {
+    document.title =
+      view === 'case' && selectedCase?.case_number ? selectedCase.case_number + ' · NegotiateAI'
+      : view === 'create' ? 'New Case · NegotiateAI'
+      : 'Dashboard · NegotiateAI';
+  }, [view, selectedCase]);
 
   async function checkSession() {
     const token = localStorage.getItem('token');
@@ -52,6 +67,17 @@ function AppShell() {
     setRefreshKey(k => k + 1);
   }, []);
 
+  // Stable handlers: inline arrows here would hand the memoized children a new
+  // prop identity on every AppShell render and defeat React.memo.
+  const goToDashboard = useCallback(() => {
+    setView('dashboard');
+    setSelectedCase(null);
+    navigate('/app');
+  }, [navigate]);
+
+  const openCreateCase = useCallback(() => setView('create'), []);
+  const closeCreateCase = useCallback(() => setView('dashboard'), []);
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--surface)', display: 'flex',
@@ -60,7 +86,7 @@ function AppShell() {
           borderTopColor: 'var(--primary)', borderRadius: '50%',
           animation: 'spin 0.7s linear infinite' }} />
         <div style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500 }}>
-          Loading NegotiateAI...
+          Loading NegotiateAI…
         </div>
       </div>
     );
@@ -69,77 +95,73 @@ function AppShell() {
   if (!user) return <AuthScreen onLogin={handleLogin} onGuestLogin={handleGuestLogin} />;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--surface)', color: 'var(--on-surface)',
-      fontFamily: "'Inter', sans-serif" }}>
-      {/* ── Top Bar (DESIGN.md: clean top-bar, white bg, subtle bottom border) ── */}
-      <header style={css.header}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ cursor: 'pointer' }}
-            onClick={() => { setView('dashboard'); navigate('/app'); setSelectedCase(null); }}>
-            <span style={{ fontSize: 22 }}>⚖</span>
-            <span style={css.logo}>NegotiateAI</span>
+    <div style={{ minHeight: '100vh', background: 'var(--surface)', color: 'var(--on-surface)' }}>
+      <a href="#main" className="skip-link">Skip to content</a>
+
+      {/* ── Top Bar ── */}
+      <header className="app-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+          <div
+            className="app-brand"
+            role="button"
+            tabIndex={0}
+            aria-label="Go to dashboard"
+            onClick={goToDashboard}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToDashboard(); }
+            }}
+          >
+            <span aria-hidden="true" style={{ fontSize: 22, marginRight: 8 }}>⚖</span>
+            <span className="app-logo-text">NegotiateAI</span>
           </div>
-          <div style={{ marginLeft: 8, padding: '4px 12px', borderRadius: 100,
-            background: 'rgba(0,102,102,0.08)', border: '1px solid rgba(0,102,102,0.2)',
-            fontSize: 11, fontWeight: 600, color: 'var(--primary)' }}>
-            AI Mediation Active
-          </div>
+          <div className="app-pill">AI Mediation Active</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--on-surface)' }}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+          <div style={{ textAlign: 'right', minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--on-surface)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user.full_name}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
+            <div className="app-header-meta" style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
               {user.role} · {user.email}
             </div>
           </div>
           {user.is_guest && (
-            <div style={{ padding: '4px 10px', borderRadius: 100,
-              background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
-              fontSize: 11, fontWeight: 600, color: '#D97706' }}>
+            <span style={{ padding: '4px 10px', borderRadius: 'var(--r-pill)', whiteSpace: 'nowrap',
+              background: 'rgba(180,83,9,0.09)', border: '1px solid rgba(180,83,9,0.25)',
+              fontSize: 11, fontWeight: 600, color: 'var(--warning)' }}>
               Demo Mode
-            </div>
+            </span>
           )}
-          <button className="app-btn app-ghost"
-            style={{ ...css.btnGhost, color: 'var(--text-secondary)',
-              borderColor: 'var(--border)' }}
-            onClick={handleLogout}>
-            Sign Out
-          </button>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>Sign Out</Button>
         </div>
       </header>
 
       {/* ── Main Content ── */}
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 24px 48px' }}>
+      <main id="main" className="page-container">
         {view === 'dashboard' && (
           <CaseDashboard
             user={user}
             onSelectCase={handleSelectCase}
-            onCreateCase={() => setView('create')}
+            onCreateCase={openCreateCase}
             refreshKey={refreshKey}
           />
         )}
         {view === 'create' && (
-          <CreateCase onClose={() => setView('dashboard')} onCreated={handleCaseCreated} />
+          <CreateCase onClose={closeCreateCase} onCreated={handleCaseCreated} />
         )}
         {view === 'case' && selectedCase && (
           <CaseDetail
             caseData={selectedCase}
-            onBack={() => { setView('dashboard'); navigate('/app'); setSelectedCase(null); }}
+            onBack={goToDashboard}
             onUpdate={setSelectedCase}
           />
         )}
       </main>
 
       {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid var(--border)',
-        padding: '20px 24px',
-        textAlign: 'center',
-        fontSize: 12,
-        color: 'var(--text-secondary)'
-      }}>
+      <footer className="app-footer">
         NegotiateAI — MSME Online Dispute Resolution Platform ·
         Powered by MSMED Act 2006 · AI-mediated negotiation
       </footer>

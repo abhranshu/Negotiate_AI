@@ -39,12 +39,21 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional
 import xgboost as xgb
-import lightgbm as lgb
+try:
+    import lightgbm as lgb
+    _LIGHTGBM_ERROR = None
+except Exception as _lgb_exc:  # environment-dependent; see guard in train()/__init__
+    # lightgbm is a declared runtime dep (requirements*.txt) but must not make this
+    # module unimportable when it is absent — the failure is surfaced explicitly
+    # at the point of use instead of silently at import time.
+    lgb = None
+    _LIGHTGBM_ERROR = _lgb_exc
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import roc_auc_score, mean_absolute_error
 from sklearn.calibration import CalibratedClassifierCV
 import shap
+from scipy.special import expit
 
 
 # ─── Data schema ─────────────────────────────────────────────────────────────
@@ -393,6 +402,11 @@ class OutcomePredictionTrainer:
         return np.vstack(rows)
 
     def train(self, df: pd.DataFrame):
+        if lgb is None:
+            raise RuntimeError(
+                "lightgbm is required to train Module 3 models "
+                f"(pip install lightgbm). Original import error: {_LIGHTGBM_ERROR}"
+            )
         print(f"[Train] Dataset: {len(df)} cases, settled={df['settled'].mean():.1%}")
         X = self.prepare_features(df)
         y = df["settled"].values
@@ -449,6 +463,13 @@ class OutcomePredictionTrainer:
 
         # Save models
         joblib.dump(calibrated_clf, self.output_dir / "settlement_classifier.pkl")
+        # Also persist in XGBoost's NATIVE format (.ubj + JSON sidecar) so loading
+        # never unpickles an XGBoost object and therefore never prints the
+        # "serialized model" advisory. Falls back to the pickle if export fails.
+        try:
+            export_native_classifier(calibrated_clf, self.output_dir)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[Train] Warning: native XGBoost export failed ({exc}); pickle still usable.")
         joblib.dump(lgb_reg,        self.output_dir / "settlement_pct_regressor.pkl")
         joblib.dump(lgb_days,       self.output_dir / "adjudication_days_regressor.pkl")
         joblib.dump(self.fe,        self.output_dir / "feature_engineer.pkl")
@@ -457,14 +478,106 @@ class OutcomePredictionTrainer:
         return calibrated_clf, lgb_reg, lgb_days
 
 
+# ─── Native XGBoost representation ──────────────────────────────────────────
+
+def export_native_classifier(calibrated_clf, output_dir) -> Path:
+    """Export a fitted ``CalibratedClassifierCV`` (XGBoost folds) to native format.
+
+    Writes each fold's booster via ``Booster.save_model`` (.ubj) plus a JSON
+    sidecar holding the Platt/sigmoid calibration parameters. Loading the result
+    never unpickles an XGBoost object, so the pickle advisory never appears.
+    No retraining — the booster and calibration params are copied verbatim.
+    """
+    output_dir = Path(output_dir)
+    native = output_dir / "native"
+    native.mkdir(parents=True, exist_ok=True)
+
+    folds = []
+    for i, cc in enumerate(calibrated_clf.calibrated_classifiers_):
+        model_name = f"settlement_xgb_{i}.ubj"
+        cc.estimator.get_booster().save_model(str(native / model_name))
+        cal = cc.calibrators[0]
+        folds.append({"model": model_name, "a": float(cal.a_), "b": float(cal.b_)})
+
+    cfg = json.loads(calibrated_clf.calibrated_classifiers_[0].estimator.get_booster().save_config())
+    meta = {
+        "format": "native-calibrated-xgb",
+        "version": 1,
+        "objective": cfg["learner"]["objective"]["name"],
+        "classes": [int(c) for c in calibrated_clf.classes_],
+        "n_features_in": int(calibrated_clf.n_features_in_),
+        "folds": folds,
+    }
+    sidecar = native / "settlement_classifier.json"
+    sidecar.write_text(json.dumps(meta, indent=2))
+    return sidecar
+
+
+class NativeCalibratedClassifier:
+    """Calibrated XGBoost classifier loaded from the NATIVE format.
+
+    Reproduces ``CalibratedClassifierCV.predict_proba`` exactly (verified
+    numerically against the pickle: max abs diff 0.0): the mean over folds of
+    ``expit(-(a * p_fold + b))``, where ``p_fold`` is that fold's positive-class
+    probability and ``(a, b)`` are the fold's Platt parameters.
+    """
+
+    _EPS = float(np.finfo(np.float64).eps)
+
+    def __init__(self, native_dir):
+        native_dir = Path(native_dir)
+        meta = json.loads((native_dir / "settlement_classifier.json").read_text())
+        self.objective      = meta.get("objective", "binary:logistic")
+        self.classes_       = np.asarray(meta.get("classes", [0, 1]))
+        self.n_features_in_ = int(meta.get("n_features_in", 0))
+        self._boosters = []
+        self._params   = []
+        for fold in meta["folds"]:
+            booster = xgb.Booster()
+            booster.load_model(str(native_dir / fold["model"]))
+            self._boosters.append(booster)
+            self._params.append((float(fold["a"]), float(fold["b"])))
+
+    def _fold_positive_prob(self, booster, a: float, b: float, x: np.ndarray) -> np.ndarray:
+        p = booster.predict(xgb.DMatrix(x))
+        p = np.clip(p, self._EPS, 1.0 - self._EPS)
+        return expit(-(a * p + b))
+
+    def predict_proba(self, x: np.ndarray) -> np.ndarray:
+        p_pos = np.mean(
+            [self._fold_positive_prob(bo, a, b, x)
+             for bo, (a, b) in zip(self._boosters, self._params)],
+            axis=0,
+        )
+        p_pos = np.clip(p_pos, self._EPS, 1.0 - self._EPS)
+        return np.vstack([1.0 - p_pos, p_pos]).T
+
+    @property
+    def shap_booster(self):
+        """First fold's booster — used for SHAP TreeExplainer."""
+        return self._boosters[0]
+
+
 # ─── Inference ────────────────────────────────────────────────────────────────
 
 class OutcomePredictionEngine:
 
     def __init__(self, model_dir: str = "./models"):
         _register_pickle_compatibility()
+        if lgb is None:
+            raise RuntimeError(
+                "lightgbm is required to load the saved Module 3 models — the "
+                "regressors are LightGBM pickles "
+                f"(pip install lightgbm). Original import error: {_LIGHTGBM_ERROR}"
+            )
         model_dir = Path(model_dir)
-        self.clf      = joblib.load(model_dir / "settlement_classifier.pkl")
+        # Prefer the native XGBoost representation when present: it loads without
+        # unpickling any XGBoost object. Fall back to the legacy pickle otherwise.
+        native_sidecar = model_dir / "native" / "settlement_classifier.json"
+        if native_sidecar.exists():
+            self.clf = NativeCalibratedClassifier(native_sidecar.parent)
+        else:
+            self.clf = joblib.load(model_dir / "settlement_classifier.pkl")
         self.pct_reg  = joblib.load(model_dir / "settlement_pct_regressor.pkl")
         self.days_reg = joblib.load(model_dir / "adjudication_days_regressor.pkl")
         self.fe       = joblib.load(model_dir / "feature_engineer.pkl")
@@ -523,10 +636,13 @@ class OutcomePredictionEngine:
     def _shap_factors(self, x: np.ndarray, features: CaseFeatures) -> list[dict]:
         """Compute SHAP values for interpretability."""
         try:
-            # XGBoost inner estimator for SHAP
-            inner_model = self.clf.calibrated_classifiers_[0].estimator
-            explainer   = shap.TreeExplainer(inner_model)
-            shap_vals   = explainer.shap_values(x)[0]
+            # XGBoost model for SHAP — booster for native, inner estimator for pickle
+            if isinstance(self.clf, NativeCalibratedClassifier):
+                inner_model = self.clf.shap_booster
+            else:
+                inner_model = self.clf.calibrated_classifiers_[0].estimator
+            explainer = shap.TreeExplainer(inner_model)
+            shap_vals = explainer.shap_values(x)[0]
 
             names = self.fe.FEATURE_NAMES
             pairs = sorted(zip(names, shap_vals), key=lambda t: abs(t[1]), reverse=True)
@@ -540,6 +656,81 @@ class OutcomePredictionEngine:
             ]
         except Exception:
             return []
+
+
+# ─── Process-wide engine cache ────────────────────────────────────────────────
+
+# Artifacts written by OutcomePredictionTrainer. Their presence plus mtime/size
+# form the cache key, so re-training invalidates the cached engine by itself.
+MODEL_FILES = (
+    "settlement_classifier.pkl",
+    "settlement_pct_regressor.pkl",
+    "adjudication_days_regressor.pkl",
+    "feature_engineer.pkl",
+    "native/settlement_classifier.json",
+    "native/settlement_xgb_0.ubj",
+    "native/settlement_xgb_1.ubj",
+    "native/settlement_xgb_2.ubj",
+    "native/settlement_xgb_3.ubj",
+    "native/settlement_xgb_4.ubj",
+)
+
+
+def models_present(model_dir: str = "./models") -> bool:
+    """True when a previously trained model set is on disk (native or pickle)."""
+    directory = Path(model_dir)
+    return (
+        (directory / "native" / "settlement_classifier.json").exists()
+        or (directory / "settlement_classifier.pkl").exists()
+    )
+
+
+def model_signature(model_dir: str = "./models") -> tuple:
+    """Cheap fingerprint of the saved model files.
+
+    Four stat() calls (microseconds) instead of the four joblib.load() calls it
+    guards. Putting it in the cache key means a re-trained model is picked up
+    automatically instead of being masked by a stale in-memory engine.
+    """
+    directory = Path(model_dir)
+    signature = []
+    for name in MODEL_FILES:
+        path = directory / name
+        if path.exists():
+            stat = path.stat()
+            signature.append((name, stat.st_mtime_ns, stat.st_size))
+        else:
+            signature.append((name, None, None))
+    return tuple(signature)
+
+
+def get_outcome_engine(model_dir: str = "./models") -> "OutcomePredictionEngine":
+    """Return the shared OutcomePredictionEngine for `model_dir`.
+
+    Building one costs four joblib.load() calls of sklearn/LightGBM pickles.
+    The predict route used to do exactly that on every request; now it happens
+    once per (model dir, model files) pair for the life of the process.
+
+    The engine is inference-only — predict() mutates nothing — so sharing it
+    across concurrent requests is safe.
+    """
+    from api.cache import ML_MODEL_CACHE
+
+    directory = Path(model_dir).resolve()
+    key = ("outcome_engine", str(directory), model_signature(directory))
+
+    # Drop engines built from superseded files (e.g. after a re-train) so only
+    # the current model set stays resident.
+    ML_MODEL_CACHE.invalidate_where(
+        lambda k: isinstance(k, tuple) and len(k) == 3
+        and k[0] == "outcome_engine" and k[1] == str(directory) and k != key
+    )
+
+    return ML_MODEL_CACHE.get_or_create(
+        key,
+        lambda: OutcomePredictionEngine(model_dir=str(model_dir)),
+        ttl=None,
+    )
 
 
 # ─── Entry point ─────────────────────────────────────────────────────────────

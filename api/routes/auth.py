@@ -11,7 +11,10 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.models.user import User
 from api.schemas.user import UserCreate, UserOut, Token
-from api.auth import hash_password, verify_password, create_access_token, get_current_user
+from api.auth import (
+    hash_password, verify_password, create_access_token, get_current_user,
+    invalidate_user_cache,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -35,6 +38,10 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+    # Invalidation hook for the authenticated-user cache: registering is the
+    # only place this API writes a user row. (The new id cannot be cached yet,
+    # but keeping the write site explicit is what makes the cache safe to keep.)
+    invalidate_user_cache(user.id)
     return user
 
 

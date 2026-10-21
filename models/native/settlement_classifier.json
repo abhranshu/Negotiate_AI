@@ -1,0 +1,37 @@
+{
+  "format": "native-calibrated-xgb",
+  "version": 1,
+  "objective": "binary:logistic",
+  "classes": [
+    0,
+    1
+  ],
+  "n_features_in": 18,
+  "folds": [
+    {
+      "model": "settlement_xgb_0.ubj",
+      "a": -3.7814129075867187,
+      "b": 1.3386571016618558
+    },
+    {
+      "model": "settlement_xgb_1.ubj",
+      "a": -4.504103892979758,
+      "b": 1.6517996741859058
+    },
+    {
+      "model": "settlement_xgb_2.ubj",
+      "a": -4.038956059736495,
+      "b": 1.401290188875569
+    },
+    {
+      "model": "settlement_xgb_3.ubj",
+      "a": -4.308168452105964,
+      "b": 1.5447588022460363
+    },
+    {
+      "model": "settlement_xgb_4.ubj",
+      "a": -4.254955866565073,
+      "b": 1.6209706805853261
+    }
+  ]
+}

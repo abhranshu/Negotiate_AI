@@ -18,19 +18,17 @@ Data sources:
 
 import re
 import json
-import torch
 import numpy as np
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 from PIL import Image
-from transformers import (
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
-    pipeline as hf_pipeline,
-)
 from sklearn.preprocessing import LabelEncoder
 import joblib
+
+# Heavy ML imports (torch, transformers) are lazy — see get_document_classifier.
+# This keeps `import AIML.document_intelligence` working on slim images
+# (Bedrock path) without the ~2GB torch+transformers install.
 
 try:
     import pytesseract
@@ -105,11 +103,19 @@ class DocumentOCR:
     def extract_text(self, file_path: str, language: str = "en") -> str:
         path = Path(file_path)
         tess_lang = self.TESSERACT_LANG_MAP.get(language, "eng")
+        suffix = path.suffix.lower()
 
-        if path.suffix.lower() == ".pdf":
+        if suffix == ".pdf":
             return self._extract_from_pdf(str(path), tess_lang)
-        else:
-            return self._extract_from_image(str(path), tess_lang)
+        if suffix == ".docx":
+            return self._extract_from_docx(str(path))
+        if suffix == ".doc":
+            # Legacy binary .doc is not readable by python-docx. Failing with a
+            # clear message beats Pillow raising "cannot identify image file".
+            raise RuntimeError(
+                "Legacy .doc files are not supported — save the file as .docx or PDF and upload again."
+            )
+        return self._extract_from_image(str(path), tess_lang)
 
     def _extract_from_image(self, path: str, lang: str) -> str:
         self._ensure_tesseract_available()
@@ -118,15 +124,42 @@ class DocumentOCR:
         return pytesseract.image_to_string(img, config=config).strip()
 
     def _extract_from_pdf(self, path: str, lang: str) -> str:
-        """Convert PDF pages to images and OCR each."""
+        """Convert PDF pages to images and OCR each.
+
+        pdf2image shells out to poppler's `pdftoppm`, which must be installed in
+        the runtime image (poppler-utils). Without it every PDF upload fails, so
+        report that specific cause instead of a generic conversion error.
+        """
+        self._ensure_tesseract_available()
         try:
-            self._ensure_tesseract_available()
             from pdf2image import convert_from_path
-            images = convert_from_path(path, dpi=200)
-            texts  = [pytesseract.image_to_string(img, lang=lang) for img in images]
-            return "\n\n".join(texts).strip()
         except ImportError:
             raise RuntimeError("Install pdf2image: pip install pdf2image")
+        try:
+            images = convert_from_path(path, dpi=200)
+        except Exception as exc:
+            raise RuntimeError(
+                f"PDF conversion failed ({exc}). The runtime image needs poppler-utils "
+                "for pdftoppm; install it or upload the invoice as an image (.png/.jpg)."
+            ) from exc
+        texts = [pytesseract.image_to_string(img, lang=lang) for img in images]
+        return "\n\n".join(texts).strip()
+
+    def _extract_from_docx(self, path: str) -> str:
+        """Read a Word document's paragraphs and tables directly (no OCR)."""
+        try:
+            import docx  # python-docx
+        except ModuleNotFoundError as exc:
+            raise RuntimeError("Install python-docx: pip install python-docx") from exc
+
+        document = docx.Document(path)
+        parts = [p.text.strip() for p in document.paragraphs if p.text and p.text.strip()]
+        for table in document.tables:
+            for row in table.rows:
+                cells = [c.text.strip() for c in row.cells if c.text and c.text.strip()]
+                if cells:
+                    parts.append(" | ".join(cells))
+        return "\n".join(parts).strip()
 
     @staticmethod
     def _ensure_tesseract_available():
@@ -152,6 +185,11 @@ class DocumentClassifier:
     """
 
     def __init__(self, model_path: str = "distilbert-base-uncased"):
+        # Lazy heavy imports: Bedrock path never constructs this, so slim
+        # images without torch/transformers still import this module fine.
+        import torch
+        from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.model     = AutoModelForSequenceClassification.from_pretrained(
             model_path, num_labels=len(DOC_TYPES)
@@ -164,6 +202,8 @@ class DocumentClassifier:
 
     def classify(self, text: str, max_length: int = 512) -> tuple[str, float]:
         """Returns (doc_type, confidence)."""
+        import torch
+
         # Use first 512 tokens (header of document is most informative)
         inputs = self.tokenizer(
             text[:2000],
@@ -223,6 +263,29 @@ class DocumentClassifier:
         return fields
 
 
+# ─── Process-wide classifier cache ────────────────────────────────────────────
+
+def get_document_classifier(model_path: str = "distilbert-base-uncased") -> DocumentClassifier:
+    """Return the shared DocumentClassifier for `model_path`.
+
+    DocumentClassifier.__init__ loads a DistilBERT tokenizer plus weights and
+    moves them onto the device: seconds of work and a few hundred MB of RAM.
+    The upload route built one per *file*, so a single 5-file upload paid that
+    cost five times. Loading once and sharing removes it.
+
+    The classifier only ever runs inference (model.eval()), so one instance can
+    serve concurrent requests. Nothing invalidates it — the weights come from a
+    read-only HuggingFace path that this app never rewrites.
+    """
+    from api.cache import ML_MODEL_CACHE
+
+    return ML_MODEL_CACHE.get_or_create(
+        ("document_classifier", model_path),
+        lambda: DocumentClassifier(model_path=model_path),
+        ttl=None,
+    )
+
+
 # ─── Gap Detection ────────────────────────────────────────────────────────────
 
 class GapDetector:
@@ -272,6 +335,9 @@ class CaseSummariser:
     """
 
     def __init__(self):
+        import torch
+        from transformers import pipeline as hf_pipeline
+
         self.summariser = hf_pipeline(
             "summarization",
             model="sshleifer/distilbart-cnn-12-6",

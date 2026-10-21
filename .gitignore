@@ -14,6 +14,12 @@ api/migrations/__pycache__/
 # Local SQLite databases (except Chroma vector DB)
 phase2_demo.db
 test_alembic.db
+test_negotiateai.db
+test_import.db
+
+# Test artifacts
+.pytest_cache/
+test_uploads/
 
 # Heavy datasets and local outputs (do NOT commit 2GB+ datasets)
 data/chainyo___rvl-cdip-invoice/
@@ -39,3 +45,6 @@ node_modules/
 frontend/node_modules/
 # Local start script
 start.sh
+
+# Diagnostic report (do not commit) ===
+NegotiateAI_Diagnostic_Audit.md

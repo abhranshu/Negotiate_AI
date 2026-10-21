@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import API, { getApiError } from '../api';
 import { css } from '../theme';
-import { Badge, Spinner } from './UI';
+import { Badge, Alert, Button } from './UI';
 
 export default function AuthScreen({ onLogin, onGuestLogin }) {
   const [mode, setMode]    = useState('login');
@@ -37,22 +37,38 @@ export default function AuthScreen({ onLogin, onGuestLogin }) {
     }
   };
 
+  // `name` + `autoComplete` let browsers and password managers fill these
+  // correctly (they previously had neither, so sign-in never offered to save).
   const inp = (key, label, type = 'text', placeholder = '', options = {}) => (
     <div style={{ marginBottom: 16 }}>
-      <label style={css.label}>{label}</label>
+      <label style={css.label} htmlFor={`auth-${key}`}>{label}</label>
       <input
-        style={{ ...css.input, ...(options.type === 'number' ? { type: 'number', min: 0 } : { type }) }}
+        id={`auth-${key}`}
+        name={key}
+        type={type}
+        style={css.input}
         value={form[key]}
         onChange={e => setForm({ ...form, [key]: e.target.value })}
         placeholder={placeholder}
+        required
+        autoComplete={options.autoComplete || 'off'}
+        autoCapitalize={options.autoCapitalize}
+        autoFocus={options.autoFocus}
+        inputMode={options.inputMode}
+        spellCheck={options.spellCheck}
       />
     </div>
   );
 
+  // Real <form> semantics: Enter in any field submits, and assistive tech
+  // announces this as a form rather than a stack of inputs.
+  const submitForm = (e) => { e.preventDefault(); if (!loading) submit(); };
+
   const selectInp = (key, label, options) => (
     <div style={{ marginBottom: 16 }}>
-      <label style={css.label}>{label}</label>
+      <label style={css.label} htmlFor={`auth-${key}`}>{label}</label>
       <select
+        id={`auth-${key}`}
         style={css.select}
         value={form[key]}
         onChange={e => setForm({ ...form, [key]: e.target.value })}
@@ -100,13 +116,14 @@ export default function AuthScreen({ onLogin, onGuestLogin }) {
           </div>
         </div>
 
-        {/* Card */}
+        {/* Card. The fields live in a real <form> so Enter submits; the demo
+            button stays outside it because it is not a form action. */}
         <div style={{
           background: 'var(--surface-container-lowest)',
           border: '1px solid var(--border)',
           borderRadius: 8,
           padding: 28,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          boxShadow: 'var(--shadow-sm)',
           animation: 'scaleIn 0.4s ease-out both'
         }}>
           {/* Mode toggle */}
@@ -114,15 +131,10 @@ export default function AuthScreen({ onLogin, onGuestLogin }) {
             {['login', 'register'].map(m => (
               <button
                 key={m}
-                style={{
-                  ...css.tab,
-                  flex: 1,
-                  height: 40,
-                  background: mode === m ? 'var(--primary)' : 'var(--surface)',
-                  color: mode === m ? 'var(--on-primary)' : 'var(--text-secondary)',
-                  border: 'none',
-                  boxShadow: mode === m ? '0 2px 8px rgba(0,102,102,0.25)' : 'none',
-                }}
+                type="button"
+                className={'tab' + (mode === m ? ' is-active' : '')}
+                aria-pressed={mode === m}
+                style={{ flex: 1 }}
                 onClick={() => { setMode(m); setErr(''); }}
               >
                 {m === 'login' ? 'Sign In' : 'Register'}
@@ -130,94 +142,75 @@ export default function AuthScreen({ onLogin, onGuestLogin }) {
             ))}
           </div>
 
-          {mode === 'register' && (
-            <>
-              {inp('full_name', 'Full Name', 'text', 'Ramesh Sharma')}
-              {inp('company_name', 'Company Name', 'text', 'Sharma Textiles Pvt Ltd')}
-              {selectInp('role', 'Role', [
-                { value: 'claimant',  label: 'Claimant (MSME Supplier)' },
-                { value: 'respondent', label: 'Respondent (Buyer)' },
-              ])}
-            </>
-          )}
+          <form onSubmit={submitForm}>
+            {mode === 'register' && (
+              <>
+                {inp('full_name', 'Full Name', 'text', 'Ramesh Sharma', {
+                  autoComplete: 'name', autoCapitalize: 'words',
+                })}
+                {inp('company_name', 'Company Name', 'text', 'Sharma Textiles Pvt Ltd', {
+                  autoComplete: 'organization', autoCapitalize: 'words',
+                })}
+                {selectInp('role', 'Role', [
+                  { value: 'claimant',  label: 'Claimant (MSME Supplier)' },
+                  { value: 'respondent', label: 'Respondent (Buyer)' },
+                ])}
+              </>
+            )}
 
-          {inp('email', 'Email Address', 'email', 'you@company.com')}
+            {inp('email', 'Email Address', 'email', 'you@company.com', {
+              autoComplete: 'email', inputMode: 'email', autoCapitalize: 'none',
+              spellCheck: false, autoFocus: mode === 'login',
+            })}
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={css.label}>Password</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                style={{ ...css.input, paddingRight: 44, marginBottom: 0 }}
-                type={showPw ? 'text' : 'password'}
-                value={form.password}
-                onChange={e => setForm({ ...form, password: e.target.value })}
-                placeholder="Enter password"
-              />
-              <button
-                type="button"
-                aria-label={showPw ? 'Hide password' : 'Show password'}
-                onClick={() => setShowPw(!showPw)}
-                style={{
-                  position: 'absolute', right: 12, top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: 14, padding: 0, opacity: 0.6,
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {showPw ? 'Hide' : 'Show'}
-              </button>
+            <div style={{ marginBottom: 16 }}>
+              <label style={css.label} htmlFor="auth-password">Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  id="auth-password"
+                  name="password"
+                  style={{ ...css.input, paddingRight: 72, marginBottom: 0 }}
+                  type={showPw ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  placeholder="Enter password"
+                  required
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                />
+                <button
+                  type="button"
+                  className="btn btn-plain"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPw}
+                  onClick={() => setShowPw(!showPw)}
+                  style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)' }}
+                >
+                  {showPw ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {err && (
-            <div style={{
-              color: 'var(--error)',
-              fontSize: 13,
-              marginBottom: 12,
-              padding: '10px 14px',
-              background: 'rgba(186,26,26,0.06)',
-              border: '1px solid rgba(186,26,26,0.2)',
-              borderRadius: 8,
-            }}>
-              {typeof err === 'string' ? err : JSON.stringify(err)}
-            </div>
-          )}
+            <Alert msg={err} type="error" />
 
-          <button
-            style={{
-              ...css.btn,
-              width: '100%',
-              padding: '12px',
-              fontSize: 14,
-              marginBottom: 16,
-              boxShadow: '0 2px 8px rgba(0,102,102,0.25)',
-            }}
-            onClick={submit}
-            disabled={loading}
-          >
-            {loading && <Spinner />}
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
-          </button>
+            <Button
+              type="submit"
+              variant="primary"
+              block
+              size="lg"
+              loading={loading}
+              style={{ marginBottom: 16 }}
+            >
+              {mode === 'login' ? 'Sign In' : 'Create Account'}
+            </Button>
+          </form>
 
           {/* Guest bypass */}
           <div style={{ textAlign: 'center', margin: '16px 0 4px', color: 'var(--text-secondary)', fontSize: 12 }}>
             — or —
           </div>
-          <button
-            className="app-btn app-ghost"
-            style={{
-              ...css.btnGhost,
-              width: '100%',
-              padding: '11px',
-              fontSize: 13,
-              color: 'var(--text-secondary)',
-              borderColor: 'var(--border)',
-            }}
-            onClick={onGuestLogin}
-          >
+          <Button variant="ghost" block onClick={onGuestLogin}>
             Continue as Demo User
-          </button>
+          </Button>
         </div>
 
         {/* Footer */}

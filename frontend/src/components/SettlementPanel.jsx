@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt } from '../theme';
-import { Badge, Spinner, Alert, EmptyState } from './UI';
+import { Badge, Alert, EmptyState, Button } from './UI';
 
 const ValidationCheck = React.memo(function ValidationCheck({ label, pass }) {
   return (
@@ -162,38 +162,22 @@ export default function SettlementPanel({ caseData, onUpdate }) {
         <div style={{
           display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap',
         }}>
-          <button
-            style={{
-              ...css.btn,
-              padding: '10px 24px',
-              fontSize: 13,
-              background: 'linear-gradient(135deg, #10B981, #06B6D4)',
-              color: '#fff',
-              boxShadow: '0 2px 8px rgba(16,185,129,0.25)',
-            }}
+          <Button
+            variant="success"
+            loading={loading}
+            disabled={fetching}
             onClick={generate}
-            disabled={loading || fetching}
           >
-            {loading ? (
-              <><Spinner /> Generating legal agreement...</>
-            ) : hasSettlement
-              ? 'Regenerate Agreement'
-              : 'Generate Settlement Agreement'}
-          </button>
+            {loading
+              ? 'Generating legal agreement…'
+              : hasSettlement
+                ? 'Regenerate Agreement'
+                : 'Generate Settlement Agreement'}
+          </Button>
           {hasSettlement && !data && (
-            <button
-              style={{
-                ...css.btnGhost,
-                padding: '10px 20px',
-                fontSize: 13,
-                color: 'var(--primary)',
-                borderColor: 'var(--primary)',
-              }}
-              onClick={fetchExisting}
-              disabled={fetching}
-            >
-              {fetching ? <Spinner /> : 'Load Existing'}
-            </button>
+            <Button variant="ghost" loading={fetching} onClick={fetchExisting}>
+              Load Existing
+            </Button>
           )}
         </div>
       )}
@@ -260,28 +244,12 @@ export default function SettlementPanel({ caseData, onUpdate }) {
                 Agreement Document
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  style={{
-                    ...css.btnGhost,
-                    padding: '6px 12px', fontSize: 12,
-                    color: 'var(--primary)',
-                    borderColor: 'var(--primary)',
-                  }}
-                  onClick={() => copyToClipboard(text)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(text)}>
                   {copied ? '✓ Copied!' : 'Copy'}
-                </button>
-                <button
-                  style={{
-                    ...css.btnGhost,
-                    padding: '6px 12px', fontSize: 12,
-                    color: 'var(--text-secondary)',
-                    borderColor: 'var(--border)',
-                  }}
-                  onClick={() => window.print()}
-                >
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => window.print()}>
                   🖨️ Print
-                </button>
+                </Button>
               </div>
             </div>
             <div style={{
@@ -299,28 +267,18 @@ export default function SettlementPanel({ caseData, onUpdate }) {
             }}>
               {text}
             </div>
-            <button
-              style={{
-                ...css.btnGhost,
-                background: 'transparent',
-                color: 'var(--primary)',
-                fontSize: 12,
-                marginTop: 8,
-                padding: '6px 12px',
-              }}
+            <Button
+              variant="plain"
               onClick={() => setShowFull(!showFull)}
+              aria-expanded={showFull}
+              style={{ marginTop: 8 }}
             >
               {showFull ? '▲ Collapse' : '▼ Expand Full Document'}
-            </button>
+            </Button>
           </div>
 
           {/* Summary stats */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 12,
-            marginBottom: 16,
-          }}>
+          <div className="grid-cols-3" style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
             {[
               { label: 'Agreed Amount',  value: fmt(agreedAmt),   color: '#10B981' },
               { label: 'of Original Claim', value: caseData.claim_amount

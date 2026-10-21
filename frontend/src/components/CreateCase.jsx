@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import API, { getApiError } from '../api';
 import { css } from '../theme';
-import { Spinner, Alert } from './UI';
+import { Alert, Button } from './UI';
 
 const DISPUTE_TYPES = [
   { value: 'delayed_payment',  label: 'Delayed Payment' },
@@ -22,7 +22,7 @@ function pretty(label) {
   return label.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-export default function CreateCase({ onClose, onCreated }) {
+function CreateCase({ onClose, onCreated }) {
   const [form, setForm] = useState({
     dispute_type: 'delayed_payment',
     claim_amount: '',
@@ -54,45 +54,28 @@ export default function CreateCase({ onClose, onCreated }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.4)',
-      backdropFilter: 'blur(4px)',
-      zIndex: 200,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 16,
-    }}
+    <div
+      className="modal-backdrop"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div style={{
-        background: 'var(--surface-container-lowest)',
-        border: '1px solid var(--border)',
-        borderRadius: 8,
-        padding: 28,
-        width: 560,
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        animation: 'scaleIn 0.3s ease-out both',
-      }}>
+      <div
+        className="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-case-title"
+        style={{ padding: 28 }}
+      >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--on-surface)' }}>
+          <h2 id="new-case-title" style={{ fontSize: 18, fontWeight: 700, color: 'var(--on-surface)' }}>
             New Dispute Case
-          </div>
+          </h2>
           <button
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 24, color: 'var(--text-secondary)',
-              padding: '4px 8px', borderRadius: 4,
-              lineHeight: 1,
-            }}
+            type="button"
+            className="btn btn-ghost btn-icon"
+            aria-label="Close dialog"
             onClick={onClose}
-            onMouseEnter={e => e.target.style.color = 'var(--on-surface)'}
-            onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
           >
             ×
           </button>
@@ -101,10 +84,11 @@ export default function CreateCase({ onClose, onCreated }) {
         {err && <Alert msg={err} type="error" />}
 
         {/* Form */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="grid-cols-2" style={{ display: 'grid', gap: 16 }}>
           <div>
-            <label style={css.label}>Dispute Type</label>
+            <label style={css.label} htmlFor="cc-dispute-type">Dispute Type</label>
             <select
+              id="cc-dispute-type"
               style={css.select}
               value={form.dispute_type}
               onChange={e => setForm({ ...form, dispute_type: e.target.value })}
@@ -115,8 +99,9 @@ export default function CreateCase({ onClose, onCreated }) {
             </select>
           </div>
           <div>
-            <label style={css.label}>Claim Amount (₹)</label>
+            <label style={css.label} htmlFor="cc-claim-amount">Claim Amount (₹)</label>
             <input
+              id="cc-claim-amount"
               style={css.input}
               type="number"
               min="0"
@@ -126,8 +111,9 @@ export default function CreateCase({ onClose, onCreated }) {
             />
           </div>
           <div>
-            <label style={css.label}>Overdue Days</label>
+            <label style={css.label} htmlFor="cc-overdue-days">Overdue Days</label>
             <input
+              id="cc-overdue-days"
               style={css.input}
               type="number"
               min="0"
@@ -137,8 +123,9 @@ export default function CreateCase({ onClose, onCreated }) {
             />
           </div>
           <div>
-            <label style={css.label}>State (MSEFC Jurisdiction)</label>
+            <label style={css.label} htmlFor="cc-state">State (MSEFC Jurisdiction)</label>
             <select
+              id="cc-state"
               style={css.select}
               value={form.state}
               onChange={e => setForm({ ...form, state: e.target.value })}
@@ -149,8 +136,9 @@ export default function CreateCase({ onClose, onCreated }) {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label style={css.label}>Industry</label>
+          <label style={css.label} htmlFor="cc-industry">Industry</label>
           <select
+            id="cc-industry"
             style={css.select}
             value={form.industry}
             onChange={e => setForm({ ...form, industry: e.target.value })}
@@ -162,8 +150,9 @@ export default function CreateCase({ onClose, onCreated }) {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label style={css.label}>Respondent Email <span style={{ color: 'var(--text-secondary)' }}>(optional)</span></label>
+          <label style={css.label} htmlFor="cc-respondent-email">Respondent Email <span style={{ color: 'var(--text-secondary)' }}>(optional)</span></label>
           <input
+            id="cc-respondent-email"
             style={css.input}
             type="email"
             value={form.respondent_email}
@@ -173,8 +162,9 @@ export default function CreateCase({ onClose, onCreated }) {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label style={css.label}>Dispute Description</label>
+          <label style={css.label} htmlFor="cc-description">Dispute Description</label>
           <textarea
+            id="cc-description"
             style={{ ...css.input, minHeight: 100, resize: 'vertical',
               fontFamily: "'Inter', sans-serif" }}
             value={form.description}
@@ -199,34 +189,16 @@ export default function CreateCase({ onClose, onCreated }) {
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button
-            style={{
-              ...css.btnGhost,
-              flex: 1,
-              color: 'var(--text-secondary)',
-              borderColor: 'var(--border)',
-            }}
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            style={{
-              ...css.btn,
-              flex: 2,
-              background: 'var(--primary)',
-              color: 'var(--on-primary)',
-              boxShadow: '0 2px 8px rgba(0,102,102,0.25)',
-            }}
-            onClick={submit}
-            disabled={loading}
-          >
-            {loading && <Spinner />}
-            {loading ? 'Creating...' : 'Create Case'}
-          </button>
+        <div className="btn-row">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" block loading={loading} onClick={submit}>
+            {loading ? 'Creating…' : 'Create Case'}
+          </Button>
         </div>
       </div>
     </div>
   );
 }
+
+// Modal with its own form state — no reason to re-render it when AppShell does.
+export default React.memo(CreateCase);

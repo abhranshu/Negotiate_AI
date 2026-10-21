@@ -4,17 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AI-powered MSME Online Dispute Resolution platform. Resolve payment disputes under the MSMED Act 2006 using voice, documents, prediction, and negotiation.">
-  <meta name="theme-color" content="#0a0f1e">
+  <!-- Matches the app's light institutional theme. This was #0a0f1e (dark navy),
+       which flashed a dark page and tinted mobile browser chrome to a colour the
+       app never uses. -->
+  <meta name="theme-color" content="#006666">
+  <meta name="color-scheme" content="light">
   <title>NegotiateAI — MSME ODR Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0f1e; color: #e2eaf5; font-family: 'Inter', sans-serif; min-height: 100vh; }
+    /* Painted before the bundle and global.css arrive — keep it identical to the
+       theme so there is no flash of a differently-coloured page. */
+    html, body { margin: 0; padding: 0; background: #F8F9FA; color: #191C1D; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+    #boot { display: flex; min-height: 100vh; align-items: center; justify-content: center; gap: 16px; flex-direction: column; }
+    #boot .ring { width: 40px; height: 40px; border: 3px solid #DEE2E6; border-top-color: #006666; border-radius: 50%; animation: bootspin 0.7s linear infinite; }
+    #boot .label { color: #4A5554; font-size: 14px; font-weight: 500; }
+    @keyframes bootspin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #boot .ring { animation: none; } }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Replaced as soon as React mounts; gives the app an immediate loading
+         affordance instead of a blank page. -->
+    <div id="boot">
+      <div class="ring"></div>
+      <div class="label">Loading NegotiateAI…</div>
+    </div>
+  </div>
+  <noscript>
+    <div style="padding: 40px; text-align: center; font-family: 'Inter', sans-serif; color: #191C1D;">
+      <h1 style="font-size: 20px; margin-bottom: 8px;">JavaScript is required</h1>
+      <p style="color: #4A5554; font-size: 14px;">
+        NegotiateAI is an interactive application. Please enable JavaScript to continue.
+      </p>
+    </div>
+  </noscript>
 </body>
 </html>

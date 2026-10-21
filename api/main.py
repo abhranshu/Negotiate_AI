@@ -7,8 +7,24 @@ Run directly on the low-resource VM with:
 Do not use --reload in production. Keep workers=1 on the 7.6 GB box.
 Docs at:   http://localhost:8000/docs
 """
+import asyncio
 import os
+import sys
 from contextlib import asynccontextmanager
+
+# ── Console encoding guard ──────────────────────────────────────────────────
+# Windows Python defaults stdout/stderr to cp1252, which cannot encode the
+# Unicode symbols used in the startup status prints below (⏳, ✅, ⚠️) or the
+# em-dashes in AIML log lines. An unencodable print() inside the lifespan raises
+# UnicodeEncodeError; the handler for it prints another emoji and raises again,
+# so the exception escapes the lifespan and uvicorn aborts startup with code 3
+# before the server ever binds a port. Force UTF-8 with replacement so a log
+# line can never take the server down.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError, OSError):
+        pass
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,7 +93,10 @@ async def lifespan(app: FastAPI):
         try:
             from AIML.negotiation_ai import _build_local_pipe
             print(f"⏳ Pre-loading local model ({settings.LOCAL_MODEL_ID})...")
-            _build_local_pipe()
+            # to_thread, not a direct call: the load takes 1-2 minutes, and
+            # running it on the event loop would stall startup's own tasks
+            # (log flushing, signal handling) for the whole duration.
+            await asyncio.to_thread(_build_local_pipe)
             print("✅ Local model ready")
         except Exception as e:
             print(f"⚠️  Local model pre-load failed ({e}) — will retry on first message")
@@ -86,7 +105,7 @@ async def lifespan(app: FastAPI):
         try:
             from AIML.negotiation_ai import NegotiationSentimentAnalyser
             print("⏳ Pre-loading sentiment model...")
-            NegotiationSentimentAnalyser()
+            await asyncio.to_thread(NegotiationSentimentAnalyser)
             print("✅ Sentiment model ready")
         except Exception as e:
             print(f"⚠️  Sentiment model pre-load failed ({e}) — will retry on first message")
@@ -112,6 +131,8 @@ if app_proxy_fix is not None:
     app.add_middleware(app_proxy_fix)
 
 # ── CORS (allow all origins in development; restrict in production) ────────────
+if "*" in settings.ALLOWED_ORIGINS:
+    print("[WARN] ALLOWED_ORIGINS contains '*' — set explicit origins in production .env")
 app.add_middleware(
     CORSMiddleware,
     allow_origins     = settings.ALLOWED_ORIGINS,
@@ -142,4 +163,22 @@ def root():
 
 @app.get("/health", tags=["Health"])
 def health():
-    return {"status": "ok"}
+    """Liveness + database reachability.
+
+    Deliberately does NOT run any ML inference: health checks are polled
+    frequently and must stay cheap. A reachable DB is the strongest cheap
+    signal that the app can actually serve requests.
+    """
+    from fastapi.responses import JSONResponse
+    from sqlalchemy import text
+    from api.database import engine
+
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse(
+            status_code=503,
+            content={"status": "degraded", "database": "unreachable", "detail": str(exc)},
+        )
+    return {"status": "ok", "database": "ok"}

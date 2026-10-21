@@ -14,7 +14,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.models.case import Case, Message, CaseStatus
+from api.models.case import Case, Message, CaseStatus, CASE_WITH_CONTEXT
 from api.models.user import User
 from api.schemas.case import NegotiateRequest, NegotiateResponse, MessageOut
 from api.auth import get_current_user
@@ -38,6 +38,10 @@ _FALLBACK_RESULT = {
     "agreement_reached":  False,
     "agreement_amount":   None,
     "strategy_hints":     {},
+    # Marks this as the neutral fallback (Module 4 unavailable/errored) rather
+    # than a real mediator turn. Clients must check this before trusting the
+    # text as AI-generated. Real results from the session leave it unset (False).
+    "is_fallback":        True,
 }
 
 
@@ -86,21 +90,47 @@ def _get_or_create_session(case: Case):
         _prune_sessions()
         _touch_session(case.id)
 
-        # Build document summary from all uploaded docs for this case
+        # Build document summary from all uploaded docs for this case. Needed by
+        # both branches below (an existing session gets its summary refreshed).
         doc_summary = None
         if hasattr(case, "documents") and case.documents:
             parts = []
             for doc in case.documents:
+                fields = doc.key_fields if isinstance(doc.key_fields, dict) else {}
+                if not doc.extracted_text and not fields:
+                    continue
+                # Structured extraction first: the mediator answers "what does my
+                # invoice say" from these values, and Module 2 already pulled them
+                # out. Raw OCR follows as supporting text (truncated — an OCR dump
+                # of several pages would otherwise crowd out the case facts).
+                facts = []
+                if fields.get("invoice_number"):
+                    facts.append(f"number={fields['invoice_number']}")
+                if fields.get("amount"):
+                    facts.append(f"amount=INR {fields['amount']:,}")
+                if fields.get("dates"):
+                    facts.append("dates=" + ", ".join(str(d) for d in fields["dates"][:3]))
+                if fields.get("parties"):
+                    facts.append("parties=" + ", ".join(str(p) for p in fields["parties"][:3]))
+                if fields.get("summary"):
+                    facts.append(f"summary={fields['summary']}")
+                header = f"[{doc.doc_type or doc.filename}: {doc.filename}]"
+                body = ("; ".join(facts) if facts else "")
                 if doc.extracted_text:
-                    parts.append(f"[{doc.doc_type or doc.filename}]: {doc.extracted_text[:500]}")
+                    body = f"{body}\nOCR text: {doc.extracted_text[:800]}" if body else (
+                        f"OCR text: {doc.extracted_text[:800]}"
+                    )
+                parts.append(f"{header}\n{body}")
             if parts:
                 doc_summary = "\n\n".join(parts)
 
-        # Get claimant and respondent names if available
-        claimant_name   = case.claimant.full_name   if case.claimant   else None
-        respondent_name = case.respondent.full_name if case.respondent else None
-
         if case.id not in _SESSIONS:
+            # Only needed to seed a brand-new session. These used to be resolved
+            # on every message, costing two extra SELECTs per message whose
+            # results were then discarded for any session already cached.
+            claimant_name   = case.claimant.full_name   if case.claimant   else None
+            respondent_name = case.respondent.full_name if case.respondent else None
+
             state = NegotiationState(
                 case_id               = case.id,
                 claim_amount          = case.claim_amount or 100_000,
@@ -152,13 +182,34 @@ async def send_message(
     current_user: User    = Depends(get_current_user),
 ):
     """Send a negotiation message via REST API. Module 4 returns a mediator response."""
-    case = db.query(Case).filter(Case.id == case_id).first()
+    # _get_or_create_session() reads the case's documents and parties; load them
+    # with the case so the session lookup doesn't emit a lazy SELECT per
+    # relationship.
+    case = (
+        db.query(Case)
+        .options(*CASE_WITH_CONTEXT)
+        .filter(Case.id == case_id)
+        .first()
+    )
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
 
     party_str = _party_from_user(case, current_user)
     if case.status in (CaseStatus.draft, CaseStatus.submitted):
         case.status = CaseStatus.in_progress
+
+    # Warm the local model BEFORE the session is built and off the event loop.
+    # NegotiationSession's constructor loads the model on first use; doing that
+    # here (in a worker thread) instead of inside the loop means a 1-2 minute
+    # cold load can no longer stall every other request — including the
+    # WebSocket pings whose 20s timeout was closing the client's socket.
+    from api.config import settings as _settings
+    if _settings.USE_LOCAL_MODEL:
+        try:
+            from AIML.negotiation_ai import ensure_local_pipe_loaded
+            await ensure_local_pipe_loaded()
+        except ImportError:
+            pass
 
     session = _get_or_create_session(case)
 
@@ -180,7 +231,12 @@ async def send_message(
             result = await asyncio.to_thread(
                 lambda: asyncio.run(session.process_message(party_enum, payload.text, payload.offer))
             )
-        except Exception:
+        except Exception as exc:
+            print(
+                f"[Negotiation/REST] mediator failed "
+                f"({type(exc).__name__}: {exc})",
+                flush=True,
+            )
             result = _FALLBACK_RESULT
     else:
         result = _FALLBACK_RESULT
@@ -231,6 +287,18 @@ async def websocket_negotiation(
         while True:
             # 1. Receive JSON message from connected party
             data = await websocket.receive_json()
+
+            # Live typing indicator (frontend debounces these): relay to the
+            # room and return — it is never persisted and never reaches the
+            # mediator, so it must not fall through to the offer/text path.
+            if data.get("type") == "typing":
+                await manager.broadcast_public(case_id, {
+                    "type": "typing",
+                    "sender": party_str,
+                    "is_typing": bool(data.get("is_typing", True)),
+                })
+                continue
+
             text = data.get("text", "")
             offer = data.get("offer")
 
@@ -238,7 +306,17 @@ async def websocket_negotiation(
                 continue
 
             # 2. Fetch case from database
-            case = db.query(Case).filter(Case.id == case_id).first()
+            #    Eager-load what _get_or_create_session() below needs. Note the
+            #    commit just after this expires all loaded instances, so on the
+            #    first message of a case the relationships get re-read anyway;
+            #    on every later message (status already in_progress, no commit)
+            #    this is what keeps it to one round trip.
+            case = (
+                db.query(Case)
+                .options(*CASE_WITH_CONTEXT)
+                .filter(Case.id == case_id)
+                .first()
+            )
             if case and case.status in (CaseStatus.draft, CaseStatus.submitted):
                 case.status = CaseStatus.in_progress
                 db.commit()
@@ -252,6 +330,19 @@ async def websocket_negotiation(
             })
 
             # 4. Invoke Module 4 (NegotiationSession)
+            #    Warm the model first, in a worker thread: constructing the
+            #    session triggers the load, and blocking this loop for the
+            #    duration of it is what made the client's socket die (uvicorn
+            #    closes a WebSocket whose ping goes unanswered for 20s) — so
+            #    messages vanished with no reply and no error.
+            from api.config import settings as _settings
+            if case and _settings.USE_LOCAL_MODEL:
+                try:
+                    from AIML.negotiation_ai import ensure_local_pipe_loaded
+                    await ensure_local_pipe_loaded()
+                except ImportError:
+                    pass
+
             session = _get_or_create_session(case) if case else None
 
             # Release the DB connection BEFORE the AI call (same rationale as
@@ -290,7 +381,15 @@ async def websocket_negotiation(
                             })
                         else:
                             result = event  # final dict — full text, no extra frame
-                except Exception:
+                except Exception as exc:
+                    # Never swallow this. Previously a broken mediator looked
+                    # exactly like a slow one: the room silently received the
+                    # neutral template and nothing reached CloudWatch.
+                    print(
+                        f"[Negotiation/WS] mediator failed "
+                        f"({type(exc).__name__}: {exc})",
+                        flush=True,
+                    )
                     result = _FALLBACK_RESULT
             else:
                 result = _FALLBACK_RESULT
@@ -316,10 +415,17 @@ async def websocket_negotiation(
                 "text": result["mediator_response"],
                 "sentiment": result.get("sentiment_detected"),
                 "phase": result.get("phase"),
-                "round": result.get("round"),
-                "agreement_reached": result.get("agreement_reached"),
-                "agreement_amount": result.get("agreement_amount")
+                "round": result.get("round"),                "agreement_reached": result.get("agreement_reached"),
+                "agreement_amount": result.get("agreement_amount"),
+                # Which engine produced this text and whether it is the neutral
+                # template. The chat UI is the primary consumer, so it needs the
+                # same honest signal the REST response already carries.
+                "ai_source": result.get("ai_source"),
+                "is_fallback": bool(result.get("is_fallback", False)),
             })
+
+
+
 
             # 6. Send Private Party-Specific Strategy Hints (Crucial Novelty!)
             hints = result.get("strategy_hints", {})
@@ -348,4 +454,13 @@ def get_messages(
         raise HTTPException(status_code=404, detail="Case not found")
     if case.claimant_id != current_user.id and case.respondent_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorised")
-    return sorted(case.messages, key=lambda m: m.timestamp)
+    # Query the messages directly rather than walking case.messages: the
+    # relationship pulls the whole collection into the session's identity map
+    # and the ordering then had to be redone in Python. Ordering in the database
+    # keeps this to a single statement and leaves the ORM graph untouched.
+    return (
+        db.query(Message)
+        .filter(Message.case_id == case_id)
+        .order_by(Message.timestamp)
+        .all()
+    )

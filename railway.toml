@@ -6,7 +6,11 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "gunicorn api.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120"
+# One worker. Railway's startCommand OVERRIDES the Dockerfile CMD, so leaving
+# this at "--workers 2" would silently reintroduce the two-worker OOM the
+# Dockerfile documents: each worker loads its own copy of PyTorch and (with
+# USE_LOCAL_MODEL=true) the local Qwen model (~1.5-2 GB each).
+startCommand = "gunicorn api.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"

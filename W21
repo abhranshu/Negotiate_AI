@@ -1,0 +1,47 @@
+
+1. Case tabs are now a real ARIA tablist —  components/UI.jsx ,  components/CaseDetail.jsx 
+-  Tab  reports  role="tab" ,  aria-selected ,  aria-controls  and roving  tabIndex  (selected = 0, others = -1) instead of  aria-current="page"  on a plain button.
+- Tab bar is  role="tablist"  +  aria-label="Case sections" ; each panel is  role="tabpanel"  with  id / aria-labelledby .
+- Arrow Left/Right, Home, End move between tabs and take focus with them.
+
+Verified live: after one  ArrowRight , selection went  Overview → Documents & Voice , focus landed on  case-tab-docs , the visible panel switched to  case-panel-docs , zero JS errors.
+
+2. Printing actually produces a case document —  global.css ,  CaseDetail.jsx 
+- The "🖨️ Print" button existed but nothing hid the app chrome, so it printed the sticky header, tab bar, buttons and footer.
+- Added  @media print : hides  .app-header/.app-footer/.skip-link/.site-nav/.no-print , flattens shadows and hover lifts,  break-inside: avoid  on cards/rows, denser tables,  @page { margin: 14mm } , and keeps status/badge colours. Back + Print buttons and the tab bar are  .no-print .
+
+3. Navigation feels right —  AppShell.jsx 
+- Scrolls to top when the view changes (opening a case from halfway down the dashboard used to leave the case header off-screen).
+- Per-view  document.title :  Dashboard · NegotiateAI ,  New Case · NegotiateAI ,  MSME-2026-0001 · NegotiateAI  — verified all three.
+
+4. Empty dashboard is actionable —  components/UI.jsx ,  CaseDashboard.jsx 
+-  EmptyState  gained an optional  action  slot; "No cases yet" now shows a Create your first case button wired to  onCreateCase  (previously it described what to do but offered nothing to click). Guest/demo state left as-is.
+
+5. Sign-in form behaves like a real form —  AuthScreen.jsx 
+- Inputs now carry  name ,  required ,  autoComplete  ( email ,  current-password  /  new-password ,  name ,  organization ),  inputMode="email" ,  spellCheck={false} ,  autoCapitalize , and email autofocus on the sign-in tab. Password managers can save and fill credentials now — verified the attributes in rendered DOM.
+
+Verification
+
+-  react-scripts build  ×3: final  BUILD_EXIT=0 , no compile warnings/errors.
+- Headless Chrome + CDP against the built bundle with a mocked API: guest dashboard, case open, tablist semantics, arrow-key switching, per-view titles, no runtime errors.
+- Build restored to the real config — 1 reference to the CloudFront API base, 0 to my temporary localhost mock.
+
+Limitations
+
+- Not redeployed — the live  d31cezah0dnx0p.cloudfront.net/app/case  still runs the previous bundle until you deploy.
+- Print output was verified structurally (rules present in the built CSS); I didn't render a PDF to eyeball pagination.
+- The working tree already contained unrelated uncommitted frontend edits before this pass (LandingPage, NegotiationChat, theme.js, etc.) — those are not mine and I left them untouched.
+Suggested followups:
+Polish pass complete and verified — the deliverables match what I reported.
+
+Files changed (6):
+-  frontend/src/components/UI.jsx  —  Tab  is now a proper ARIA tab ( role ,  aria-selected ,  aria-controls , roving  tabIndex );  EmptyState  gained an optional  action  slot.
+-  frontend/src/components/CaseDetail.jsx  — tab bar is  role="tablist"  with  aria-label , Arrow/Home/End navigation,  role="tabpanel"  +  aria-labelledby  on panels,  .no-print  on the back/print buttons and tab bar.
+-  frontend/src/global.css  —  @media print  block: hides app chrome, flattens elevation, avoids page breaks inside cards/rows, keeps badge colours.
+-  frontend/src/components/AppShell.jsx  — scroll-to-top on view change; per-view  document.title .
+-  frontend/src/components/CaseDashboard.jsx  — "Create your first case" CTA in the empty state.
+-  frontend/src/components/AuthScreen.jsx  —  name / required / autoComplete / inputMode / spellCheck / autoCapitalize /autofocus on the form inputs.
+
+Verified by running it (not just compiling): headless Chrome + CDP against the built bundle with a mocked API confirmed the tablist ( aria-label="Case sections" , 5 tabs with correct  aria-selected / tabIndex , panel ids), live arrow-key switching (selection, focus and visible panel all moved to Documents & Voice), per-view titles ( Dashboard · ,  MSME-2026-0001 · ), guest dashboard, and zero runtime errors. Auth attributes confirmed in the rendered DOM. Final  react-scripts build  exit 0 with no warnings; bundle restored to the CloudFront API base (0 localhost references). Temporary server, Chrome profile and scripts cleaned up; no lingering listeners.
+
+Not verified / limitations: not redeployed — the live site still serves the old bundle; print output checked structurally (rules present in built CSS), not rendered as a PDF; guest/demo empty state intentionally has no CTA; the repo already had unrelated uncommitted frontend edits before this pass, which I did not touch.

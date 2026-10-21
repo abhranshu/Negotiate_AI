@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "NegotiateAI"
 include(":app")
-include(":app")

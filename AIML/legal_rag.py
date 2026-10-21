@@ -57,6 +57,23 @@ _SECTION_RE = re.compile(
     r"(?im)^\s*(?:\*\*)?(section\s+\d+[a-z]?|sec\.?\s*\d+[a-z]?|\d+[a-z]?\.)"
 )
 
+# Markdown chapter/heading lines ("## CHAPTER V", "### DELAYED PAYMENTS ...").
+# Left unmerged these become the highest-scoring chunks in TF-IDF, because a
+# heading has a very high term-frequency/length ratio — which is how a bare
+# "DELAYED PAYMENTS TO MICRO AND SMALL ENTERPRISES" line ended up at rank 1
+# with no provision text behind it.
+_MD_HEADING_RE = re.compile(r"^\s*#{1,6}\s+\S")
+
+# A heading is short enough to be buffered and attached to its body.
+_HEADING_MAX_LEN = 160
+
+# Leading section title only (used to check whether a chunk has real body text).
+_LEADING_SECTION_RE = re.compile(
+    r"^\s*(?:\*\*)?(?:section\s+\d+[a-z]?|sec\.?\s*\d+[a-z]?|\d+[a-z]?\.)\s*"
+    r"[A-Za-z][^.]{0,100}?\.?(?:\*\*)?\s*",
+    re.IGNORECASE,
+)
+
 
 def clean_text(raw: str) -> str:
     """Normalise whitespace/newlines but keep paragraph breaks."""
@@ -67,10 +84,37 @@ def clean_text(raw: str) -> str:
 
 
 def _split_paragraphs(text: str):
+    """Yield paragraphs, attaching each short section heading to the body that
+    follows it.
+
+    Without this, a heading such as ``**15. Liability of buyer to make
+    payment.**`` (41 chars) clears the 40-char noise filter on its own and gets
+    indexed as a standalone chunk. Retrieval then hands the mediator a bare
+    section title with no provision text behind it — exactly the "Section 15."
+    fragment observed in the prompt — which invites the model to fill the gap
+    with invented or unrelated text.
+    """
+    pending_heading = ""
     for para in re.split(r"\n\s*\n", text):
         para = " ".join(para.split())
-        if len(para) >= 40:              # skip headings / noise
+        if not para:
+            continue
+        if len(para) <= _HEADING_MAX_LEN and (
+            _SECTION_RE.match(para) or _MD_HEADING_RE.match(para)
+        ):
+            # Hold it; the body comes next. Consecutive headings are merged so
+            # "## CHAPTER V" + "### DELAYED PAYMENTS..." reach the body together.
+            pending_heading = f"{pending_heading} {para}".strip()
+            continue
+        if len(para) >= 40:                # skip headings / noise
+            if pending_heading:
+                para = f"{pending_heading} {para}"
+                pending_heading = ""
             yield para
+    # Trailing heading with no body — keep it so the section still exists,
+    # but only if it carries enough text to be worth retrieving.
+    if pending_heading and len(pending_heading) >= 40:
+        yield pending_heading
 
 
 def _window_chunks(text: str, size: int, overlap: int):
@@ -100,6 +144,12 @@ def chunk_document(text: str, source: str) -> list[dict]:
             # Normalise bare numbers to "Section N" so citations read nicely
             current_section = raw if raw.lower().startswith("sec") else f"Section {raw}"
         for window in _window_chunks(para, CHUNK_SIZE, CHUNK_OVERLAP):
+            # Safety net: never index a chunk that is only a section title.
+            # A heading repeated without its body is worse than nothing,
+            # because the model will cite the section and then invent the text.
+            body = _LEADING_SECTION_RE.sub("", window).strip()
+            if len(body) < 40:
+                continue
             chunks.append({
                 "text":    window,
                 "source":  source,
@@ -111,37 +161,43 @@ def chunk_document(text: str, source: str) -> list[dict]:
 # ─── Vector retriever (primary) ───────────────────────────────────────────────
 
 class VectorRetriever:
-    """ChromaDB + sentence-transformers. Requires the two optional packages."""
+    """ChromaDB with its BUILT-IN ONNX embeddings (all-MiniLM-L6-v2).
 
-    def __init__(self, persist_dir: Path = PERSIST_DIR, collection: str = COLLECTION,
-                 embed_model: str = EMBED_MODEL):
+    Deliberately NOT sentence-transformers/torch: the ONNX model is ~80MB and
+    runs on onnxruntime alone, so the deploy image stays light (~300MB vs
+    ~2GB) and queries stay fast (~20ms on CPU). The ONNX model is downloaded
+    once to ~/.cache/chroma/onnx_models/ (baked into the Docker image by the
+    `python -m AIML.legal_rag --build` build step).
+    """
+
+    def __init__(self, persist_dir: Path = PERSIST_DIR, collection: str = COLLECTION):
         import chromadb
-        from sentence_transformers import SentenceTransformer
 
         self._client = chromadb.PersistentClient(path=str(persist_dir))
-        self._col    = self._client.get_or_create_collection(
+        # The default embedding function is registered automatically on
+        # collection creation and used for both upsert(query texts) and
+        # query_texts — no explicit embedding calls needed anywhere.
+        self._col = self._client.get_or_create_collection(
             collection, metadata={"hnsw:space": "cosine"}
         )
-        self._embed  = SentenceTransformer(embed_model)
 
     def build(self, documents: list[dict]):
         ids         = [f"{d['source']}::{i}" for i, d in enumerate(documents)]
         texts       = [d["text"] for d in documents]
         metadatas   = [{"source": d["source"], "section": d["section"]} for d in documents]
-        embeddings  = self._embed.encode(texts, show_progress_bar=True).tolist()
-        # ChromaDB caps upsert batch size (~5461); chunk to stay under it.
+        # ChromaDB embeds via the collection's default ONNX function.
+        # Caps upsert batch size (~5461); chunk to stay under it.
         batch = 1000
         for i in range(0, len(documents), batch):
             self._col.upsert(
                 ids=ids[i:i + batch],
                 documents=texts[i:i + batch],
                 metadatas=metadatas[i:i + batch],
-                embeddings=embeddings[i:i + batch],
             )
         print(f"[RAG] Vector store: {len(documents)} chunks upserted to '{self._col.name}'.")
 
     def query(self, query: str, k: int = 3) -> list[dict]:
-        hits = self._col.query(query_embeddings=[self._embed.encode(query)], n_results=k)
+        hits = self._col.query(query_texts=[query], n_results=k)
         out  = []
         for i, doc in enumerate(hits["documents"][0]):
             out.append({
@@ -192,7 +248,7 @@ class KeywordRetriever:
                     idf = math.log((n_docs + 1) / (df.get(t, 0) + 1)) + 1.0
                     score += (tf[t] / len(tokens)) * idf
             if score > 0:
-                scored.append((score, d))
+                scored.append((score * _source_boost(d) * _length_prior(d), d))
         scored.sort(key=lambda x: x[0], reverse=True)
         return [
             {**d, "score": round(s, 4), "retriever": "keyword"}
@@ -203,6 +259,34 @@ class KeywordRetriever:
 _STOPWORDS = set("""a an and are as at be but by for from has have if in into is it
 its no not of on or such than that the their there these they this to was were
 will with you your shall may""".split())
+
+
+# The corpus pairs two very differently-sized statutes: MSMED_Act_2006.md
+# (37 KB, the domain law this project is about) and A2013-18.md (1.3 MB, the
+# Companies Act). Pure TF-IDF lets the large generic file win on incidental
+# word overlap — it was returning Sections 378Y and 127 (dividends) for a
+# delayed-payment dispute. Weight the domain statute up instead.
+_SOURCE_BOOST = {
+    "MSMED_Act_2006.md": 1.6,
+}
+
+
+def _source_boost(doc: dict) -> float:
+    return _SOURCE_BOOST.get(doc.get("source", ""), 1.0)
+
+
+def _length_prior(doc: dict) -> float:
+    """Mild penalty for heading-sized fragments.
+
+    A 60-char chunk matching two query terms outscores a 500-char provision
+    that matches four, purely because score is normalised by token count.
+    """
+    text = doc.get("text", "")
+    if len(text) < 120:
+        return 0.5
+    if len(text) < 250:
+        return 0.8
+    return 1.0
 
 
 # ─── Facade ───────────────────────────────────────────────────────────────────
@@ -248,8 +332,8 @@ class LegalRetriever:
                         self._backend.build(json.loads(KEYWORD_CACHE.read_text(encoding="utf-8")))
                     except Exception:
                         pass
-                print("[RAG] chromadb/sentence-transformers not installed - using keyword "
-                      "fallback. Install with: pip install chromadb sentence-transformers")
+                print("[RAG] chromadb not installed - using keyword "
+                      "fallback. Install with: pip install chromadb")
 
     @property
     def mode(self) -> str:

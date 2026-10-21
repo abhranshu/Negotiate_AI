@@ -7,6 +7,7 @@ it falls back to a local path on this low-resource VM (see settings.USE_LOCAL_AS
 POST /api/cases/{case_id}/voice  — Upload audio, extract entities, pre-fill case fields
 """
 import os
+import threading
 import uuid
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -26,9 +27,39 @@ router = APIRouter(prefix="/api/cases", tags=["Voice"])
 
 AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".ogg", ".flac", ".webm", ".mp4"}
 
+# Deliberately small: a larger Whisper model would blow past this VM's RAM.
+ASR_MODEL_SIZE = "tiny"
+
+# The cached model is shared by every request. Whisper decoders are not
+# documented as thread-safe, so transcription is serialised rather than run
+# concurrently against one instance (it is CPU-bound here anyway, so parallel
+# decodes would only contend).
+_ASR_LOCK = threading.Lock()
+
 # Small note: this file no longer uses the Groq API. The old Groq-dependent
 # implementation was replaced with an offline-first path suitable for the
 # low-resource VM.
+
+
+def _load_asr_model(backend: str):
+    """Load the local ASR model once per process and share it.
+
+    load_model() reads and initialises weights from disk — seconds of work and
+    hundreds of MB of RAM — and this used to happen inline on every upload.
+
+    Raises if the backend is unavailable, so callers keep falling through to
+    the next backend and then to the stub. Failures are not cached.
+    """
+    from api.cache import ML_MODEL_CACHE
+
+    def _build():
+        if backend == "faster_whisper":
+            import faster_whisper
+            return faster_whisper.load_model(ASR_MODEL_SIZE, device="cpu", compute_type="int8")
+        import whisper
+        return whisper.load_model(ASR_MODEL_SIZE)
+
+    return ML_MODEL_CACHE.get_or_create(("asr", backend, ASR_MODEL_SIZE), _build, ttl=None)
 
 
 def _transcribe_local(audio_path: str) -> dict:
@@ -39,36 +70,33 @@ def _transcribe_local(audio_path: str) -> dict:
     supports small quantized models). If neither ASR lib is installed, falls
     back to a demo stub so the API still accepts uploads.
 
-    IMPORTANT: this is meant for small/cheap models. Do NOT call this with a
-    large Whisper model on this VM — it would blow past the available RAM.
+    The model itself is cached process-wide (see _load_asr_model), so the
+    model load is no longer part of the per-request path.
     """
-    try:
-        import faster_whisper
-        size = "tiny"
-        model = faster_whisper.load_model(size, device="cpu", compute_type="int8")
-        segments, info = model.transcribe(
-            audio_path,
-            language=None,
-            beam_size=1,
-            vad_filter=False,
-        )
-        text = " ".join(seg.text for seg in segments).strip()
-        lang = info.language or "en"
-        return {"text": text or "", "language": lang}
-    except Exception:  # noqa: BLE001 - degrade to stub if anything fails
-        pass
+    with _ASR_LOCK:
+        try:
+            model = _load_asr_model("faster_whisper")
+            segments, info = model.transcribe(
+                audio_path,
+                language=None,
+                beam_size=1,
+                vad_filter=False,
+            )
+            text = " ".join(seg.text for seg in segments).strip()
+            lang = info.language or "en"
+            return {"text": text or "", "language": lang}
+        except Exception:  # noqa: BLE001 - degrade to stub if anything fails
+            pass
 
-    try:
-        import whisper
-        size = "tiny"
-        model = whisper.load_model(size)
-        result = model.transcribe(audio_path, language=None, fp16=False)
-        return {
-            "text": result.get("text", "").strip(),
-            "language": result.get("language", "en"),
-        }
-    except Exception:  # noqa: BLE001
-        pass
+        try:
+            model = _load_asr_model("whisper")
+            result = model.transcribe(audio_path, language=None, fp16=False)
+            return {
+                "text": result.get("text", "").strip(),
+                "language": result.get("language", "en"),
+            }
+        except Exception:  # noqa: BLE001
+            pass
 
     return {
         "text": "Demo mode: no local ASR engine installed (install faster-whisper or openai-whisper for real transcription).",
@@ -103,8 +131,10 @@ def _run_ner(transcript: str) -> dict:
     loads successfully.
     """
     try:
-        from AIML.voice_pipeline import LegalNER
-        ner = LegalNER()
+        from AIML.voice_pipeline import get_legal_ner
+        # Cached process-wide: LegalNER() loads a BERT pipeline, which is far
+        # too expensive to rebuild on every audio upload.
+        ner = get_legal_ner()
         entities = ner.extract(transcript)
         dtype, _ = ner.classify_dispute_type(transcript)
         return {"entities": entities, "dispute_type": dtype}

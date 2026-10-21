@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import API, { getApiError } from '../api';
 import { css, fmt, sentiColor } from '../theme';
-import { Badge, Spinner, Alert, EmptyState } from './UI';
+import { Badge, Spinner, Alert, EmptyState, Button } from './UI';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
+
+// How long the peer keeps seeing "typing…" after the last keystroke, and the
+// client-side watchdog that clears a stale indicator if the sender vanishes.
+const TYPING_STOP_MS = 500;
+const TYPING_WATCHDOG_MS = 5000;
 
 const PHASES = ['opening', 'anchoring', 'bargaining', 'closing', 'agreement'];
 const PHASE_COLORS = {
@@ -218,20 +224,147 @@ const DealMeter = React.memo(function DealMeter({ claim, cOffer, rOffer }) {
   );
 });
 
+const QUICK_REPLIES = [
+  'I am ready to settle at a fair amount.',
+  'Your offer is too low considering the delay.',
+  'Let us find a middle ground.',
+  'I accept the proposed settlement terms.',
+];
+
+/*
+ * Message list is its own memoized component: while the mediator streams tokens
+ * the parent re-renders on every token, but `messages`/`myParty` keep their
+ * identity, so React bails out of the whole list instead of walking every bubble.
+ */
+const MessageList = React.memo(function MessageList({ messages, myParty }) {
+  return messages.map((m, i) => <ChatBubble key={i} m={m} myParty={myParty} />);
+});
+
+/*
+ * The composer owns the input/offer state so typing (one state change per
+ * keystroke) only re-renders these two fields, not the whole negotiation room.
+ */
+const Composer = React.memo(function Composer({ onSend, onTyping, loading }) {
+  const [input, setInput] = useState('');
+  const [offer, setOffer] = useState('');
+  // The peer should learn about typing as it starts, so `true` goes out on the
+  // leading edge while the matching `false` is debounced until the user pauses.
+  const typingRef = useRef(false);
+  const { debounced: stopTypingLater, cancel: cancelStopTyping } =
+    useDebouncedCallback(() => onTyping(false), TYPING_STOP_MS);
+
+  const handleMessageChange = useCallback((e) => {
+    setInput(e.target.value);
+    if (!typingRef.current) {
+      typingRef.current = true;
+      onTyping(true);
+    }
+    stopTypingLater();
+  }, [onTyping, stopTypingLater]);
+
+  const submit = useCallback(() => {
+    const text = input.trim();
+    if (!text) return;
+    // Explicit check: offer=0 ("free settlement") is valid — the old
+    // truthy test silently dropped it.
+    const trimmed = offer.trim();
+    const amt = trimmed !== '' ? parseFloat(trimmed) : null;
+    if (trimmed !== '' && !Number.isFinite(amt)) return;
+    onSend(text, amt);
+    // Sending ends the burst now — don't make the peer wait out the timer.
+    if (typingRef.current) {
+      typingRef.current = false;
+      cancelStopTyping();
+      onTyping(false);
+    }
+    setInput('');
+    setOffer('');
+  }, [input, offer, onSend, onTyping, cancelStopTyping]);
+
+  const pickQuickReply = useCallback((q) => { setInput(q); setOffer(''); }, []);
+
+  return (
+    <>
+      {/* Quick replies */}
+      <div style={{
+        display: 'flex', gap: 6, flexWrap: 'wrap',
+        marginBottom: 12,
+      }}>
+        {QUICK_REPLIES.map(q => (
+          <button
+            key={q}
+            type="button"
+            className="btn btn-ghost btn-sm quick-reply"
+            onClick={() => pickQuickReply(q)}
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div style={{
+        display: 'flex', gap: 10, alignItems: 'center',
+        flexWrap: 'wrap',
+      }}>
+        <input
+          style={{
+            ...css.input,
+            flex: 3,
+            marginBottom: 0,
+            fontSize: 13,
+          }}
+          placeholder="Type your message to the other party..."
+          value={input}
+          onChange={handleMessageChange}
+          onKeyDown={e => e.key === 'Enter' && submit()}
+        />
+        <input
+          style={{
+            ...css.input,
+            flex: 1,
+            marginBottom: 0,
+            minWidth: 120,
+            fontSize: 13,
+          }}
+          placeholder="Offer ₹ (optional)"
+          type="number"
+          value={offer}
+          onChange={e => setOffer(e.target.value)}
+        />
+        <Button
+          variant="primary"
+          loading={loading}
+          disabled={!input.trim()}
+          onClick={submit}
+        >
+          Send
+        </Button>
+      </div>
+    </>
+  );
+});
+
 export default function NegotiationChat({ caseData, onUpdate }) {
   const [messages, setMessages]       = useState([]);
-  const [input, setInput]             = useState('');
-  const [offer, setOffer]             = useState('');
   const [loading, setLoading]         = useState(false);
   const [err, setErr]                 = useState('');
   const [lastMeta, setLastMeta]       = useState(null);
   const [party]                       = useState('claimant');
   const [streamingText, setStreamingText] = useState('');
   const [wsConnected, setWsConnected] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
+  // True between sending a message and the mediator starting to answer. Without
+  // it a dropped socket was indistinguishable from "thinking": the message was
+  // fire-and-forget over the WebSocket, so no reply and no error ever appeared.
+  const [awaitingReply, setAwaitingReply] = useState(false);
+  const awaitingRef    = useRef(false);
+  const replyTimerRef  = useRef(null);
   const wsRef                          = useRef(null);
   const onUpdateRef                    = useRef(onUpdate);
   onUpdateRef.current = onUpdate;
   const scrollRef                      = useRef(null);
+  const typingWatchdogRef              = useRef(null);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -242,45 +375,131 @@ export default function NegotiationChat({ caseData, onUpdate }) {
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
+  // Peer typing indicator. The sender emits `is_typing: false` when it pauses,
+  // but if it drops off mid-sentence nobody would, so a watchdog clears it.
+  const stopReplyWatch = useCallback(() => {
+    if (replyTimerRef.current) {
+      clearTimeout(replyTimerRef.current);
+      replyTimerRef.current = null;
+    }
+    awaitingRef.current = false;
+    setAwaitingReply(false);
+  }, []);
+
+  const startReplyWatch = useCallback(() => {
+    awaitingRef.current = true;
+    setAwaitingReply(true);
+    if (replyTimerRef.current) clearTimeout(replyTimerRef.current);
+    // Backstop only — a dropped socket is normally caught by onclose long
+    // before this fires. Generous, because a GPU/CPU-split model can legitimately
+    // take a while to produce its first token.
+    replyTimerRef.current = setTimeout(() => {
+      replyTimerRef.current = null;
+      if (!awaitingRef.current) return;
+      awaitingRef.current = false;
+      setAwaitingReply(false);
+      setErr('The mediator did not reply. Your message was sent — resend it if no reply appears.');
+    }, 90000);
+  }, []);
+
+  useEffect(() => () => {
+    if (replyTimerRef.current) clearTimeout(replyTimerRef.current);
+  }, []);
+
+  const clearOtherTyping = useCallback(() => {
+    if (typingWatchdogRef.current) {
+      clearTimeout(typingWatchdogRef.current);
+      typingWatchdogRef.current = null;
+    }
+    setOtherTyping(false);
+  }, []);
+
+  const showOtherTyping = useCallback(() => {
+    setOtherTyping(true);
+    if (typingWatchdogRef.current) clearTimeout(typingWatchdogRef.current);
+    typingWatchdogRef.current = setTimeout(() => {
+      typingWatchdogRef.current = null;
+      setOtherTyping(false);
+    }, TYPING_WATCHDOG_MS);
+  }, []);
+
+  useEffect(() => clearOtherTyping, [clearOtherTyping]);
+
   // WebSocket real-time
   useEffect(() => {
     const base = (API.defaults.baseURL || 'http://localhost:8000').replace(/^http/, 'ws');
-    const ws = new WebSocket(`${base}/api/cases/ws/${caseData.id}?party=${party}`);
-    wsRef.current = ws;
-    ws.onopen  = () => setWsConnected(true);
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setWsConnected(false);
-    ws.onmessage = e => {
-      let f;
-      try { f = JSON.parse(e.data); } catch { return; }
-      if (f.type === 'user_message') {
-        setMessages(prev => [...prev, {
-          party: f.sender, text: f.text, offer: f.offer,
-          timestamp: new Date().toISOString()
-        }]);
-      } else if (f.type === 'mediator_started') {
-        setStreamingText('');
-      } else if (f.type === 'mediator_token') {
-        setStreamingText(prev => prev + (f.text || ''));
-      } else if (f.type === 'mediator_response') {
-        setMessages(prev => [...prev, {
-          party: 'mediator',
-          text: f.text,
-          sentiment: f.sentiment,
-          phase: f.phase,
-          timestamp: new Date().toISOString(),
-        }]);
-        setLastMeta(f);
-        setStreamingText('');
-        if (f.agreement_reached) {
-          onUpdateRef.current(prev => ({
-            ...prev, agreement_amount: f.agreement_amount
-          }));
+    let closed = false;
+    let attempt = 0;
+    let retryTimer = null;
+
+    // One socket per invocation; onclose schedules the next attempt.
+    function connect() {
+      const ws = new WebSocket(`${base}/api/cases/ws/${caseData.id}?party=${party}`);
+      wsRef.current = ws;
+      ws.onopen = () => { attempt = 0; setWsConnected(true); };
+      ws.onerror = () => { setWsConnected(false); clearOtherTyping(); };
+      ws.onclose = () => {
+        setWsConnected(false);
+        clearOtherTyping();
+        // If we were mid-request the reply is never coming, so say so rather
+        // than leaving the user watching a spinner forever. The message itself
+        // was delivered, so ask them to resend instead of replaying it — a
+        // replay would post a second mediator turn.
+        if (awaitingRef.current) {
+          stopReplyWatch();
+          setErr('Connection to the mediator dropped before it replied. Your message was sent — resend it if no reply appears.');
         }
-      }
+        // Panels stay mounted across tab switches now, so without reconnecting a
+        // dropped socket stayed dead for the rest of the session: every later
+        // message silently took the REST path, or was lost entirely.
+        if (closed) return;
+        attempt += 1;
+        retryTimer = setTimeout(connect, Math.min(1000 * 2 ** attempt, 15000));
+      };
+      ws.onmessage = e => {
+        let f;
+        try { f = JSON.parse(e.data); } catch { return; }
+        if (f.type === 'typing') {
+          // Our own frames are echoed back by the broadcast — ignore them.
+          if (f.sender !== party) (f.is_typing ? showOtherTyping() : clearOtherTyping)();
+        } else if (f.type === 'user_message') {
+          if (f.sender !== party) clearOtherTyping();
+          setMessages(prev => [...prev, {
+            party: f.sender, text: f.text, offer: f.offer,
+            timestamp: new Date().toISOString()
+          }]);
+        } else if (f.type === 'mediator_started') {
+          stopReplyWatch();          // the reply is arriving — stop the watchdog
+          setStreamingText('');
+        } else if (f.type === 'mediator_token') {
+          setStreamingText(prev => prev + (f.text || ''));
+        } else if (f.type === 'mediator_response') {
+          stopReplyWatch();
+          setMessages(prev => [...prev, {
+            party: 'mediator',
+            text: f.text,
+            sentiment: f.sentiment,
+            phase: f.phase,
+            timestamp: new Date().toISOString(),
+          }]);
+          setLastMeta(f);
+          setStreamingText('');
+          if (f.agreement_reached) {
+            onUpdateRef.current(prev => ({
+              ...prev, agreement_amount: f.agreement_amount
+            }));
+          }
+        }
+      };
+    }
+
+    connect();
+    return () => {
+      closed = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      wsRef.current?.close();
     };
-    return () => ws.close();
-  }, [caseData.id, party]);
+  }, [caseData.id, party, clearOtherTyping, showOtherTyping, stopReplyWatch]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -300,15 +519,20 @@ export default function NegotiationChat({ caseData, onUpdate }) {
     [messages]
   );
 
-  const send = async () => {
-    if (!input.trim()) return;
+  const sendTyping = useCallback((isTyping) => {
+    const ws = wsRef.current;
+    // Nothing to fall back to over REST — a missing indicator is harmless.
+    if (!wsConnected || ws?.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ type: 'typing', is_typing: isTyping }));
+  }, [wsConnected]);
+
+  const send = useCallback(async (text, amt) => {
     setErr('');
-    const text = input.trim();
-    const amt  = offer ? parseFloat(offer) : null;
-    setInput('');
-    setOffer('');
     if (wsConnected && wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ text, offer: amt }));
+      // Over the socket there is no response object to await, so track it
+      // explicitly: 'mediator_started' clears this, a dropped socket reports it.
+      startReplyWatch();
       return;
     }
     setLoading(true);
@@ -334,14 +558,7 @@ export default function NegotiationChat({ caseData, onUpdate }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const quickReplies = useMemo(() => [
-    'I am ready to settle at a fair amount.',
-    'Your offer is too low considering the delay.',
-    'Let us find a middle ground.',
-    'I accept the proposed settlement terms.',
-  ], []);
+  }, [caseData.id, party, wsConnected, startReplyWatch]);
 
   return (
     <div>
@@ -365,12 +582,22 @@ export default function NegotiationChat({ caseData, onUpdate }) {
             <span>🤝</span>
             AI-Mediated Negotiation Room
           </div>
-          {lastMeta?.phase && (
-            <Badge
-              text={'Phase: ' + lastMeta.phase}
-              color={PHASE_COLORS[lastMeta.phase] || 'var(--primary)'}
-            />
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {otherTyping && (
+              <span style={{
+                fontSize: 11, fontStyle: 'italic',
+                color: 'var(--text-secondary)',
+              }}>
+                <span style={{ color: '#8B5CF6' }}>●</span> Other party is typing…
+              </span>
+            )}
+            {lastMeta?.phase && (
+              <Badge
+                text={'Phase: ' + lastMeta.phase}
+                color={PHASE_COLORS[lastMeta.phase] || 'var(--primary)'}
+              />
+            )}
+          </div>
         </div>
         {lastMeta?.phase && <PhaseTracker current={lastMeta.phase} />}
         <DealMeter claim={caseData.claim_amount} cOffer={lastC} rOffer={lastR} />
@@ -392,7 +619,7 @@ export default function NegotiationChat({ caseData, onUpdate }) {
               subtext="Start the negotiation — the AI mediator will moderate the conversation"
             />
           ) : (
-            messages.map((m, i) => <ChatBubble key={i} m={m} myParty={party} />)
+            <MessageList messages={messages} myParty={party} />
           )}
           {streamingText && (
             <div style={{
@@ -421,7 +648,7 @@ export default function NegotiationChat({ caseData, onUpdate }) {
               </div>
             </div>
           )}
-          {loading && (
+          {(loading || awaitingReply) && (
             <div style={{
               textAlign: 'center', color: 'var(--text-secondary)',
               fontSize: 12, padding: 8,
@@ -431,83 +658,12 @@ export default function NegotiationChat({ caseData, onUpdate }) {
           )}
         </div>
 
-        {/* Quick replies */}
-        <div style={{
-          display: 'flex', gap: 6, flexWrap: 'wrap',
-          marginBottom: 12,
-        }}>
-          {quickReplies.map(q => (
-            <button
-              key={q}
-              style={{
-                ...css.btnGhost,
-                color: 'var(--text-secondary)',
-                borderColor: 'var(--border)',
-                padding: '6px 12px',
-                fontSize: 12,
-              }}
-              onClick={() => { setInput(q); setOffer(''); }
-            }
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div style={{
-          display: 'flex', gap: 10, alignItems: 'center',
-          flexWrap: 'wrap',
-        }}>
-          <input
-            style={{
-              ...css.input,
-              flex: 3,
-              marginBottom: 0,
-              fontSize: 13,
-            }}
-            placeholder="Type your message to the other party..."
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && send()}
-          />
-          <input
-            style={{
-              ...css.input,
-              flex: 1,
-              marginBottom: 0,
-              minWidth: 120,
-              fontSize: 13,
-            }}
-            placeholder="Offer ₹ (optional)"
-            type="number"
-            value={offer}
-            onChange={e => setOffer(e.target.value)}
-          />
-          <button
-            style={{
-              ...css.btn,
-              background: 'var(--primary)',
-              color: 'var(--on-primary)',
-              padding: '10px 20px',
-              boxShadow: '0 2px 8px rgba(0,102,102,0.25)',
-            }}
-            onClick={send}
-            disabled={loading || !input.trim()}
-          >
-            {loading ? <Spinner /> : 'Send'}
-          </button>
-        </div>
+        <Composer onSend={send} onTyping={sendTyping} loading={loading} />
       </div>
 
       {/* Mediator insights row */}
       {lastMeta && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 12,
-          marginBottom: 16,
-        }}>
+        <div className="grid-cols-3" style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
           <div style={{
             background: 'var(--surface-container-lowest)',
             border: '1px solid var(--border)',
